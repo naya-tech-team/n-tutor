@@ -1,1 +1,21 @@
-# n-tutor
+# Training
+
+- Terraform
+- Python basics
+- Fast API
+- MCP - FastMCP
+- A2A
+- Strands Agents
+    - Agents
+    - Multi Agents
+        - Agent with Tools
+        - Graph
+        - Workflows
+    - State / Context management
+- AgentCore
+    - Runtime
+    - Deploying strands agents into Runtime
+    - Gateway
+    - API Integration
+    - Observability
+    - Identity
