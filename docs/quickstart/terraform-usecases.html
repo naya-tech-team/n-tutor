@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terraform: Use Case Catalogue — AI Engineering</title>
+<meta name="description" content="Twenty-seven runnable Terraform use cases, each with the scenario it solves and the code that solves it — from a first resource through modules and challenges to data sources, for_each, functions, validation guards and lifecycle." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+<style>
+  .usecase {
+    border-left: 3px solid var(--accent, #6366f1);
+    padding: 12px 0 12px 18px;
+    margin: 18px 0 20px;
+    background: color-mix(in srgb, var(--accent, #6366f1) 6%, transparent);
+    border-radius: 0 8px 8px 0;
+  }
+  .usecase .usecase-label {
+    display: block;
+    font-size: .72rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    font-weight: 700;
+    opacity: .75;
+    margin-bottom: 6px;
+  }
+  .usecase p { margin: 0; }
+  .usecase p + p { margin-top: 10px; }
+  .usecase .prereq {
+    font-size: .9rem;
+    opacity: .8;
+    font-style: italic;
+  }
+  .uc-index td:first-child { white-space: nowrap; font-weight: 600; }
+  .path-note { font-size: .9rem; opacity: .8; }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">7</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link active" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Coming soon</div>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Strands (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>Terraform Use Cases</span>
+    </nav>
+
+    <h1>Terraform Use Case Catalogue</h1>
+    <div class="meta-row">
+      <span class="badge badge-intermediate">Use Cases</span>
+      <span class="badge badge-info">code-first</span>
+      <span class="badge badge-info">27 scenarios</span>
+      <span class="badge badge-info">~105 min</span>
+    </div>
+    <p>Twenty-seven self-contained Terraform scenarios, ordered as a learning path. Each one opens with <strong>the problem it solves</strong>, then shows <strong>the code that solves it</strong>, then explains the parts that matter.</p>
+    <p><strong>Scenarios 1–21</strong> take you from a single resource to a fully modularised two-tier application. <strong>Scenarios 22–27</strong> close the gaps those leave — between them the first twenty-one use only eight block types, three meta-arguments and three built-in functions, which is enough to <em>read</em> most Terraform and not enough to <em>write</em> it well.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📘 How to use this page</div>
+      <p>Every scenario is an independent root module. Work through one at a time: read the use case, read the code, then run <code>terraform init</code> → <code>plan</code> → <code>apply</code> → <code>destroy</code> in that scenario's own directory. Never run Terraform from the parent directory — each scenario has its own provider and its own state.</p>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ These are teaching examples</div>
+      <p><strong>Scenarios 1–21</strong> target AWS <code>us-west-2</code> (Oregon) on <code>t3.micro</code> — the free-tier-eligible type in this region — with the Amazon Linux 2023 AMI <code>ami-0b76d82b547c3c077</code>. They are deliberately minimal — see <a href="#caveats">Caveats</a> before reusing any of this in a real project.</p>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">🧭 Terraform 1.15 is the baseline</div>
+      <p>Scenarios 22–27 declare <code>required_version = "&gt;= 1.15"</code>, so a too-old CLI gives you a clear message rather than a baffling parse error. Check yours:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">terraform version                        # expect v1.15.x or newer
+brew upgrade hashicorp/tap/terraform     # if it isn't</code></pre>
+      </div>
+      <p>Which release introduced each thing these scenarios use — all of it available on 1.15:</p>
+      <table>
+        <thead><tr><th>Feature</th><th>Introduced in</th></tr></thead>
+        <tbody>
+          <tr><td><code>check {}</code> blocks, <code>import {}</code> blocks</td><td>1.5</td></tr>
+          <tr><td><code>.tftest.hcl</code> / <code>terraform test</code></td><td>1.6 (1.7 for <code>mock_provider</code>)</td></tr>
+          <tr><td><code>removed {}</code> blocks</td><td>1.7</td></tr>
+          <tr><td><strong>Cross-variable <code>validation</code> conditions</strong> — used in scenario 26, and the oldest release these scenarios genuinely need</td><td><strong>1.9</strong></td></tr>
+          <tr><td>S3 backend <code>use_lockfile</code> — native state locking, no DynamoDB table</td><td>1.10</td></tr>
+          <tr><td><code>ephemeral</code> resources and variables — values that never reach state</td><td>1.10</td></tr>
+        </tbody>
+      </table>
+      <p>Note the gap: the strict minimum this code needs is <strong>1.9</strong>, but it is pinned at <strong>1.15</strong> as a course baseline. That is a deliberate team choice, not a technical requirement — and it is the kind of decision <a href="#uc22">scenario 22</a> is about. If you are publishing a <em>module</em> for other people, pin the true minimum instead, or you lock out consumers for no reason.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">💰 This tier is cheaper than the basics</div>
+      <p>Scenarios 1–21 run EC2, RDS and Elastic IPs, all of which bill by the hour — public IPv4 has been charged hourly since February 2024. Everything here uses resources that are <strong>free to exist</strong>: S3 buckets, SSM Standard parameters, CloudWatch log groups, IAM policies and <code>terraform_data</code>. Log groups always set <code>retention_in_days</code>; buckets always set <code>force_destroy = true</code>.</p>
+    </div>
+
+
+    <h2 id="index">The 27 scenarios</h2>
+    <table class="uc-index">
+      <thead><tr><th>#</th><th>Scenario</th><th>The use case in one line</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#uc1">1</a></td><td>First Resource</td><td>Create something in the cloud from a text file.</td></tr>
+        <tr><td><a href="#uc2">2</a></td><td>EC2 Instance</td><td>Launch a virtual server.</td></tr>
+        <tr><td><a href="#uc3">3</a></td><td>Security Groups</td><td>Open a firewall port and let Terraform work out the ordering.</td></tr>
+        <tr><td><a href="#uc4">4</a></td><td>Elastic IP &amp; Outputs</td><td>Give a server a fixed public IP and print it.</td></tr>
+        <tr><td><a href="#uc5">5</a></td><td>IAM User &amp; Policy</td><td>Create a user with a custom permissions document.</td></tr>
+        <tr><td><a href="#uc6">6</a></td><td>Managed Database</td><td>Provision an RDS database.</td></tr>
+        <tr><td><a href="#uc7">7</a></td><td>Explicit Dependencies</td><td>Force ordering when there is no reference between resources.</td></tr>
+        <tr><td><a href="#uc8">8</a></td><td>Variable Types</td><td>Stop hardcoding values.</td></tr>
+        <tr><td><a href="#uc9">9</a></td><td>Count</td><td>Create many identical servers from one block.</td></tr>
+        <tr><td><a href="#uc10">10</a></td><td>Variable Files</td><td>Same code, different sizes per environment.</td></tr>
+        <tr><td><a href="#uc11">11</a></td><td>Feature Switch</td><td>Create a resource in prod but not in test.</td></tr>
+        <tr><td><a href="#uc12">12</a></td><td>count.index &amp; Splat</td><td>Give each replica a different name; collect every IP.</td></tr>
+        <tr><td><a href="#uc13">13</a></td><td>Dynamic Blocks</td><td>Generate one firewall rule per port in a list.</td></tr>
+        <tr><td><a href="#uc14">14</a></td><td>Modules</td><td>Package infrastructure for reuse.</td></tr>
+        <tr><td><a href="#uc15">15</a></td><td>for_each on Modules</td><td>Stamp out one stack per environment, safely.</td></tr>
+        <tr><td><a href="#uc16">16</a></td><td>Error Handling</td><td>Read a Terraform error and fix it.</td></tr>
+        <tr><td><a href="#uc17">17</a></td><td>Import</td><td>Adopt infrastructure that already exists.</td></tr>
+        <tr><td><a href="#uc18">18</a></td><td>Remote State</td><td>Share state across a team.</td></tr>
+        <tr><td><a href="#uc19">19</a></td><td>Challenge 1</td><td>Build a tagged VPC.</td></tr>
+        <tr><td><a href="#uc20">20</a></td><td>Challenge 2</td><td>Build a whole web + db stack in one file.</td></tr>
+        <tr><td><a href="#uc21">21</a></td><td>Challenge 3</td><td>Refactor that stack into composed modules.</td></tr>
+        <tr><td colspan="3"><strong>Advanced — closes the language gaps. Needs Terraform ≥ 1.15, and costs nothing to run.</strong></td></tr>
+        <tr><td><a href="#uc22">22</a></td><td>Version pinning</td><td>Pin the CLI, the provider and the module so it works next week too.</td></tr>
+        <tr><td><a href="#uc23">23</a></td><td>Data sources &amp; locals</td><td>Stop hardcoding account IDs, regions and AMIs; compute the name once.</td></tr>
+        <tr><td><a href="#uc24">24</a></td><td><code>for_each</code> on resources</td><td>Add a team to a map and only that team's resources change.</td></tr>
+        <tr><td><a href="#uc25">25</a></td><td>Expressions &amp; functions</td><td>Turn one input map into names, tags, an IAM policy and a config file.</td></tr>
+        <tr><td><a href="#uc26">26</a></td><td>Validation &amp; checks</td><td>Fail in two seconds with a clear message, not twenty minutes into an apply.</td></tr>
+        <tr><td><a href="#uc27">27</a></td><td>The <code>lifecycle</code> block</td><td>Protect, rename and force-replace without collateral damage.</td></tr>
+      </tbody>
+    </table>
+
+    <hr />
+
+    <h2 id="uc1">1. Your First Resource</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You want to create a piece of cloud infrastructure — here a network (VPC) — without opening the AWS console. You need the smallest possible file that Terraform will accept, so you can see the whole <code>init → plan → apply → destroy</code> loop end to end.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_vpc" "myvpc" {
+    cidr_block = "10.0.0.0/16"
+}</code></pre>
+    </div>
+    <p>Two blocks is the whole program. The <strong>provider</strong> block says which cloud to talk to and where. The <strong>resource</strong> block declares one thing you want to exist.</p>
+    <p>Resource syntax is always <code>resource "&lt;TYPE&gt;" "&lt;LOCAL_NAME&gt;" { … }</code>. The type (<code>aws_vpc</code>) comes from the provider and decides what arguments are valid. The local name (<code>myvpc</code>) is only how <em>Terraform</em> refers to it — it never appears in AWS.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform init      # download the AWS provider
+terraform plan      # preview: 1 to add, 0 to change, 0 to destroy
+terraform apply     # create it (type "yes")
+terraform destroy   # tear it down</code></pre>
+    </div>
+
+    <h2 id="uc2">2. EC2 Instance</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You need a virtual server to run something on. This is the same two-block shape as before, proving the pattern generalises: change the resource type and the arguments, and you get a completely different piece of infrastructure.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+}</code></pre>
+    </div>
+    <p><code>ami</code> is the machine image (the operating system to boot) and <code>instance_type</code> is the hardware size. There's no key pair and no security group here — this is the bare minimum AWS will accept to start an instance.</p>
+    <div class="callout callout-tip">
+      <div class="callout-title">Why this AMI and this instance type</div>
+      <p>The same image has a different ID in every region, so hardcoding one — as these examples do — locks the config to <code>us-west-2</code>. See <a href="#caveats">Caveats</a> for the data-source version that works anywhere.</p>
+      <p>The type is <code>t3.micro</code> rather than the more familiar <code>t2.micro</code> for two independent reasons: in <code>us-west-2</code> AWS reports <code>t2.micro</code> as <strong>not</strong> free-tier eligible while <code>t3.micro</code> is, and Amazon Linux 2023 requires ENA networking, which the older Xen-based <code>t2</code> family doesn't support. Free-tier eligibility differs by region — verify it before copying this elsewhere.</p>
+    </div>
+
+    <h2 id="uc3">3. Security Groups &amp; Implicit Dependencies</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Your server needs a firewall rule so traffic can reach it. But a security group has to exist <em>before</em> an instance can be attached to it — so how do you tell Terraform the correct order? The answer: you don't. Reference one resource from another and Terraform derives the order itself.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    security_groups = [aws_security_group.webtraffic.name]   # &lt;-- implicit dependency
+}
+
+resource "aws_security_group" "webtraffic" {
+    name = "Allow HTTPS"
+
+    ingress {
+        from_port = 443
+        to_port = 443
+        protocol = "TCP"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port = 443
+        to_port = 443
+        protocol = "TCP"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}</code></pre>
+    </div>
+    <p>Because the instance reads <code>aws_security_group.webtraffic.name</code>, Terraform builds a dependency graph and creates the security group <strong>first</strong>, automatically. On destroy it reverses the order.</p>
+    <p>The order the blocks appear in the file is irrelevant — the instance is written above the security group it depends on and it still works. Terraform resolves ordering from <em>references</em>, never from position.</p>
+    <p><code>ingress</code> is inbound traffic, <code>egress</code> is outbound. Each nested block opens a port range from a set of source addresses; <code>0.0.0.0/0</code> means "the entire internet".</p>
+
+    <h2 id="uc4">4. Elastic IP &amp; Outputs</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>A default EC2 public IP changes every time the instance restarts. You want a permanent address — and, just as importantly, you want Terraform to <em>tell you what that address is</em> once it's built, instead of hunting for it in the console.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+}
+
+resource "aws_eip" "elasticeip" {
+    instance = aws_instance.ec2.id
+}
+
+output "EIP" {
+    value = aws_eip.elasticeip.public_ip
+}</code></pre>
+    </div>
+    <p>An <strong>output</strong> block surfaces a value that only exists after the resource is created. Terraform prints it at the end of <code>apply</code>, and you can re-read it from state at any time without applying again.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform apply
+terraform output          # show all outputs
+terraform output EIP      # show just this one</code></pre>
+    </div>
+    <p>Outputs have a second, bigger job: they are how a child module returns values to whatever called it. That becomes the backbone of scenarios <a href="#uc14">14</a> and <a href="#uc21">21</a>.</p>
+
+    <h2 id="uc5">5. IAM User, Policy &amp; Attachment</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You need to grant a person or service a specific set of AWS permissions. That takes three separate things — an identity, a permissions document, and the link between them — and it's a good example of embedding raw JSON inside HCL.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_iam_user" "myUser" {
+    name = "terraform-user"
+}
+
+resource "aws_iam_policy" "customPolicy" {
+    name = "GlacierEFSEC2"
+
+    policy = &lt;&lt;EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CreateVpc",
+                "ec2:StopInstances",
+                "ec2:CreateVolume",
+                "glacier:ListVaults",
+                "glacier:CompleteMultipartUpload",
+                "elasticfilesystem:ClientMount"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_policy_attachment" "policyBind" {
+    name = "attachment"
+    users = [aws_iam_user.myUser.name]
+    policy_arn = aws_iam_policy.customPolicy.arn
+}</code></pre>
+    </div>
+    <p class="path-note">The real policy in the course code lists roughly 70 EC2, Glacier and EFS actions; it's trimmed here to keep the shape readable.</p>
+    <p>The <strong>heredoc</strong> syntax <code>&lt;&lt;EOF … EOF</code> embeds a multi-line string verbatim — ideal for a JSON policy document you've copied out of the AWS policy generator. The closing <code>EOF</code> must sit at the start of its own line.</p>
+    <p>The attachment resource is the join: it takes a list of users and a policy ARN. Note it reads <code>.arn</code> from the policy — another implicit dependency, so all three resources are created in the right order.</p>
+    <div class="callout callout-warning">
+      <div class="callout-title">Prefer the non-exclusive attachment</div>
+      <p><code>aws_iam_policy_attachment</code> is <strong>exclusive</strong> — it detaches the policy from any identity not listed in its arguments, which can silently revoke access elsewhere in the account. For real work use <code>aws_iam_user_policy_attachment</code>.</p>
+    </div>
+
+    <h2 id="uc6">6. Managed Database (RDS)</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Your application needs a database, and you'd rather not run one yourself. RDS gives you a managed engine; Terraform gives you a repeatable definition of it. This scenario also shows a resource with a meaningful number of required arguments.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_db_instance" "myRDS" {
+    db_name = "myDB"
+    identifier = "my-first-rds"
+    instance_class = "db.t3.micro"
+    engine = "mariadb"
+    engine_version = "11.4"
+    username = "bob"
+    password = "password123"
+    port = 3306
+    allocated_storage = 20
+    skip_final_snapshot = true
+}</code></pre>
+    </div>
+    <p>Two names are in play and they mean different things: <code>identifier</code> is what AWS calls the instance, while <code>db_name</code> is the database created <em>inside</em> the engine.</p>
+    <p><code>skip_final_snapshot = true</code> lets <code>terraform destroy</code> finish without prompting for a snapshot name. That's convenient in a lab and dangerous in production — leave it <code>false</code> for anything you'd miss.</p>
+    <div class="callout callout-danger">
+      <div class="callout-title">Never hardcode a password</div>
+      <p>The password here is inline for demo purposes. Anything you write in a <code>.tf</code> file is also written to the state file in plain text. Use a sensitive variable, AWS Secrets Manager, or <code>manage_master_user_password</code>.</p>
+    </div>
+
+    <h2 id="uc7">7. Explicit Dependencies</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Your web server must not start until the database server exists — but nothing in the web server's configuration actually <em>references</em> the database, so Terraform has no way to infer the ordering and would happily build both at once. You need to state the dependency by hand.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_instance" "db" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+}
+
+resource "aws_instance" "web" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+
+    depends_on = [aws_instance.db]   # &lt;-- explicit: db must exist first
+}</code></pre>
+    </div>
+    <p><code>depends_on</code> takes a list of resource addresses and forces Terraform to finish those before starting this one. Compare with scenario <a href="#uc3">3</a>, where the dependency came free from a reference.</p>
+    <p>Reach for it only when an implicit reference isn't available. It's a blunter instrument: it can't express <em>which</em> attribute you need, so it serialises more of the graph than necessary and slows applies down.</p>
+
+    <h2 id="uc8">8. Variable Types</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Hardcoded values mean copying the whole file to change one setting. Variables turn a config into something parameterised and reusable. This scenario is a reference sheet: every variable type Terraform supports, in one place.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "vpcname" {          # string
+  type    = string
+  default = "myvpc"
+}
+
+variable "sshport" {          # number
+  type    = number
+  default = 22
+}
+
+variable "enabled" {          # bool — type inferred from the default
+  default = true
+}
+
+variable "mylist" {           # list — ordered, same type throughout
+  type    = list(string)
+  default = ["Value1", "Value2"]
+}
+
+variable "mymap" {            # map — key/value lookup
+  type = map
+  default = {
+    Key1 = "Value1"
+    Key2 = "Value2"
+  }
+}
+
+variable "mytuple" {          # tuple — fixed length, mixed types
+  type    = tuple([string, number, string])
+  default = ["cat", 1, "dog"]
+}
+
+variable "myobject" {         # object — named attributes, mixed types
+  type = object({ name = string, port = list(number) })
+  default = {
+    name = "terraform-user"
+    port = [22, 25, 80]
+  }
+}
+
+variable "inputname" {        # no default -> Terraform prompts at apply time
+  type        = string
+  description = "Set the name of the VPC"
+}</code></pre>
+    </div>
+    <p>Variables are consumed with <code>var.&lt;name&gt;</code>:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_vpc" "myvpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = var.inputname
+  }
+}
+
+output "vpcid" {
+  value = aws_vpc.myvpc.id
+}</code></pre>
+    </div>
+    <p>A variable with <strong>no <code>default</code></strong> and no supplied value makes Terraform stop and prompt interactively. That's fine at a keyboard and fatal in CI, so supply it explicitly instead:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform apply -var="inputname=MyVPC"
+
+export TF_VAR_inputname=MyVPC     # any TF_VAR_* env var becomes a variable
+terraform apply</code></pre>
+    </div>
+
+    <h2 id="uc9">9. Count — Replicating Resources</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You need three identical servers. Copy-pasting the resource block three times works but is unmaintainable — every future change has to be made three times. <code>count</code> turns one block into N.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    count = 3
+}</code></pre>
+    </div>
+    <p>The resource is now a <strong>list</strong>, addressed by index: <code>aws_instance.ec2[0]</code>, <code>[1]</code>, <code>[2]</code>. Anything referencing it must pick an element or use a splat (scenario <a href="#uc12">12</a>).</p>
+    <div class="callout callout-warning">
+      <div class="callout-title">Index shifting</div>
+      <p>Because <code>count</code> addresses are positional, removing an item from the middle of a count-driven list renumbers everything after it — and Terraform will destroy and recreate resources that you never touched. Scenario <a href="#uc15">15</a> shows the fix.</p>
+    </div>
+
+    <h2 id="uc10">10. Variable Files per Environment</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Test needs 2 servers; production needs 50. You want <strong>one</strong> configuration — not a copied folder per environment — with the differences pulled out into small values files you can swap at the command line.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+variable "number_of_servers" {
+    type = number
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    count = var.number_of_servers
+}</code></pre>
+    </div>
+    <p>The two values files hold nothing but the differences:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>test values</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">number_of_servers = 2</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>prod values</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">number_of_servers = 50</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform apply -var-file="test.tfvars"    # 2 instances
+terraform apply -var-file="prod.tfvars"    # 50 instances</code></pre>
+    </div>
+    <p>A values file named <code>terraform.tfvars</code> (or anything ending <code>.auto.tfvars</code>) is loaded automatically. Any other name needs <code>-var-file</code> — which is exactly what makes the environment choice explicit and visible in your shell history.</p>
+    <div class="callout callout-danger">
+      <div class="callout-title">One state, two environments</div>
+      <p>Applying both files in the same directory doesn't give you two environments — the second apply <em>rewrites</em> the first, because they share one state file. Real separation comes from separate state: workspaces, separate backends, or separate directories.</p>
+    </div>
+
+    <h2 id="uc11">11. Feature Switch — Conditional Resources</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Some infrastructure should only exist in production — a bastion host, a monitoring box, a read replica. You want a single config where that resource is created in prod and <em>completely absent</em> everywhere else.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+variable "environment" {
+    type = string
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    count = var.environment == "prod" ? 1 : 0
+}</code></pre>
+    </div>
+    <p>This is the classic Terraform feature toggle. There is no <code>if</code> statement in HCL — instead you put a <strong>ternary</strong> on <code>count</code>, where <code>0</code> means "don't create this at all".</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>prod values</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">number_of_servers = 50
+environment="prod"</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>test values</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">number_of_servers = 2
+environment="test"</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform apply -var-file="prod.tfvars"    # 1 instance created
+terraform apply -var-file="test.tfvars"    # 0 instances — resource skipped entirely</code></pre>
+    </div>
+    <p>The resource still uses list addressing even when there's one of it, so referencing it elsewhere means <code>aws_instance.ec2[0].id</code> — which will error in the environments where the count is zero. That's the main friction of this pattern.</p>
+
+    <h2 id="uc12">12. count.index &amp; Splat Expressions</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You want three database servers, but each should be <em>named differently</em> — and afterwards you need the private IP of every one of them as a single list. Plain <code>count</code> gives you copies; this scenario makes each copy distinct and then collects an attribute across all of them.</p>
+    </div>
+    <p>The caller passes a list of names into a module:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · root</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+module "db" {
+    source = "./db"
+    server_names = ["mariadb","mysql","mssql"]
+}
+
+output "private_ips" {
+    value = module.db.PrivateIP
+}</code></pre>
+    </div>
+    <p>The module derives its own count from the length of that list:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · db module</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "server_names" {
+    type = list(string)
+}
+
+resource "aws_instance" "db" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    count = length(var.server_names)          # 3 instances
+
+    tags = {
+        Name = var.server_names[count.index]  # "mariadb", "mysql", "mssql"
+    }
+}
+
+output "PrivateIP" {
+    value = [aws_instance.db.*.private_ip]    # splat: the attribute from every instance
+}</code></pre>
+    </div>
+    <p>Three techniques stack up here:</p>
+    <table>
+      <thead><tr><th>Technique</th><th>What it buys you</th></tr></thead>
+      <tbody>
+        <tr><td><code>length(var.server_names)</code></td><td>The count is <em>derived</em> from the data. Add a fourth name and you get a fourth server — no other edit.</td></tr>
+        <tr><td><code>count.index</code></td><td>The 0-based iteration number, used to pick this instance's matching name out of the list.</td></tr>
+        <tr><td><code>aws_instance.db.*.private_ip</code></td><td>The <strong>splat expression</strong> — reads one attribute from every instance and returns them as a list.</td></tr>
+      </tbody>
+    </table>
+    <p>Without the splat you'd have to write out <code>aws_instance.db[0].private_ip</code>, <code>[1]</code>, <code>[2]</code> — and update it every time the count changed.</p>
+
+    <h2 id="uc13">13. Dynamic Blocks</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Your security group needs to open eight ports. Writing eight near-identical <code>ingress</code> blocks by hand is tedious and error-prone, and the port list should really be configurable. But <code>count</code> can't help — these are <em>nested blocks inside</em> a resource, not whole resources. That's what <code>dynamic</code> is for.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+variable "ingressrules" {
+    type = list(number)
+    default = [80,443]
+}
+
+variable "egressrules" {
+    type = list(number)
+    default = [80,443,25,3306,53,8080]
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    security_groups = [aws_security_group.webtraffic.name]
+}
+
+resource "aws_security_group" "webtraffic" {
+    name = "Allow HTTPS"
+
+    dynamic "ingress" {
+        iterator = port
+        for_each = var.ingressrules
+        content {
+            from_port   = port.value
+            to_port     = port.value
+            protocol    = "TCP"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+    }
+
+    dynamic "egress" {
+        iterator = port
+        for_each = var.egressrules
+        content {
+            from_port   = port.value
+            to_port     = port.value
+            protocol    = "TCP"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+    }
+}</code></pre>
+    </div>
+    <p>Four parts to the syntax:</p>
+    <table>
+      <thead><tr><th>Part</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>dynamic "ingress"</code></td><td>The name of the nested block you're generating.</td></tr>
+        <tr><td><code>for_each</code></td><td>The collection to iterate over.</td></tr>
+        <tr><td><code>iterator = port</code></td><td>Renames the iteration variable (it defaults to the block name). The current element is <code>port.value</code>.</td></tr>
+        <tr><td><code>content { }</code></td><td>The block body produced on each pass.</td></tr>
+      </tbody>
+    </table>
+    <p>Twelve lines produce two ingress rules and six egress rules — and adding a port is now a one-number edit to a variable. Compare against the hand-written pair of blocks in scenario <a href="#uc3">3</a>.</p>
+
+    <h2 id="uc14">14. Modules</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You've written a good EC2 configuration and now three projects want it. Copying the file into each one means three places to fix every bug. A module packages the configuration behind a small interface — inputs in, outputs out — so callers reuse it instead of duplicating it.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · root</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+module "ec2module" {
+    source  = "./ec2"          # local path; can also be a registry or git URL
+    ec2name = "Name From Module"
+}
+
+output "module_output" {
+    value = module.ec2module.instance_id
+}</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · ec2 module</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "ec2name" {
+    type = string
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    tags = {
+        Name = var.ec2name
+    }
+}
+
+output "instance_id" {
+    value = aws_instance.ec2.id
+}</code></pre>
+    </div>
+    <p>The module contract has exactly three rules:</p>
+    <ol>
+      <li><strong>Inputs</strong> — the child declares <code>variable "ec2name"</code>; the caller sets it as an argument inside the <code>module</code> block.</li>
+      <li><strong>Outputs</strong> — the child declares <code>output "instance_id"</code>; the caller reads it as <code>module.ec2module.instance_id</code>. Nothing is visible to the caller unless it's an output.</li>
+      <li><strong>No provider block in the child</strong> — it inherits the provider configured by the root module.</li>
+    </ol>
+    <div class="callout callout-tip">
+      <div class="callout-title">Re-run init after touching a module</div>
+      <p>Adding, moving, or changing the source of a <code>module</code> block requires <code>terraform init</code> again — Terraform has to fetch and link the source before it can plan. "My module change did nothing" is almost always a missing <code>init</code>.</p>
+    </div>
+
+    <h2 id="uc15">15. for_each on a Module</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You want the same stack in dev, test, and prod. <code>count = 3</code> would build three of them — but then deleting the middle environment renumbers the other two and Terraform destroys and rebuilds infrastructure you never touched. You need instances keyed by <em>name</em>, not by position.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · root</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+module "ec2" {
+    source   = "./ec2"
+    for_each = toset(["dev", "test", "prod"])
+}</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · ec2 module</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+}</code></pre>
+    </div>
+    <p><code>toset()</code> converts the list into a set so each element becomes a <strong>stable string key</strong> rather than a position. The instances are addressed as <code>module.ec2["dev"]</code>, <code>module.ec2["test"]</code>, <code>module.ec2["prod"]</code>.</p>
+    <p>That's the whole point. Remove <code>"test"</code> from the list and only <code>module.ec2["test"]</code> is destroyed — <code>"dev"</code> and <code>"prod"</code> keep their keys and are left completely alone. Inside the child, the current key is available as <code>each.key</code>, which is how you'd tag each instance with its environment name.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">Terraform 0.13+</div>
+      <p><code>count</code> and <code>for_each</code> on <code>module</code> blocks were added in Terraform 0.13. Before that, repeating a module meant writing the block out once per environment.</p>
+    </div>
+    <p><strong>Rule of thumb:</strong> <code>for_each</code> for named collections; <code>count</code> only for genuinely identical copies or an on/off toggle.</p>
+
+    <h2 id="uc16">16. Error Handling</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>You will write broken Terraform. This scenario is broken <em>on purpose</em> so you can practise the thing that actually matters: reading the error, finding the line, and fixing it — before you burn an <code>apply</code> against real infrastructure.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · intentionally broken</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_instance" "ec2" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = var.type     # &lt;-- undeclared variable
+}</code></pre>
+    </div>
+    <p>The config reads <code>var.type</code>, which is never declared anywhere. Run the cheapest check first:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform validate    # catches it without credentials or a network call
+terraform plan</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>output</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">Error: Reference to undeclared input variable
+
+  on main.tf line 7, in resource "aws_instance" "ec2":
+   7:     instance_type = var.type
+
+An input variable with the name "type" has not been declared.</code></pre>
+    </div>
+    <p>The fix is to add the missing declaration:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · the fix</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "type" {
+    type    = string
+    default = "t3.micro"
+}</code></pre>
+    </div>
+    <p>Terraform's error messages improved sharply in 0.12+ — they name the file, the line, the expression, and usually the fix. Make <code>terraform validate</code> a reflex: it's the fastest feedback loop you have, since it needs no AWS credentials and touches nothing.</p>
+
+    <h2 id="uc17">17. Importing Existing Infrastructure</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Someone built a VPC by clicking around the console last year. You now want Terraform to manage it — without destroying and rebuilding it. Import brings existing infrastructure under management by teaching Terraform's state file that a real resource corresponds to a block in your config.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_vpc" "myvpc" {
+    cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_vpc" "myvpc2" {
+    cidr_block = "192.168.0.0/24"
+}</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash"># 1. Write the resource block first — Terraform will not generate it for you
+# 2. Map the real AWS resource ID onto that address
+terraform import aws_vpc.myvpc2 vpc-0a1b2c3d4e5f67890
+
+# 3. Confirm your config matches reality — the goal is "No changes"
+terraform plan</code></pre>
+    </div>
+    <p>Two things to internalise:</p>
+    <ul>
+      <li><code>terraform import</code> only writes to <strong>state</strong>. It does not write HCL — you author the resource block yourself, by hand, before importing.</li>
+      <li>If <code>plan</code> shows changes after an import, your HCL doesn't match the real resource. Keep adjusting the HCL until the plan is clean. Applying a dirty plan here means <em>modifying live infrastructure</em> to match a config you only half-wrote.</li>
+    </ul>
+    <div class="callout callout-tip">
+      <div class="callout-title">Terraform 1.5+ makes this easier</div>
+      <p>Newer versions add a declarative <code>import { }</code> block plus <code>terraform plan -generate-config-out=…</code>, which scaffolds the HCL for you — a large improvement over hand-writing blocks for dozens of existing resources.</p>
+    </div>
+
+    <h2 id="uc18">18. Remote State on S3</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>By default the state file sits on your laptop. Your colleague's Terraform therefore has no idea what you've built, will try to create it again, and whoever applies last wins. A backend moves state into shared storage so a team can work on the same infrastructure.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · backend</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">terraform {
+    backend "s3" {
+        key        = "terraform/tfstate.tfstate"
+        bucket     = "demo-remote-backend-2020"
+        region     = "us-west-2"
+        access_key = "your_access_key"
+        secret_key = "your_secret_key"
+    }
+}</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · config</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_vpc" "test" {
+    cidr_block = "10.0.0.0/16"
+}</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform init    # offers to copy your existing local state up to the bucket</code></pre>
+    </div>
+    <p>Four things that catch people out:</p>
+    <ul>
+      <li>The S3 bucket <strong>must already exist</strong>. A backend can't create its own storage — it's needed before Terraform has any state to work from.</li>
+      <li>The backend block <strong>cannot use variables or interpolation</strong>. Values must be literals, or passed at init time with <code>terraform init -backend-config=…</code>.</li>
+      <li>Add <strong>state locking</strong> so two people can't apply at once — <code>use_lockfile = true</code> on current versions, or a DynamoDB table on older ones.</li>
+      <li><strong>Don't commit credentials.</strong> Omit <code>access_key</code>/<code>secret_key</code> entirely and let the AWS credential chain resolve them from environment variables, your credentials file, or an instance role.</li>
+    </ul>
+    <div class="callout callout-danger">
+      <div class="callout-title">State files contain secrets</div>
+      <p>State stores every resource attribute in <strong>plain text</strong> — including that RDS password from scenario 6. Never commit <code>terraform.tfstate</code>, and treat the bucket holding it as a secret store: private, encrypted, versioned, access-logged.</p>
+    </div>
+
+    <h2 id="uc19">19. Challenge 1 — Tagged VPC</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case · challenge</span>
+      <p><strong>Your task:</strong> create a VPC with the CIDR block <code>192.168.0.0/24</code>, tagged with the name <code>TerraformVPC</code>. Write it yourself before reading the solution.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · solution</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_vpc" "challenge1vpc" {
+    cidr_block = "192.168.0.0/24"
+    tags = {
+        Name = "TerraformVPC"
+    }
+}</code></pre>
+    </div>
+    <p><code>tags</code> is a map, so it uses <code>=</code> and braces rather than the nested-block syntax you saw for <code>ingress</code>. The <code>Name</code> tag is special in AWS: it's what the console displays as the resource's name.</p>
+
+    <h2 id="uc20">20. Challenge 2 — A Full Stack in One File</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case · challenge</span>
+      <p><strong>Your task:</strong> build a two-tier application. A database server and a web server; the web server runs Apache and serves a page; a security group opens ports 80 and 443; the web server has a permanent public IP; and the run finishes by printing the database's private IP and the website's public IP.</p>
+      <p>This is the first scenario that combines everything so far — security groups, bootstrap scripts, dynamic blocks, Elastic IPs and outputs — in a single configuration.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · solution</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+resource "aws_instance" "db" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+
+    tags = {
+        Name = "DB Server"
+    }
+}
+
+resource "aws_instance" "web" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    security_groups = [aws_security_group.web_traffic.name]
+    user_data = file("server-script.sh")     # bootstrap script, runs at first boot
+    tags = {
+        Name = "Web Server"
+    }
+}
+
+resource "aws_eip" "web_ip" {
+    instance = aws_instance.web.id
+}
+
+variable "ingress" {
+    type = list(number)
+    default = [80,443]
+}
+
+variable "egress" {
+    type = list(number)
+    default = [80,443]
+}
+
+resource "aws_security_group" "web_traffic" {
+    name = "Allow Web Traffic"
+
+    dynamic "ingress" {
+        iterator = port
+        for_each = var.ingress
+        content {
+            from_port   = port.value
+            to_port     = port.value
+            protocol    = "TCP"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+    }
+
+    dynamic "egress" {
+        iterator = port
+        for_each = var.egress
+        content {
+            from_port   = port.value
+            to_port     = port.value
+            protocol    = "TCP"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+    }
+}
+
+output "PrivateIP" {
+    value = aws_instance.db.private_ip
+}
+
+output "PublicIP" {
+    value = aws_eip.web_ip.public_ip
+}</code></pre>
+    </div>
+    <p>The bootstrap script installs and starts Apache the first time the instance boots:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>bash · bootstrap script</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">#!/bin/bash
+sudo dnf -y update
+sudo dnf install -y httpd
+sudo systemctl start httpd
+sudo systemctl enable httpd
+echo "&lt;h1&gt;Hello from Terraform&lt;/h1&gt;" | sudo tee /var/www/html/index.html</code></pre>
+    </div>
+    <p><code>file(…)</code> reads the script off disk and hands it to <code>user_data</code>, where cloud-init executes it on first boot. Browse to the <code>PublicIP</code> output and the page is there — infrastructure <em>and</em> configuration from one <code>apply</code>.</p>
+    <div class="callout callout-warning">
+      <div class="callout-title">user_data runs once</div>
+      <p>Cloud-init runs the script on <strong>first boot only</strong>. Editing the script won't change a running instance — Terraform will show a plan that replaces the instance instead. That's expected; it's why this pattern suits bootstrapping rather than ongoing configuration management.</p>
+    </div>
+
+    <h2 id="uc21">21. Challenge 3 — The Same Stack, Modularised</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case · challenge</span>
+      <p><strong>Your task:</strong> take challenge 2 — which works, but is one long file where everything knows about everything else — and refactor it into modules, without changing what gets built.</p>
+      <p>This is the capstone. It demonstrates <strong>module composition</strong>: modules that call other modules and pass values between them, with each piece reusable on its own.</p>
+    </div>
+    <p>The stack splits into four modules:</p>
+    <table>
+      <thead><tr><th>Module</th><th>Owns</th><th>Exposes</th></tr></thead>
+      <tbody>
+        <tr><td>root</td><td>the provider; calls <code>db</code> and <code>web</code></td><td><code>PrivateIP</code>, <code>PublicIP</code></td></tr>
+        <tr><td>db</td><td>the database instance</td><td><code>PrivateIP</code></td></tr>
+        <tr><td>web</td><td>the web instance; calls <code>sg</code> and <code>eip</code></td><td><code>pub_ip</code></td></tr>
+        <tr><td>sg</td><td>the security group</td><td><code>sg_name</code></td></tr>
+        <tr><td>eip</td><td>the elastic IP</td><td><code>PublicIP</code> (takes <code>instance_id</code>)</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>The root</strong> becomes almost empty — it wires two modules together and re-exports their results:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · root</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+    region = "us-west-2"
+}
+
+module "db" {
+    source = "./db"
+}
+
+module "web" {
+    source = "./web"
+}
+
+output "PrivateIP" {
+    value = module.db.PrivateIP
+}
+
+output "PublicIP" {
+    value = module.web.pub_ip
+}</code></pre>
+    </div>
+
+    <p><strong>The db module</strong> is the simplest — one resource, one output:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · db module</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_instance" "db" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+
+    tags = {
+        Name = "DB Server"
+    }
+}
+
+output "PrivateIP" {
+    value = aws_instance.db.private_ip
+}</code></pre>
+    </div>
+
+    <p><strong>The web module</strong> is where composition happens — it calls two further modules and feeds its own instance ID into one of them:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · web module</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_instance" "web" {
+    ami = "ami-0b76d82b547c3c077"
+    instance_type = "t3.micro"
+    security_groups = [module.sg.sg_name]          # consumes the sg module's output
+    user_data = file("./web/server-script.sh")     # path relative to the ROOT module
+    tags = {
+        Name = "Web Server"
+    }
+}
+
+module "eip" {
+    source      = "../eip"
+    instance_id = aws_instance.web.id              # passes a value INTO the eip module
+}
+
+module "sg" {
+    source = "../sg"
+}
+
+output "pub_ip" {
+    value = module.eip.PublicIP                    # re-exports a nested module's output
+}</code></pre>
+    </div>
+
+    <p><strong>The sg module</strong> is the dynamic-block security group from scenario 13, now exposing its name so callers can attach to it:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · sg module</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "ingress" {
+    type = list(number)
+    default = [80,443]
+}
+
+variable "egress" {
+    type = list(number)
+    default = [80,443]
+}
+
+resource "aws_security_group" "web_traffic" {
+    name = "Allow Web Traffic"
+
+    dynamic "ingress" {
+        iterator = port
+        for_each = var.ingress
+        content {
+            from_port   = port.value
+            to_port     = port.value
+            protocol    = "TCP"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+    }
+
+    dynamic "egress" {
+        iterator = port
+        for_each = var.egress
+        content {
+            from_port   = port.value
+            to_port     = port.value
+            protocol    = "TCP"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+    }
+}
+
+output "sg_name" {
+    value = aws_security_group.web_traffic.name
+}</code></pre>
+    </div>
+
+    <p><strong>The eip module</strong> is the best example of a genuinely reusable module — it knows nothing about web servers, only that it needs an instance ID:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl · eip module</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "instance_id" {
+    type = string
+}
+
+resource "aws_eip" "web_ip" {
+    instance = var.instance_id
+}
+
+output "PublicIP" {
+    value = aws_eip.web_ip.public_ip
+}</code></pre>
+    </div>
+
+    <h3>What this scenario teaches</h3>
+    <ol>
+      <li><strong>Output chaining.</strong> The public IP travels up four levels: <code>aws_eip.web_ip.public_ip</code> → <code>module.eip.PublicIP</code> → <code>module.web.pub_ip</code> → the root's <code>PublicIP</code>. Every layer must explicitly re-export — outputs are <em>not</em> inherited automatically. Miss one link and the value is invisible at the top.</li>
+      <li><strong>Relative sources.</strong> The root reaches down with <code>./db</code>, while the web module reaches sideways to its siblings with <code>../eip</code> and <code>../sg</code>.</li>
+      <li><strong><code>file()</code> paths resolve against the root module</strong>, not the file containing the call — which is why the web module has to write <code>./web/server-script.sh</code> even though the script sits right next to it. Using <code>"${path.module}/server-script.sh"</code> is the robust alternative: it resolves relative to the module's own directory and keeps working wherever the module is called from.</li>
+      <li><strong>Reusability comes from narrow interfaces.</strong> The eip module takes an <code>instance_id</code> and returns an IP. Because it makes no assumptions about what it's attached to, it can be dropped into any project unchanged.</li>
+    </ol>
+
+    <h2 id="uc22">22. Version pinning</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>"It worked last week." Between then and now a provider released a new major, a module moved a branch, and a colleague ran a different CLI. Pin all three so the config you wrote is the config that runs.</p>
+      <p class="prereq">You should already know: basic scenario 14 (modules), basic scenario 18 (backends).</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">terraform {
+  # The CLI itself, pinned to the course baseline so everyone gets identical
+  # behaviour and a clear message instead of a baffling parse error.
+  #
+  # Worth noticing, since this scenario is about pinning honestly: the OLDEST
+  # release that can actually run these scenarios is 1.9 — that is when a
+  # validation block could first reference another variable (scenario 26).
+  # Everything else here works on 1.5. Pinning the baseline rather than the
+  # true minimum is a deliberate team choice, not a technical requirement;
+  # if you are publishing a MODULE for others, pin the true minimum instead,
+  # or you lock out consumers for no reason.
+  required_version = "&gt;= 1.15"
+
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+
+      # "~&gt;" is the pessimistic constraint operator. On a two-part version it
+      # allows the last part to move: ~&gt; 6.0 means &gt;= 6.0.0 and &lt; 7.0.0.
+      # You get bug fixes and new features; you never get a breaking major.
+      version = "~&gt; 6.0"
+    }
+
+    random = {
+      source  = "hashicorp/random"
+      version = "~&gt; 3.6"
+    }
+  }
+}</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Written</th><th>Means</th></tr></thead>
+      <tbody>
+        <tr><td><code>= 6.1.0</code></td><td>exactly this, nothing else</td></tr>
+        <tr><td><code>&gt;= 6.1.0</code></td><td>this or anything newer, <em>including the next major</em> — rarely what you want</td></tr>
+        <tr><td><code>~&gt; 6.1</code></td><td><code>&gt;= 6.1.0, &lt; 7.0.0</code> — minors and patches move, majors don't</td></tr>
+        <tr><td><code>~&gt; 6.1.0</code></td><td><code>&gt;= 6.1.0, &lt; 6.2.0</code> — only patches move</td></tr>
+      </tbody>
+    </table>
+
+    <p>The provider block is where cross-cutting configuration lives:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">provider "aws" {
+  region = var.region
+
+  # Applied to every taggable resource this provider creates. Set them once
+  # here and you never write them on an individual resource again.
+  default_tags {
+    tags = {
+      Project   = "terraform-course"
+      Scenario  = "22-versions-pinning"
+      ManagedBy = "terraform"
+    }
+  }
+
+  # Tags that something *else* writes onto our resources — EKS, Config rules,
+  # cost tooling. Without this, every plan would show a diff trying to strip
+  # them back off.
+  ignore_tags {
+    key_prefixes = ["kubernetes.io/", "aws:"]
+  }
+}</code></pre>
+    </div>
+    <p>The bucket in this scenario deliberately has <strong>no <code>tags</code> block</strong>. Every tag on it arrives from <code>default_tags</code> — the <code>effective_tags</code> output reads <code>tags_all</code> (resource tags merged with provider defaults) rather than <code>tags</code>, which would be empty.</p>
+
+    <h3>The lock file</h3>
+    <p><code>terraform init</code> writes <code>.terraform.lock.hcl</code> recording the exact version and checksums it chose. <strong>Commit it</strong> — that is what makes a colleague's <code>init</code> resolve identically to yours.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform init                                   # writes the lock file
+terraform providers                              # what this config requires
+terraform init -upgrade                          # re-resolve within constraints, rewrite the lock
+terraform providers lock -platform=linux_amd64 \
+                        -platform=darwin_arm64   # add checksums for CI's platform too</code></pre>
+    </div>
+    <p>That last command matters more than it looks: a lock file created on a Mac has no checksums for Linux, so CI fails on a checksum mismatch. Record every platform your team builds on.</p>
+
+    <h3>Pinning modules</h3>
+    <p>Same constraint syntax, different argument per source type:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl"># Registry module — `version` is a separate argument:
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~&gt; 5.0"
+}
+
+# Git module — there is no `version` argument; pin with a ref in the URL.
+# Always pin to a TAG, never a branch. `?ref=main` is not a pin.
+module "vpc" {
+  source = "git::https://github.com/acme/tf-modules.git//vpc?ref=v1.2.0"
+}</code></pre>
+    </div>
+    <p>Local modules cannot be versioned at all — they are whatever is on disk, which is exactly why they belong to one repo rather than to a team.</p>
+
+    <h2 id="uc23">23. Data sources and locals</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Your config has an account ID typed into it, a region repeated eleven times, and an AMI ID that expires. Ask AWS for those at plan time instead, and compose the derived names in one place.</p>
+      <p class="prereq">You should already know: basic scenario 8 (variables), scenario 22 (pinning).</p>
+    </div>
+    <p>A <code>resource</code> block says <em>make this exist and keep it that way</em>. A <code>data</code> block says <em>go and find out, I am not managing it</em>. Data sources are re-read on every plan, so they always reflect reality.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl"># Who am I? Returns the account ID of whatever credentials are in use — the
+# reliable way to build globally-unique names without hardcoding an account.
+data "aws_caller_identity" "current" {}
+
+# Where am I? Note: in AWS provider 6.x the attribute is `.region`.
+# The older `.name` still resolves but is deprecated.
+data "aws_region" "current" {}
+
+# Which availability zones can I actually use *in this account*? This differs
+# per account, which is why hardcoding "us-west-2a" eventually breaks.
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+# The current Amazon Linux 2023 AMI, straight from the parameter AWS maintains.
+# This is the fix for the hardcoded AMI in the basic scenarios: that ID is
+# region-locked and goes stale, this one never does.
+data "aws_ssm_parameter" "al2023" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+}</code></pre>
+    </div>
+    <p>A <strong>local</strong> is not an input and not an output — it is a named expression, so a rule that appears in fifteen places is written down once:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">locals {
+  account_id = data.aws_caller_identity.current.account_id
+  region     = data.aws_region.current.region
+
+  # "${...}" is string interpolation — expressions evaluated inside a string.
+  name_prefix = "${var.app}-${var.env}"
+
+  # Globally unique without hardcoding anything.
+  bucket_name = "tf-course-23-${local.name_prefix}-${local.account_id}"
+
+  # Locals can reference other locals, so long as there is no cycle.
+  az_names = data.aws_availability_zones.available.names
+  az_count = length(local.az_names)
+}</code></pre>
+    </div>
+    <p><code>path.module</code> is the directory of <em>this module</em>, not the directory you were standing in when you ran Terraform. Always prefer it over a bare relative path — a bare path is exactly what breaks when a module is called from somewhere else, which basic scenario 21 runs straight into:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_ssm_parameter" "app_config" {
+  name  = "/tf-course/${local.name_prefix}/config"
+  type  = "String"
+  value = file("${path.module}/config/app-config.json")
+}</code></pre>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">A provider-6.x trap</div>
+      <p>Every <code>aws_ssm_parameter</code> value is marked sensitive, so a root output reading <code>.value</code> fails with <em>"Output refers to sensitive values"</em>. For a parameter that genuinely isn't a secret — a public AMI pointer — read <code>.insecure_value</code> instead. Otherwise mark the output <code>sensitive = true</code>.</p>
+    </div>
+    <p>Explore the values interactively:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform console
+&gt; data.aws_caller_identity.current.account_id
+&gt; local.name_prefix
+&gt; length(data.aws_availability_zones.available.names)</code></pre>
+    </div>
+
+    <h2 id="uc24">24. <code>for_each</code> on resources</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>Three teams each need a log group and a parameter. Later a fourth arrives and a second leaves. You want adding a team to be a one-line change that touches nothing else.</p>
+      <p class="prereq">You should already know: basic scenario 9 (<code>count</code>), basic scenario 15 (<code>for_each</code> on a module), scenario 23 (locals).</p>
+    </div>
+    <p>This is the biggest single gap in the basic catalogue: <code>count</code> is taught thoroughly and <code>for_each</code> on a resource never appears, so <code>each.key</code> and <code>each.value</code> are never seen.</p>
+
+    <p><strong>Over a set</strong> — <code>each.key</code> and <code>each.value</code> are the same string:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_ssm_parameter" "team_marker" {
+  for_each = toset(var.team_names)
+
+  name  = "/tf-course/24/teams/${each.key}/marker"
+  type  = "String"
+  value = "team ${each.value} is managed by terraform"
+}</code></pre>
+    </div>
+    <p><code>for_each</code> accepts a <strong>set or a map, never a list</strong> — hence <code>toset()</code>.</p>
+
+    <p><strong>Over a map of objects</strong> — the form you actually want. <code>each.key</code> is the map key, <code>each.value</code> is the whole object, so every instance is configured differently from one block:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_cloudwatch_log_group" "team" {
+  for_each = var.teams
+
+  name              = "/tf-course/24/${each.key}"
+  retention_in_days = each.value.retention_days
+
+  tags = {
+    Team  = each.key
+    Owner = each.value.owner
+    Tier  = each.value.tier
+  }
+}</code></pre>
+    </div>
+
+    <p><strong>Chaining</strong> — a <code>for_each</code> resource <em>is</em> a map, so it can be fed straight back into another <code>for_each</code>. The keys line up automatically:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_ssm_parameter" "team_log_group_arn" {
+  for_each = aws_cloudwatch_log_group.team
+
+  name  = "/tf-course/24/teams/${each.key}/log-group-arn"
+  type  = "String"
+  value = each.value.arn
+}</code></pre>
+    </div>
+
+    <h3>Why this matters — run the experiment</h3>
+    <p><code>count</code> addresses by <strong>position</strong>; <code>for_each</code> addresses by <strong>name</strong>:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>state addresses</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">aws_ssm_parameter.count_based[0]     aws_cloudwatch_log_group.team["orders"]
+aws_ssm_parameter.count_based[1]     aws_cloudwatch_log_group.team["billing"]
+aws_ssm_parameter.count_based[2]     aws_cloudwatch_log_group.team["search"]</code></pre>
+    </div>
+    <p>Apply, remove <code>"billing"</code> from the middle of both inputs, and plan again:</p>
+    <ul>
+      <li><strong><code>count</code></strong> — index <code>[1]</code> is now <code>"search"</code> and <code>[2]</code> is gone, so Terraform destroys and recreates the <code>search</code> parameter <em>that you never touched</em>. One removal, two unrelated changes.</li>
+      <li><strong><code>for_each</code></strong> — only <code>["billing"]</code> is destroyed. <code>orders</code> and <code>search</code> keep their keys and are not mentioned in the plan.</li>
+    </ul>
+    <div class="callout callout-tip">
+      <div class="callout-title">The rule</div>
+      <p>Use <code>count</code> for identical copies or an on/off toggle. Use <code>for_each</code> for anything with an identity.</p>
+    </div>
+
+    <h2 id="uc25">25. Expressions, functions and <code>templatefile</code></h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>One map of services should produce resource names, a tag set, an IAM policy document and a rendered config file — without writing any of them out four times.</p>
+      <p class="prereq">You should already know: scenario 23 (locals), scenario 24 (<code>for_each</code>).</p>
+    </div>
+    <p><strong><code>for</code> expressions</strong> reshape a collection into a different collection. Not to be confused with the <code>for_each</code> meta-argument: <code>for_each</code> makes many <em>resources</em>, a <code>for</code> expression makes one <em>value</em>.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl"># LIST form — just the names.
+service_names = [for name, _ in var.services : name]
+
+# LIST form with a filter — only the gold tier.
+gold_services = [for name, cfg in var.services : name if cfg.tier == "gold"]
+
+# MAP form — rebuild the map with a computed value.
+service_ports = { for name, cfg in var.services : name =&gt; cfg.port }
+
+# MAP form with both a transform and a filter. `upper()` on the key shows
+# that you can rewrite keys, not just values.
+busy_services = {
+  for name, cfg in var.services : upper(name) =&gt; cfg.replicas
+  if cfg.replicas &gt; 1
+}</code></pre>
+    </div>
+    <p>Square brackets produce a list; curly braces with <code>=&gt;</code> produce a map.</p>
+
+    <h3>The functions worth knowing</h3>
+    <table>
+      <thead><tr><th>Function</th><th>What it's for</th></tr></thead>
+      <tbody>
+        <tr><td><code>coalesce(a, b)</code></td><td>First non-null wins — "use what the caller gave me, otherwise derive it"</td></tr>
+        <tr><td><code>try(expr, fallback)</code></td><td>First argument that evaluates without erroring</td></tr>
+        <tr><td><code>can(expr)</code></td><td><code>true</code>/<code>false</code> instead of the value — for conditions, especially <code>validation</code></td></tr>
+        <tr><td><code>lookup(map, key, default)</code></td><td>Map access with a fallback, so a missing key isn't fatal</td></tr>
+        <tr><td><code>merge(a, b)</code></td><td>Combine maps, later wins — the standard tagging idiom</td></tr>
+        <tr><td><code>format("%s-%03d", ...)</code></td><td>printf for HCL</td></tr>
+        <tr><td><code>join</code> / <code>split</code></td><td>string ↔ list</td></tr>
+        <tr><td><code>keys</code> / <code>values</code></td><td>pull the two halves of a map apart</td></tr>
+        <tr><td><code>cidrsubnet(base, bits, n)</code></td><td>carve a subnet without binary arithmetic in your head</td></tr>
+        <tr><td><code>jsonencode</code></td><td>build JSON from HCL instead of a raw string</td></tr>
+      </tbody>
+    </table>
+    <p>All of them are exercised in the scenario and echoed back by its <code>function_results</code> output, so you can check your intuition against what Terraform actually returned.</p>
+
+    <h3><code>jsonencode</code> versus a heredoc</h3>
+    <p>Compare with the raw JSON blob in basic scenario 5. This version cannot have a trailing-comma syntax error, and it interpolates real values:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">policy = jsonencode({
+  Version = "2012-10-17"
+  Statement = [
+    {
+      Sid    = "ReadBucket"
+      Effect = "Allow"
+      Action = [
+        "s3:GetObject",
+        "s3:ListBucket",
+      ]
+      Resource = [
+        aws_s3_bucket.app.arn,
+        "${aws_s3_bucket.app.arn}/*",
+      ]
+    },
+  ]
+})</code></pre>
+    </div>
+
+    <h3><code>templatefile</code> versus <code>file</code></h3>
+    <p><code>file()</code> reads a file verbatim (basic scenario 20). <code>templatefile()</code> reads it <em>and</em> evaluates <code>${...}</code> interpolations and <code>%{ for }</code> loops inside it:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">locals {
+  rendered_config = templatefile("${path.module}/templates/app.conf.tftpl", {
+    env      = var.env
+    bucket   = aws_s3_bucket.app.bucket
+    services = var.services
+  })
+}</code></pre>
+    </div>
+    <p>The template itself — the tildes in <code>%{~ for ... ~}</code> strip surrounding whitespace:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>tftpl template</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-ini"># Generated by Terraform — do not edit by hand.
+# Environment: ${env}
+# Storage:     ${bucket}
+
+%{~ for name, cfg in services ~}
+[${name}]
+port     = ${cfg.port}
+replicas = ${cfg.replicas}
+tier     = ${cfg.tier}
+
+%{ endfor ~}
+# ${length(services)} service(s) configured.</code></pre>
+    </div>
+    <p><strong>Splat.</strong> <code>[*]</code> pulls one attribute out of every element of a <em>list</em>. A map has no splat, so <code>values()</code> converts first — <code>values(var.services)[*].port</code>. The older <code>.*.</code> form from basic scenario 12 still parses, but <code>[*]</code> is what to write today.</p>
+
+    <h2 id="uc26">26. Validation, preconditions, postconditions and checks</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>A typo in a variable should fail immediately with a message that says what to fix — not twenty minutes into an apply, as an opaque error from the AWS API, halfway through creating things.</p>
+      <p class="prereq">You should already know: basic scenario 8 (variables), scenario 25 (<code>can</code>/<code>regex</code>).</p>
+    </div>
+    <p>Terraform has five guards. The whole point of this scenario is <strong>which one fires when</strong>.</p>
+    <table>
+      <thead><tr><th>Guard</th><th>Fires at</th><th>Can see</th><th>Blocks?</th></tr></thead>
+      <tbody>
+        <tr><td><code>variable</code> → <code>validation</code></td><td>plan, as variables resolve</td><td>other variables (1.9+)</td><td>yes</td></tr>
+        <tr><td><code>lifecycle</code> → <code>precondition</code></td><td>plan, before create</td><td>data sources, locals, other resources</td><td>yes</td></tr>
+        <tr><td><code>lifecycle</code> → <code>postcondition</code></td><td>apply, after create</td><td><code>self</code></td><td>yes</td></tr>
+        <tr><td><code>output</code> → <code>precondition</code></td><td>apply, when the output evaluates</td><td>anything</td><td>yes</td></tr>
+        <tr><td><code>check</code> → <code>assert</code></td><td>plan <strong>and</strong> apply</td><td>its own scoped data source</td><td><strong>no — warns only</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Variable validation</strong> is the cheapest. <code>can()</code> turns an expression that might error into a plain boolean, which is what a condition needs — <code>regex()</code> alone would blow up on a non-match instead of returning false:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">validation {
+  condition     = can(regex("^[a-z0-9][a-z0-9-]{1,40}[a-z0-9]$", var.bucket_prefix))
+  error_message = &lt;&lt;-EOT
+    bucket_prefix must be 3-42 characters of lowercase letters, digits and
+    hyphens, starting and ending with a letter or digit. S3 rejects
+    uppercase and underscores.
+  EOT
+}</code></pre>
+    </div>
+    <p>A variable can carry several <code>validation</code> blocks. <strong>Terraform 1.9+</strong> lets one reference <em>other</em> variables — before 1.9 this rule was impossible here and had to live in a <code>precondition</code>:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">validation {
+  condition     = var.env != "prod" || var.retention_days &gt;= 30
+  error_message = "Production keeps logs for at least 30 days. Raise retention_days or change env."
+}</code></pre>
+    </div>
+
+    <p><strong>A precondition</strong> covers what a variable validation cannot see — here the length depends on the account ID, which only a data source knows:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">lifecycle {
+  precondition {
+    condition     = length(local.bucket_name) &lt;= 63
+    error_message = "Composed bucket name is ${length(local.bucket_name)} characters; S3 allows 63. Shorten bucket_prefix."
+  }
+}</code></pre>
+    </div>
+
+    <p><strong>A postcondition</strong> asserts that reality matched your assumption, using <code>self</code>:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">lifecycle {
+  postcondition {
+    condition     = self.versioning_configuration[0].status == "Enabled"
+    error_message = "Versioning did not come back Enabled after apply."
+  }
+}</code></pre>
+    </div>
+
+    <p><strong>A <code>check</code> block</strong> is the odd one out: a failure is a <strong>warning</strong>, not an error, and it never blocks an apply. That makes it the right tool for continuous assertions about health — things you want to know about but not halt a deploy over. Uniquely, it can declare its own scoped data source, which degrades to a warning if it fails rather than killing the plan the way a top-level data source would:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">check "al2023_ami_resolves" {
+  data "aws_ssm_parameter" "al2023" {
+    name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+  }
+
+  assert {
+    condition     = data.aws_ssm_parameter.al2023.value != ""
+    error_message = "Could not resolve the current Amazon Linux 2023 AMI for ${var.region}."
+  }
+}</code></pre>
+    </div>
+
+    <h3>Two traps, both verified against the CLI</h3>
+    <div class="callout callout-danger">
+      <div class="callout-title">1. <code>terraform validate</code> does not check your values</div>
+      <p>It ignores <code>-var-file</code> and does not read <code>terraform.tfvars</code>. It evaluates validation rules only against variable <em>defaults</em>, so a file full of invalid values still reports success.</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">terraform validate -var-file=bad.tfvars   # "Success!"  — a lie
+terraform plan     -var-file=bad.tfvars   # 2 errors</code></pre>
+      </div>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">2. Coupled rules hide each other</div>
+      <p>The scenario's <code>bad.tfvars</code> has three wrong values but produces two errors. <code>retention_days</code> has a rule referencing <code>var.env</code>; <code>var.env</code> is itself invalid, so that rule cannot be evaluated and Terraform suppresses <em>all</em> reporting for <code>retention_days</code> — including the simple <code>contains()</code> rule that has nothing to do with <code>env</code>. Fix <code>env</code>, re-run, and the third error appears.</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">terraform plan -var env=production -var retention_days=2   # 1 error (env)
+terraform plan -var env=dev        -var retention_days=2   # 1 error (retention)</code></pre>
+      </div>
+      <p>Validation surfaces in waves when your rules are coupled. That is the hidden cost of cross-variable validation, and worth knowing before you reach for it.</p>
+    </div>
+
+    <h2 id="uc27">27. The <code>lifecycle</code> block</h2>
+    <div class="usecase">
+      <span class="usecase-label">Use case</span>
+      <p>One resource must never be deleted. Another is having its tags rewritten by a scanner, and every plan wants to undo it. A third needs replacing whenever an unrelated version string moves.</p>
+      <p class="prereq">You should already know: basic scenario 7 (<code>depends_on</code>), basic scenario 14 (modules), scenario 26 (which also lives in <code>lifecycle</code>).</p>
+    </div>
+
+    <p><strong><code>create_before_destroy</code></strong> — Terraform's default on replacement is destroy-then-create, which leaves a gap where the thing does not exist. For anything other resources point at, that gap is an outage. The catch: whatever makes the resource unique must hold two values at once, which is why the name here carries the version:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_ssm_parameter" "rotating" {
+  name  = "/tf-course/27/rotating/${var.config_version}"
+  type  = "String"
+  value = "created for ${var.config_version}"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}</code></pre>
+    </div>
+
+    <p><strong><code>prevent_destroy</code></strong> — a plan that would delete this errors out instead. It must be a <strong>literal</strong>; it cannot read a variable, precisely so nobody can switch it off from a tfvars file in a pipeline:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">lifecycle {
+  prevent_destroy = true
+}</code></pre>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ This blocks <code>terraform destroy</code> for scenario 27</div>
+      <p>That friction is the entire feature. To tear the scenario down: set <code>prevent_destroy = false</code>, run <code>terraform apply</code>, then <code>terraform destroy</code>.</p>
+    </div>
+
+    <p><strong><code>ignore_changes</code></strong> — stop fighting another system. Something outside Terraform writes tags here; without this, every plan tries to strip them and every apply starts a slow tug of war:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">lifecycle {
+  ignore_changes = [
+    tags["CostCentre"],  # one specific tag key
+    tags["LastScanned"], # another
+  ]
+}</code></pre>
+    </div>
+    <p>Use <code>ignore_changes = all</code> only when adopting a resource you genuinely do not manage.</p>
+
+    <p><strong><code>replace_triggered_by</code></strong> — replace me when something <em>else</em> changes. <code>terraform_data</code> is the modern, provider-free replacement for <code>null_resource</code>: it stores whatever you give it and does nothing else, which makes it a perfect tripwire.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "terraform_data" "config_version" {
+  input = var.config_version
+}
+
+resource "aws_ssm_parameter" "app_config" {
+  name  = "/tf-course/27/app-config"
+  type  = "String"
+  value = var.app_setting
+
+  lifecycle {
+    # Change var.app_setting  -&gt; ordinary in-place update.
+    # Change var.config_version -&gt; full replacement, triggered from outside.
+    replace_triggered_by = [terraform_data.config_version]
+  }
+}</code></pre>
+    </div>
+    <p>Try both and watch the plan differ:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform apply -var app_setting=debug      # ~ update in place
+terraform apply -var config_version=v2      # -/+ replacement</code></pre>
+    </div>
+    <p>Contrast with <code>terraform apply -replace=ADDR</code>, the imperative one-off equivalent — that belongs to the state tier, still to come.</p>
+
+    <p>Finally, <strong><code>depends_on</code> works on a module block</strong>, meaning "finish everything inside that module before starting anything in this one":</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">module "marker" {
+  source = "./modules/marker"
+
+  name    = "downstream"
+  message = "created after the protected log group existed"
+
+  depends_on = [aws_cloudwatch_log_group.protected]
+}</code></pre>
+    </div>
+
+    <hr />
+
+    <h2 id="path">Suggested learning path</h2>
+    <table>
+      <thead><tr><th>Stage</th><th>Work through</th></tr></thead>
+      <tbody>
+        <tr><td>Fundamentals</td><td>1 First Resource → 2 EC2 → 3 Security Groups → 4 Elastic IP</td></tr>
+        <tr><td>More resource types</td><td>5 IAM → 6 RDS → 7 Dependencies</td></tr>
+        <tr><td>Making it dynamic</td><td>8 Variables → 9 Count → 10 Variable Files → 11 Feature Switch</td></tr>
+        <tr><td>Advanced expressions</td><td>12 count.index &amp; Splat → 13 Dynamic Blocks</td></tr>
+        <tr><td>Structuring code</td><td>14 Modules → 15 for_each on Modules</td></tr>
+        <tr><td>Operations</td><td>16 Errors → 17 Import → 18 Remote State</td></tr>
+        <tr><td>Put it together</td><td>19 Challenge 1 → 20 Challenge 2 → 21 Challenge 3</td></tr>
+        <tr><td>Writing it well</td><td>22 Pinning → 23 Data &amp; locals → 24 <code>for_each</code> on resources</td></tr>
+        <tr><td>Expressing it</td><td>25 Expressions &amp; functions → 26 Validation &amp; checks → 27 <code>lifecycle</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="commands">Command reference</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform init                          # initialise providers/modules — run first, and after any module change
+terraform validate                      # syntax and reference check, no AWS calls
+terraform fmt                           # canonical formatting
+terraform plan                          # preview changes
+terraform plan -var-file="test.tfvars"  # preview with a specific values file
+terraform apply                         # create/update infrastructure
+terraform apply -auto-approve           # skip the confirmation prompt
+terraform destroy                       # tear everything down
+terraform output                        # show all outputs from state
+terraform state list                    # list resources tracked in state
+terraform import &lt;address&gt; &lt;aws_id&gt;     # adopt an existing resource</code></pre>
+    </div>
+
+    <h2 id="ignore">What to keep out of version control</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>gitignore</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">.terraform
+terraform.tfstate
+terraform.tfstate.*
+.terraform.lock.hcl
+backup</code></pre>
+    </div>
+    <p>State files record every resource attribute in plain text, database passwords included — never commit them. The provider lock file is excluded here because these are throwaway labs; a production repo should normally <em>commit</em> it, so everyone resolves the same provider versions.</p>
+
+    <h2 id="caveats">Caveats — before you reuse any of this</h2>
+    <p>These scenarios are teaching examples, deliberately stripped down so one idea stands out at a time. Each shortcut below is fine in a lab and a genuine problem in production:</p>
+    <table>
+      <thead><tr><th>Shortcut taken</th><th>What to do instead</th></tr></thead>
+      <tbody>
+        <tr><td>Hardcoded credentials — the RDS password and the S3 backend keys are inline</td><td>Sensitive variables, AWS Secrets Manager, or the ambient AWS credential chain</td></tr>
+        <tr><td>Wide-open security groups — <code>0.0.0.0/0</code> throughout</td><td>Restrict to known CIDR ranges, or reference another security group</td></tr>
+        <tr><td>Region-locked, perishable AMI — the ID only exists in <code>us-west-2</code>, and Amazon replaces the image every few weeks</td><td>Look it up dynamically with an <code>aws_ssm_parameter</code> or <code>aws_ami</code> data source — see below</td></tr>
+        <tr><td>Free-tier eligibility assumed — it varies by region and changes over time</td><td>Re-check with <code>describe-instance-types</code> before relying on it in another region</td></tr>
+        <tr><td>No provider version pinning</td><td>Add a <code>required_providers</code> block and commit the lock file</td></tr>
+        <tr><td><code>security_groups</code> set by name (EC2-Classic style)</td><td>Use <code>vpc_security_group_ids</code> with the group <em>ID</em> on modern VPC accounts</td></tr>
+        <tr><td>Everything in one state file</td><td>Separate state per environment — workspaces, separate backends, or separate directories</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Fixing the AMI properly</h3>
+    <p>The hardcoded AMI is the shortcut most likely to bite you first, because it rots on its own — Amazon publishes a new Amazon Linux 2023 image every few weeks and eventually retires the old one. Ask AWS for the current image at plan time instead — a fully worked version of this is <a href="#uc23">scenario 23</a>:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">data "aws_ssm_parameter" "al2023" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+}
+
+resource "aws_instance" "ec2" {
+  ami           = data.aws_ssm_parameter.al2023.value
+  instance_type = "t3.micro"
+}</code></pre>
+    </div>
+    <p>AWS maintains that parameter, so the config now works in <em>any</em> region and never goes stale. The trade-off: the AMI can change under you between applies, which Terraform will show as a plan that replaces the instance — pin a specific ID when that matters.</p>
+
+    <h2 id="running">Running the advanced scenarios</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">cd 24-for-each-resources
+terraform init
+terraform plan
+terraform apply
+terraform destroy</code></pre>
+    </div>
+    <p>Expected plan sizes, verified against the CLI: 22 → 2 resources, 23 → 3, 24 → 12, 25 → 3, 26 → 3, 27 → 6.</p>
+
+    <h2 id="troubleshooting">Troubleshooting</h2>
+    <table>
+      <thead><tr><th>Symptom</th><th>Cause and fix</th></tr></thead>
+      <tbody>
+        <tr><td><code>BucketAlreadyExists</code></td><td>S3 names are globally unique across every AWS account. Every bucket here is suffixed with the account ID or a <code>random_pet</code> for exactly this reason — if you still collide, change <code>bucket_prefix</code>.</td></tr>
+        <tr><td><code>Output refers to sensitive values</code></td><td>An <code>aws_ssm_parameter</code> value is sensitive in provider 6.x. Use <code>.insecure_value</code> for genuinely non-secret parameters, or mark the output <code>sensitive = true</code>.</td></tr>
+        <tr><td><code>terraform destroy</code> refuses in scenario 27</td><td>That's <code>prevent_destroy</code> working. See the note in scenario 27.</td></tr>
+        <tr><td>AWS CLI fails with <code>CERTIFICATE_VERIFY_FAILED</code> but Terraform works</td><td>Expected behind a TLS-intercepting corporate proxy. Terraform uses Go's TLS and reads the macOS system keychain; the Python-based AWS CLI does not. Fix below.</td></tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">security find-certificate -a -p /Library/Keychains/System.keychain &gt; /tmp/corp.pem
+cat /etc/ssl/cert.pem &gt;&gt; /tmp/corp.pem
+export AWS_CA_BUNDLE=/tmp/corp.pem</code></pre>
+    </div>
+
+    <h2 id="next">What this catalogue still doesn't cover</h2>
+    <p>Deliberately deferred to a later tier, and worth knowing that they're missing:</p>
+    <ul>
+      <li><strong>State &amp; multi-environment</strong> — provider aliases and multi-region, <code>terraform_remote_state</code> across stacks, workspaces, <code>moved</code>/<code>removed</code>/<code>import {}</code> refactoring, drift detection with <code>-refresh-only</code> and <code>-replace</code>.</li>
+      <li><strong>Production practice</strong> — <code>terraform test</code> with <code>.tftest.hcl</code>, module publishing and versioning, secrets via SSM SecureString, policy-as-code with <code>tflint</code>/<code>checkov</code>/OPA, CI/CD with GitHub Actions OIDC.</li>
+    </ul>
+
+  </main>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="toc-title">On This Page</div>
+    <ul id="toc-list"></ul>
+  </aside>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terraform: Quick Start — AI Engineering</title>
+<meta name="description" content="Provision cloud infrastructure as code — Terraform essentials on one page: install, the plan/apply workflow, HCL syntax, variables, expressions, modules, state, workspaces, and gotchas." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell no-toc">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">6</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Coming soon</div>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Strands (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>Terraform</span>
+    </nav>
+
+    <h1>Terraform Quick Start</h1>
+    <div class="meta-row">
+      <span class="badge badge-intermediate">Quick Start</span>
+      <span class="badge badge-info">code-first</span>
+      <span class="badge badge-info">~30 min</span>
+    </div>
+    <p><strong>Terraform</strong> lets you describe cloud infrastructure — servers, databases, networks — in text files, then create and change it safely and repeatably. Instead of clicking around a cloud console, you write what you want and Terraform makes reality match. It's how you provision the machines your app (and later, your AI agents) run on.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📘 By the end of this page you'll be able to…</div>
+      <p>read almost any Terraform file, run the <code>plan → apply</code> loop with confidence, use variables and outputs, loop with <code>for_each</code>, split work into modules, share state with a team, inspect and fix state, and know which commands to reach for when something breaks.</p>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Get the runnable code</div>
+      <p>A fuller, ready-to-run project for this quick start ships with the course: a full project: per-team S3 buckets with for_each, variables, data, and outputs. It lives in <code>quickstart/code/terraform/</code> — open its <a href="code/terraform/README.md">README</a> for exact run steps and expected output.</p>
+    </div>
+
+
+    <h2 id="what">1. What Terraform actually does</h2>
+    <p>Imagine ordering a coffee. The <em>imperative</em> way is to stand at the machine and press every button in the right order yourself. The <em>declarative</em> way is to hand over a note that says "one large oat latte" and let the barista figure out the steps. Terraform is the note. You write down the <strong>end state</strong> you want, and Terraform works out what to create, change, or delete to get there.</p>
+    <p>This idea has a name: <strong>Infrastructure as Code (IaC)</strong>. Your cloud setup lives in plain text files you can read, review, and store in version control (like git) — the same way you'd store a program. That gives you three big wins:</p>
+    <table>
+      <thead><tr><th>Without IaC (clicking)</th><th>With Terraform (code)</th></tr></thead>
+      <tbody>
+        <tr><td>Steps live in someone's memory.</td><td>Steps live in files anyone can read.</td></tr>
+        <tr><td>"Works on my account" surprises.</td><td>Same files → same result, every time.</td></tr>
+        <tr><td>No record of who changed what.</td><td>Git history shows every change.</td></tr>
+        <tr><td>Rebuilding after a disaster is manual.</td><td>Re-run <code>apply</code> and it's back.</td></tr>
+      </tbody>
+    </table>
+    <p>Terraform talks to platforms through <strong>providers</strong> — plugins for AWS, Azure, Google Cloud, GitHub, Cloudflare, and hundreds more. One tool, one language, many platforms.</p>
+
+    <h2 id="install">2. Install &amp; the whole workflow</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">brew install hashicorp/tap/terraform   # macOS; see downloads page for Windows/Linux
+terraform -version
+
+terraform init      # download providers (run once, and after adding providers/modules)
+terraform plan      # preview changes — READ THIS before applying
+terraform apply     # make the changes (type "yes")
+terraform destroy   # tear everything down
+terraform fmt       # auto-format  ·  terraform validate  # syntax check</code></pre>
+    </div>
+    <p>Terraform is <em>declarative</em>: you describe the end state, it figures out the diff. Re-running <code>apply</code> with no changes does nothing. The <code>plan</code> step is your safety net — it shows every create, change, and destroy before anything happens.</p>
+
+    <h2 id="commands">3. The core commands, explained</h2>
+    <p>You'll spend 90% of your time in just four commands. Here's what each one really does under the hood:</p>
+    <table>
+      <thead><tr><th>Command</th><th>What actually happens</th></tr></thead>
+      <tbody>
+        <tr><td><code>init</code></td><td>Reads your config, downloads the providers/modules it names, and creates the <code>.terraform/</code> folder + lock file. Run it in a new project and any time you add a provider or module.</td></tr>
+        <tr><td><code>plan</code></td><td>Compares your files ↔ real infra ↔ recorded state, then prints the diff. Changes <strong>nothing</strong>. This is a dry run.</td></tr>
+        <tr><td><code>apply</code></td><td>Shows the same plan, waits for you to type <code>yes</code>, then makes the changes and updates state.</td></tr>
+        <tr><td><code>destroy</code></td><td>Deletes everything in this config's state. Great for tearing down a test environment.</td></tr>
+      </tbody>
+    </table>
+    <p>Reading a plan is a core skill. The symbols tell you exactly what's about to happen:</p>
+    <table>
+      <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>+</code></td><td>create a new resource</td></tr>
+        <tr><td><code>~</code></td><td>update in place (safe, no downtime)</td></tr>
+        <tr><td><code>-</code></td><td>destroy a resource</td></tr>
+        <tr><td><code>-/+</code></td><td><strong>destroy then recreate</strong> — the one to watch for</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-note">
+      <div class="callout-title">💾 Save a plan, apply exactly that</div>
+      <p>For production, capture the plan and apply the reviewed artifact so nothing can change in between: <code>terraform plan -out=tfplan</code> then <code>terraform apply tfplan</code>.</p>
+    </div>
+
+    <h2 id="blocks">4. Core building blocks</h2>
+    <p>Every <code>.tf</code> file is made of a few block types. Know these eight and you can read almost any config:</p>
+    <table>
+      <thead><tr><th>Block</th><th>What it's for</th></tr></thead>
+      <tbody>
+        <tr><td><code>terraform {}</code></td><td>Settings — required version, providers, backend.</td></tr>
+        <tr><td><code>provider {}</code></td><td>Configure a platform plugin (AWS region, credentials).</td></tr>
+        <tr><td><code>resource {}</code></td><td>Create &amp; manage a piece of infra. <em>The main one.</em></td></tr>
+        <tr><td><code>data {}</code></td><td>Read existing infra you didn't create (read-only).</td></tr>
+        <tr><td><code>variable {}</code></td><td>An input you pass in.</td></tr>
+        <tr><td><code>output {}</code></td><td>A value published after apply.</td></tr>
+        <tr><td><code>locals {}</code></td><td>Named computed values, reused across the config.</td></tr>
+        <tr><td><code>module {}</code></td><td>Call a reusable bundle of resources.</td></tr>
+      </tbody>
+    </table>
+    <p>Mental model: <code>variable</code> + <code>data</code> flow in → <code>locals</code> compute → <code>resource</code>/<code>module</code> build → <code>output</code> comes out. Here's the shape of each:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>syntax at a glance</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">terraform {
+  required_version = "&gt;= 1.9"
+  required_providers { aws = { source = "hashicorp/aws", version = "~&gt; 5.0" } }
+}
+
+provider "aws" { region = "us-east-1" }
+
+resource "aws_s3_bucket" "docs" { bucket = "acme-docs" }   # ref: aws_s3_bucket.docs.id
+data "aws_vpc" "main" { default = true }                    # ref: data.aws_vpc.main.id
+variable "env" { type = string, default = "dev" }           # ref: var.env
+locals { name = "acme-${var.env}" }                         # ref: local.name
+output "bucket" { value = aws_s3_bucket.docs.bucket }
+module "network" { source = "./modules/network" }           # ref: module.network.vpc_id</code></pre>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">📁 How files are organized</div>
+      <p>Terraform loads <em>every</em> <code>.tf</code> file in the current folder and treats them as one config — file names are just for humans. A common layout is <code>main.tf</code> (resources), <code>variables.tf</code> (inputs), <code>outputs.tf</code> (outputs), and <code>terraform.tfvars</code> (values). Order doesn't matter; Terraform figures out dependencies from references.</p>
+    </div>
+
+    <h2 id="hcl">5. HCL syntax essentials</h2>
+    <p>Terraform's language is <strong>HCL</strong> (HashiCorp Configuration Language). It's designed to be easy to read. Here are the pieces you'll meet constantly:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>hcl-basics.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl"># 1. Arguments — name = value
+name    = "orders"
+count   = 3
+enabled = true
+
+# 2. Blocks — a keyword, optional labels, and a { body }
+resource "aws_instance" "web" { }
+#  ^type    ^resource-kind  ^your-name
+
+# 3. Interpolation — drop a value into a string with ${ }
+bucket = "acme-${var.env}-docs"        # -> "acme-prod-docs"
+
+# 4. Comments
+# single line      // also single line      /* block */
+
+# 5. Multi-line strings (heredoc)
+user_data = &lt;&lt;-EOT
+  #!/bin/bash
+  echo "hello from ${var.env}"
+EOT</code></pre>
+    </div>
+    <p>Refer to things with simple dotted paths — this is how values flow between blocks:</p>
+    <table>
+      <thead><tr><th>Reference</th><th>Reads…</th></tr></thead>
+      <tbody>
+        <tr><td><code>var.env</code></td><td>an input variable</td></tr>
+        <tr><td><code>local.name</code></td><td>a computed local value</td></tr>
+        <tr><td><code>aws_s3_bucket.docs.arn</code></td><td>an attribute of a resource you made</td></tr>
+        <tr><td><code>data.aws_vpc.main.id</code></td><td>an attribute of a data source</td></tr>
+        <tr><td><code>module.network.vpc_id</code></td><td>an output of a module</td></tr>
+        <tr><td><code>each.key</code> / <code>each.value</code></td><td>the current item inside a <code>for_each</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="types">6. Variable types</h2>
+    <p>Three families. Always set a <code>type</code> — it catches bad input at <code>plan</code> time, not mid-apply.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>variables.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl"># primitives
+string   number   bool
+
+# collections (many of the SAME type)
+list(string)   set(string)   map(number)
+
+# structural (mixed types)
+object({ name = string, size = string })
+tuple([string, number, bool])
+
+variable "agent" {
+  type = object({
+    name     = string
+    size     = string
+    replicas = optional(number, 1)   # optional w/ default
+  })
+  sensitive = false                  # true = hide from logs/output
+  validation {
+    condition     = contains(["small", "large"], var.agent.size)
+    error_message = "size must be small or large."
+  }
+}</code></pre>
+    </div>
+
+    <h2 id="tfvars">7. Passing values in (tfvars &amp; precedence)</h2>
+    <p>A <code>variable</code> block declares an input; you still have to <em>supply</em> a value. There are several ways, and Terraform has a strict order when the same variable is set more than once.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal &amp; files</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash"># A. a values file (most common)
+# terraform.tfvars
+env      = "prod"
+replicas = 3
+
+# B. on the command line
+terraform apply -var="env=prod" -var="replicas=3"
+
+# C. a named file
+terraform apply -var-file="prod.tfvars"
+
+# D. an environment variable (prefix TF_VAR_)
+export TF_VAR_env=prod</code></pre>
+    </div>
+    <p>When a variable is set in more than one place, later beats earlier in this order (last wins):</p>
+    <ol>
+      <li>Default in the <code>variable</code> block</li>
+      <li><code>TF_VAR_*</code> environment variables</li>
+      <li><code>terraform.tfvars</code> (and <code>*.auto.tfvars</code>)</li>
+      <li><code>-var-file</code> and <code>-var</code> on the command line</li>
+    </ol>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Don't commit secret tfvars</div>
+      <p>Files with passwords or keys should never enter git. Add <code>*.tfvars</code> to <code>.gitignore</code> (keep an <code>example.tfvars</code> with fake values), or better, pull secrets from a secrets manager at plan time.</p>
+    </div>
+
+    <h2 id="first">8. Your first resource</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_s3_bucket" "docs" {
+  bucket = "acme-agent-docs-unique-name"
+  tags   = { Project = "ai-agent-platform" }
+}</code></pre>
+    </div>
+    <p><code>resource "TYPE" "LOCAL_NAME"</code>. Reference its attributes elsewhere as <code>aws_s3_bucket.docs.id</code> — that reference also creates the dependency order automatically, so you never write "create A then B."</p>
+
+    <h2 id="vars">9. Variables, locals, outputs</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "env" { type = string, default = "dev" }
+
+locals {
+  name = "acme-${var.env}"          # computed once, reused
+}
+
+resource "aws_s3_bucket" "docs" {
+  bucket = "${local.name}-docs"
+}
+
+output "bucket" {
+  value = aws_s3_bucket.docs.bucket # printed after apply; readable by other configs
+}</code></pre>
+    </div>
+    <p>Pass values with <code>-var="env=prod"</code> or a <code>*.tfvars</code> file. <strong>variable</strong> = input, <strong>local</strong> = computed value, <strong>output</strong> = published value. Read outputs any time with <code>terraform output</code> or <code>terraform output bucket</code>.</p>
+
+    <h2 id="expressions">10. Expressions &amp; built-in functions</h2>
+    <p>HCL can compute values, not just store them. You'll use these all the time for names, tags, and conditional wiring.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>expressions.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl"># conditional  (condition ? if_true : if_false)
+instance_type = var.env == "prod" ? "m5.large" : "t3.micro"
+
+# for expression — transform a list/map
+upper_names = [for n in var.names : upper(n)]          # ["ORDERS", "BILLING"]
+by_id       = { for u in var.users : u.id =&gt; u.name }  # build a map
+
+# splat — pull one attribute from every item
+all_arns = aws_s3_bucket.docs[*].arn</code></pre>
+    </div>
+    <p>Terraform ships with a big standard library. The ones you'll reach for first:</p>
+    <table>
+      <thead><tr><th>Function</th><th>Does</th></tr></thead>
+      <tbody>
+        <tr><td><code>merge(a, b)</code></td><td>combine maps (great for shared + per-resource tags)</td></tr>
+        <tr><td><code>lookup(map, key, default)</code></td><td>safe map read with a fallback</td></tr>
+        <tr><td><code>coalesce(a, b, …)</code></td><td>first non-empty value</td></tr>
+        <tr><td><code>join / split</code></td><td>list ↔ string</td></tr>
+        <tr><td><code>toset / tolist / tomap</code></td><td>convert between collection types</td></tr>
+        <tr><td><code>file("x.txt")</code> / <code>templatefile()</code></td><td>read a file / fill a template</td></tr>
+        <tr><td><code>jsonencode / jsondecode</code></td><td>build or read JSON (IAM policies, etc.)</td></tr>
+        <tr><td><code>length / keys / values</code></td><td>inspect collections</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-note">
+      <div class="callout-title">🧪 Try expressions live</div>
+      <p>Run <code>terraform console</code> to open a REPL and test any expression: type <code>upper("hi")</code> or <code>merge({a=1},{b=2})</code> and see the result instantly. No apply needed.</p>
+    </div>
+
+    <h2 id="loops">11. Make many — <code>for_each</code> (not copy-paste)</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_s3_bucket" "docs" {
+  for_each = toset(["orders", "support", "billing"])
+  bucket   = "acme-${each.key}-docs"
+}
+# addressed as aws_s3_bucket.docs["orders"]
+
+# count = N identical copies, or an on/off toggle:
+resource "aws_db_instance" "replica" {
+  count = var.env == "prod" ? 1 : 0
+  # ...
+}</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Prefer <code>for_each</code> over <code>count</code> for named things</div>
+      <p><code>count</code> is index-based — removing a middle item shifts every later index and recreates unrelated resources. <code>for_each</code> keys by name, so removing one touches only that one.</p>
+    </div>
+
+    <h2 id="dynamic">12. Conditionals &amp; dynamic blocks</h2>
+    <p>Sometimes you need to generate <em>nested</em> blocks (like a list of firewall rules) from a variable. A <code>dynamic</code> block is a <code>for_each</code> loop that produces inner blocks instead of whole resources.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">variable "ingress_ports" { default = [80, 443] }
+
+resource "aws_security_group" "web" {
+  name = "web"
+
+  dynamic "ingress" {              # generate one "ingress { }" per port
+    for_each = var.ingress_ports
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+}</code></pre>
+    </div>
+    <p>Reach for <code>dynamic</code> only when the number of nested blocks truly varies — writing them out by hand is clearer when the list is fixed and short.</p>
+
+    <h2 id="lifecycle">13. Meta-arguments: <code>depends_on</code> &amp; <code>lifecycle</code></h2>
+    <p>Terraform usually orders work automatically from references. These special arguments let you override that behavior when you need to.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_instance" "app" {
+  # ...
+
+  # force ordering when there's no direct reference
+  depends_on = [aws_iam_role_policy.app]
+
+  lifecycle {
+    create_before_destroy = true    # make the new one before killing the old (no downtime)
+    prevent_destroy       = true    # refuse to delete this (guard a prod database)
+    ignore_changes        = [tags]  # don't fight edits made outside Terraform
+  }
+}</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Setting</th><th>Use it when…</th></tr></thead>
+      <tbody>
+        <tr><td><code>create_before_destroy</code></td><td>replacing a resource must not cause an outage.</td></tr>
+        <tr><td><code>prevent_destroy</code></td><td>accidental deletion would be catastrophic (databases, state buckets).</td></tr>
+        <tr><td><code>ignore_changes</code></td><td>something else (autoscaling, a console operator) legitimately manages a field.</td></tr>
+        <tr><td><code>depends_on</code></td><td>a hidden dependency exists that Terraform can't infer.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="modules">14. Modules — reuse a group of resources</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">module "orders_agent" {
+  source  = "./modules/agent-service"   # local dir, git URL, or registry
+  version = "1.4.0"                      # required for registry/git sources
+  name    = "orders"
+  env     = var.env
+}
+
+output "orders_db" {
+  value = module.orders_agent.db_endpoint   # reach modules only via their outputs
+}</code></pre>
+    </div>
+    <p>A module is a reusable bundle with a small interface: <strong>input variables</strong> go in, <strong>outputs</strong> come out, and everything inside is hidden. Run <code>terraform init</code> after adding one. Expose only what varies; bake secure defaults for the rest.</p>
+    <table>
+      <thead><tr><th>Source type</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>local folder</td><td><code>source = "./modules/network"</code></td></tr>
+        <tr><td>git repo</td><td><code>source = "git::https://github.com/acme/tf-network.git?ref=v2"</code></td></tr>
+        <tr><td>public registry</td><td><code>source = "terraform-aws-modules/vpc/aws"</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="data">15. Data sources — read what you didn't create</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">data "aws_vpc" "main" {
+  tags = { Name = "agent-platform-${var.env}" }
+}
+
+resource "aws_db_subnet_group" "this" {
+  subnet_ids = data.aws_vpc.main.subnet_ids   # no hardcoded IDs
+}</code></pre>
+    </div>
+    <p><code>resource</code> creates &amp; owns; <code>data</code> only reads. Refreshed every plan, so it always reflects current reality. Perfect for looking up things another team owns — a shared network, the latest AMI, your account ID.</p>
+
+    <h2 id="state">16. Remote state &amp; locking</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>backend.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">terraform {
+  backend "s3" {
+    bucket       = "acme-terraform-state"
+    key          = "agent-platform/prod/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true   # locking = no corrupted concurrent applies
+  }
+}</code></pre>
+    </div>
+    <p>Terraform's <strong>state file</strong> is its memory of what it created — a JSON map from your config to real cloud IDs. Never commit <code>terraform.tfstate</code> (it holds secrets, and git has no locking). A remote backend lets a whole team share one authoritative, encrypted, <strong>locked</strong> state. Locking means only one <code>apply</code> can run at a time, so two people can't corrupt it.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">🗂️ Split state by environment</div>
+      <p>Keep <code>dev</code>, <code>staging</code>, and <code>prod</code> in <em>separate</em> state files (different <code>key</code> paths). A mistake in dev then can never touch prod, and plans stay small and fast.</p>
+    </div>
+
+    <h2 id="managing-state">17. Managing state (the rescue commands)</h2>
+    <p>Occasionally you need to look at or fix Terraform's memory directly — after a rename, or to adopt a resource that already exists. These are safe when you understand them.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform state list                 # every resource Terraform tracks
+terraform state show aws_s3_bucket.docs   # full details of one
+
+# renamed a resource in code? move it in state so it isn't destroyed+recreated:
+terraform state mv aws_s3_bucket.old aws_s3_bucket.new
+
+# stop tracking something WITHOUT deleting the real infra:
+terraform state rm aws_s3_bucket.docs
+
+# adopt an EXISTING cloud resource into Terraform:
+terraform import aws_s3_bucket.docs acme-existing-bucket</code></pre>
+    </div>
+    <p>Modern Terraform can also record renames in code with a <code>moved</code> block, so teammates get the change automatically instead of running a manual command:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>moved.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">moved {
+  from = aws_s3_bucket.old
+  to   = aws_s3_bucket.new
+}</code></pre>
+    </div>
+
+    <h2 id="workspaces">18. Workspaces</h2>
+    <p>A <strong>workspace</strong> gives one config multiple independent state files — a lightweight way to run the same code for several environments without copying it.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform workspace new staging
+terraform workspace select staging
+terraform workspace list        # * marks the active one
+
+# use the workspace name inside config:
+# name = "acme-${terraform.workspace}"</code></pre>
+    </div>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Workspaces aren't always the right tool</div>
+      <p>They share the same backend and code, so they're best for small variations (a personal sandbox, ephemeral test envs). For prod-grade separation, many teams prefer <em>separate folders + separate backends</em> so environments can differ and can't be confused on the command line.</p>
+    </div>
+
+    <h2 id="provisioners">19. Provisioners (and why to avoid them)</h2>
+    <p>A <strong>provisioner</strong> runs a script on a machine after it's created. It exists as an escape hatch — but it breaks Terraform's declarative model (it isn't tracked in state, and it only runs at create time), so treat it as a last resort.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_instance" "app" {
+  # ...
+  provisioner "local-exec" {
+    command = "echo ${self.public_ip} &gt;&gt; hosts.txt"   # runs on YOUR machine
+  }
+}</code></pre>
+    </div>
+    <p>Prefer these instead: pass a startup script via <code>user_data</code>, bake images with Packer, or configure servers with a dedicated tool (Ansible). Reach for a provisioner only when there's truly no other way.</p>
+
+    <h2 id="example">20. A complete example, end to end</h2>
+    <p>Everything so far, assembled into one small but real project — a private bucket per team, tagged consistently, with outputs you can hand to the next tool. This is the runnable project in <code>quickstart/code/terraform/</code> (there it's split across <code>versions.tf</code>, <code>variables.tf</code>, <code>main.tf</code>, and <code>outputs.tf</code> — shown combined here).</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">terraform {
+  required_version = "&gt;= 1.9"
+  required_providers { aws = { source = "hashicorp/aws", version = "~&gt; 5.0" } }
+}
+
+provider "aws" { region = var.region }
+
+variable "region" { type = string, default = "us-east-1" }
+variable "env"    { type = string, default = "dev" }
+variable "teams"  { type = list(string), default = ["orders", "billing"] }
+
+# Read-only lookup of the current AWS account (a data source).
+data "aws_caller_identity" "current" {}
+
+locals {
+  common_tags = { Project = "ai-agent-platform", Env = var.env }
+  suffix      = "${var.env}-${data.aws_caller_identity.current.account_id}"
+}
+
+resource "aws_s3_bucket" "team" {
+  for_each = toset(var.teams)
+  bucket   = "acme-${each.key}-docs-${local.suffix}"
+  tags     = merge(local.common_tags, { Team = each.key })
+}
+
+resource "aws_s3_bucket_public_access_block" "team" {
+  for_each                = aws_s3_bucket.team
+  bucket                  = each.value.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+output "bucket_names" {
+  value = [for b in aws_s3_bucket.team : b.bucket]
+}
+
+output "bucket_arns" {
+  value = { for team, b in aws_s3_bucket.team : team =&gt; b.arn }
+}</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal — run it</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform init
+terraform plan      # review: 4 to add (2 buckets + 2 access blocks)
+terraform apply     # type yes
+
+# expected output (account-id suffix will be your own):
+# bucket_names = [
+#   "acme-orders-docs-dev-123456789012",
+#   "acme-billing-docs-dev-123456789012",
+# ]</code></pre>
+    </div>
+    <p>Add a team to the <code>teams</code> list and re-apply: Terraform creates only the new bucket, leaving the others untouched — because <code>for_each</code> keys by name. That's the whole promise of Terraform in one change.</p>
+
+    <h2 id="debug">21. Debugging &amp; troubleshooting</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">terraform fmt         # fix indentation/spacing
+terraform validate    # check syntax &amp; types (no cloud calls)
+terraform console      # REPL to test expressions
+terraform refresh      # re-sync state with real infra (or: plan -refresh-only)
+
+# verbose logs when something is really stuck:
+export TF_LOG=DEBUG          # TRACE, DEBUG, INFO, WARN, ERROR
+export TF_LOG_PATH=tf.log    # send logs to a file
+terraform apply</code></pre>
+    </div>
+    <p>Workflow when a plan surprises you: run <code>validate</code> and <code>fmt</code> first, read the plan slowly for any <code>-/+</code>, then use <code>console</code> to inspect the exact expression that's off. Turn on <code>TF_LOG</code> only as a last resort — it's very noisy.</p>
+
+    <h2 id="gotchas">22. Everyday gotchas</h2>
+    <table>
+      <thead><tr><th>You see…</th><th>It means / do this</th></tr></thead>
+      <tbody>
+        <tr><td><code>-/+</code> in a plan</td><td>Resource will be <strong>destroyed &amp; recreated</strong>. Check before applying (especially databases).</td></tr>
+        <tr><td>Plan wants to undo your change</td><td>Drift — someone edited it by hand. Change the config, not the console.</td></tr>
+        <tr><td><code>BucketAlreadyExists</code></td><td>S3 names are globally unique. Add a suffix.</td></tr>
+        <tr><td>Auth error</td><td><code>aws configure</code> or set <code>AWS_PROFILE</code>.</td></tr>
+        <tr><td>Module changes ignored</td><td>Re-run <code>terraform init</code>.</td></tr>
+        <tr><td>State locked</td><td>Another apply is running. Only <code>force-unlock</code> if you're sure it's not.</td></tr>
+        <tr><td>"Provider produced inconsistent result"</td><td>Usually a provider bug or a hand-edit; <code>refresh</code> then re-plan.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="cheatsheet">23. One-page cheat sheet</h2>
+    <table>
+      <thead><tr><th>Task</th><th>Command / snippet</th></tr></thead>
+      <tbody>
+        <tr><td>Start a project</td><td><code>terraform init</code></td></tr>
+        <tr><td>Preview changes</td><td><code>terraform plan</code></td></tr>
+        <tr><td>Apply a saved plan</td><td><code>plan -out=tfplan</code> → <code>apply tfplan</code></td></tr>
+        <tr><td>Tear down</td><td><code>terraform destroy</code></td></tr>
+        <tr><td>Format / check</td><td><code>terraform fmt</code> · <code>terraform validate</code></td></tr>
+        <tr><td>See outputs</td><td><code>terraform output</code></td></tr>
+        <tr><td>Test an expression</td><td><code>terraform console</code></td></tr>
+        <tr><td>List / show state</td><td><code>state list</code> · <code>state show &lt;addr&gt;</code></td></tr>
+        <tr><td>Rename in state</td><td><code>state mv &lt;old&gt; &lt;new&gt;</code> (or a <code>moved</code> block)</td></tr>
+        <tr><td>Adopt existing infra</td><td><code>terraform import &lt;addr&gt; &lt;id&gt;</code></td></tr>
+        <tr><td>Switch environment</td><td><code>terraform workspace select &lt;name&gt;</code></td></tr>
+        <tr><td>Target one resource</td><td><code>apply -target=&lt;addr&gt;</code> (use sparingly)</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="rules">24. Rules that keep you safe</h2>
+    <ol>
+      <li>Always read the <code>plan</code>. An unexpected <code>-</code> (destroy) is a stop sign.</li>
+      <li>Never commit state or secrets. Use a remote backend; gitignore <code>*.tfvars</code>.</li>
+      <li><code>for_each</code> for named collections; <code>count</code> only for identical copies / toggles.</li>
+      <li>Pin provider versions; commit <code>.terraform.lock.hcl</code>.</li>
+      <li>Change infra in code, never by hand in the console.</li>
+      <li>Guard the irreplaceable with <code>prevent_destroy</code>.</li>
+      <li>Keep <code>dev</code>/<code>staging</code>/<code>prod</code> state separate.</li>
+    </ol>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>Terraform is how you stand up the cloud your agents run on — then a CI/CD pipeline applies changes safely, and you host the agents (AWS AgentCore, coming soon). The full, from-zero Terraform track (state &amp; collaboration, modules in depth, CI/CD) is on the way.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

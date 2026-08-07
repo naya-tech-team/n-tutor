@@ -1,0 +1,116 @@
+[
+  {
+    "title": "Welcome — Start Here",
+    "url": "index.html",
+    "track": "Start Here",
+    "keywords": ["start", "welcome", "beginner", "intro", "no experience", "from zero", "library", "glossary", "jargon"]
+  },
+  {
+    "title": "Python: Quick Start",
+    "url": "quickstart/python.html",
+    "track": "Quick Starts",
+    "keywords": ["python", "quick start", "quickstart", "cheat sheet", "reference", "code first", "syntax", "essentials", "fast track"]
+  },
+  {
+    "title": "FastAPI: Quick Start",
+    "url": "quickstart/fastapi.html",
+    "track": "Quick Starts",
+    "keywords": ["fastapi", "quick start", "quickstart", "api", "web", "rest", "uvicorn", "pydantic", "route", "router", "middleware", "endpoint", "async", "docs", "code first"]
+  },
+  {
+    "title": "FastMCP: Quick Start",
+    "url": "quickstart/fastmcp.html",
+    "track": "Quick Starts",
+    "keywords": ["fastmcp", "mcp", "model context protocol", "quick start", "quickstart", "tool", "resource", "prompt", "server", "agent", "stdio", "claude desktop", "context", "code first"]
+  },
+  {
+    "title": "A2A: Quick Start",
+    "url": "quickstart/a2a.html",
+    "track": "Quick Starts",
+    "keywords": ["a2a", "agent2agent", "agent to agent", "quick start", "quickstart", "agent card", "executor", "task", "lifecycle", "client", "delegation", "multi-agent", "a2a-sdk", "code first"]
+  },
+  {
+    "title": "Strands: Quick Start",
+    "url": "quickstart/strands.html",
+    "track": "Quick Starts",
+    "keywords": ["strands", "strands agents", "quick start", "quickstart", "agent", "agent loop", "tool", "model", "bedrock", "mcp", "multi-agent", "swarm", "graph", "conversation manager", "code first"]
+  },
+  {
+    "title": "Terraform: Quick Start",
+    "url": "quickstart/terraform.html",
+    "track": "Quick Starts",
+    "keywords": ["terraform", "quick start", "quickstart", "infrastructure as code", "iac", "hcl", "provider", "resource", "variable", "output", "module", "state", "plan", "apply", "for_each", "count", "data source", "aws", "cloud", "code first"]
+  },
+  {
+    "title": "1 · Your First Program",
+    "url": "python/first-program.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "first program", "print", "variable", "input", "f-string", "beginner", "hello world"]
+  },
+  {
+    "title": "2 · Numbers & Text",
+    "url": "python/numbers-and-text.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "numbers", "text", "string", "int", "float", "math", "type conversion"]
+  },
+  {
+    "title": "3 · Making Decisions",
+    "url": "python/making-decisions.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "if", "else", "elif", "conditions", "comparison", "decisions", "indentation"]
+  },
+  {
+    "title": "4 · Repeating Things",
+    "url": "python/repeating.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "loop", "for", "while", "range", "repeat", "iteration"]
+  },
+  {
+    "title": "5 · Lists",
+    "url": "python/lists.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "list", "index", "append", "len", "collection"]
+  },
+  {
+    "title": "6 · Dictionaries",
+    "url": "python/dictionaries.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "dictionary", "dict", "key", "value", "items", "lookup"]
+  },
+  {
+    "title": "7 · Functions",
+    "url": "python/functions.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "function", "def", "return", "parameter", "argument", "reuse"]
+  },
+  {
+    "title": "8 · Put It Together",
+    "url": "python/mini-project.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "project", "game", "guessing", "random", "break", "capstone"]
+  },
+  {
+    "title": "9 · Objects & Classes (OOP)",
+    "url": "python/classes.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "oop", "object oriented", "class", "object", "self", "__init__", "method", "encapsulation", "inheritance", "polymorphism", "abstraction", "principles"]
+  },
+  {
+    "title": "10 · Generators",
+    "url": "python/generators.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "generator", "yield", "lazy", "memory", "stream", "iterator"]
+  },
+  {
+    "title": "11 · Decorators",
+    "url": "python/decorators.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "decorator", "wrapper", "@", "higher order function", "args", "kwargs"]
+  },
+  {
+    "title": "12 · Handling Errors",
+    "url": "python/error-handling.html",
+    "track": "Python from Zero",
+    "keywords": ["python", "error handling", "try", "except", "finally", "exception", "valueerror", "zerodivisionerror", "crash"]
+  }
+]

@@ -1,0 +1,36 @@
+# Terraform provider binaries and working dirs (GBs — never commit)
+**/.terraform/*
+.terraform/
+
+# State files: contain resource IDs, account numbers, and plaintext secrets
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Dependency lock files — each example re-inits independently in this repo
+.terraform.lock.hcl
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Variable files commonly holding credentials
+*.tfvars
+*.tfvars.json
+!example.tfvars
+
+# Plan output
+*.tfplan
+
+# CLI config with credentials
+.terraformrc
+terraform.rc
+
+# Python virtualenvs and bytecode (uv.lock IS committed — it pins the build)
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# macOS
+.DS_Store

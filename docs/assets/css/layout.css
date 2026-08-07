@@ -1,0 +1,352 @@
+/* ==========================================================================
+   LAYOUT.CSS
+   Header, sidebar, table of contents, page grid, responsive behavior.
+   ========================================================================== */
+
+/* ---- Skip link ---- */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  z-index: 1000;
+  transition: top var(--transition-fast);
+}
+.skip-link:focus { top: 8px; }
+
+/* ---- Header ---- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  background: var(--bg-header);
+  backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.site-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.site-header .brand .logo-dot {
+  width: 10px; height: 10px; border-radius: 3px;
+  background: var(--accent);
+  display: inline-block;
+}
+.header-spacer { flex: 1; }
+
+.sidebar-toggle {
+  display: none;
+  background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  width: 36px; height: 36px; cursor: pointer; color: var(--text-primary);
+  align-items: center; justify-content: center; font-size: 1.1rem;
+}
+
+/* ---- Search box (header) ---- */
+.search-box {
+  position: relative;
+  width: 320px;
+  max-width: 40vw;
+}
+.search-box input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+}
+.search-box input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.search-box::before {
+  content: "🔍";
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 0.85rem; opacity: 0.6; pointer-events: none;
+}
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 360px;
+  overflow-y: auto;
+  display: none;
+  z-index: 200;
+}
+.search-results.open { display: block; }
+.search-results a {
+  display: block;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.search-results a:last-child { border-bottom: none; }
+.search-results a:hover, .search-results a.active { background: var(--bg-subtle); }
+.search-results .result-track { font-size: var(--fs-xs); color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.search-results .result-empty { padding: 14px; color: var(--text-muted); font-size: var(--fs-sm); }
+
+/* ---- Theme toggle ---- */
+.theme-toggle {
+  background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  width: 36px; height: 36px; cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-primary);
+}
+.theme-toggle:hover { background: var(--bg-subtle); }
+
+/* ---- Reading progress bar ---- */
+.progress-bar {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 99;
+  transition: width 80ms linear;
+}
+
+/* ---- Sidebar backdrop (mobile-only overlay) ----
+   Must be display:none outside the mobile media query below. Otherwise this
+   div becomes a 4th grid item and shifts every following item into the wrong
+   grid-template-columns track (sidebar ends up in the content column, content
+   ends up squeezed into the toc column). ---- */
+.sidebar-backdrop { display: none; }
+
+/* ---- App grid: sidebar | content | toc ---- */
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--toc-width);
+  min-height: calc(100vh - var(--header-height));
+}
+.app-shell.no-toc { grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+
+/* ---- Sidebar ---- */
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: var(--bg-sidebar);
+  padding: 20px 14px 60px;
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+}
+.sidebar-section { margin-bottom: 14px; }
+.sidebar-section-title {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  margin-bottom: 6px;
+}
+/* Collapsible sections (enhanced by nav.js, which adds .is-collapsible) */
+.sidebar-section.is-collapsible > .sidebar-section-title {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--radius-sm);
+}
+.sidebar-section.is-collapsible > .sidebar-section-title:hover { background: var(--bg-subtle); color: var(--text-secondary); }
+.sidebar-section.is-collapsible > .sidebar-section-title::after {
+  content: "";
+  width: 6px; height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);            /* points down = expanded */
+  transition: transform 0.15s ease;
+  opacity: 0.7;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.sidebar-section.is-collapsible.collapsed > .sidebar-section-title::after {
+  transform: rotate(-45deg);           /* points right = collapsed */
+}
+.sidebar-section.is-collapsible.collapsed > .sidebar-link { display: none; }
+.sidebar-section-title .qs-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border-radius: 10px;
+  padding: 1px 7px;
+  margin-left: auto;
+  letter-spacing: 0;
+}
+.sidebar-section.is-collapsible > .sidebar-section-title .qs-count { margin-left: 8px; }
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  text-decoration: none;
+}
+.sidebar-link:hover { background: var(--bg-subtle); text-decoration: none; }
+.sidebar-link.active {
+  background: var(--accent-light);
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+[data-theme="dark"] .sidebar-link.active { color: var(--accent); }
+.sidebar-link .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+.sidebar-link.active .badge-dot { background: var(--accent); }
+
+/* ---- Main content ---- */
+.content {
+  padding: 32px 40px 100px;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---- Breadcrumbs ---- */
+.breadcrumbs {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.breadcrumbs a { color: var(--text-muted); }
+.breadcrumbs a:hover { color: var(--accent); }
+.breadcrumbs .sep { opacity: 0.5; }
+
+/* ---- Meta row (difficulty / time / updated) ---- */
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 28px;
+}
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+/* ---- Table of contents (right rail) ---- */
+.toc {
+  padding: 28px 20px;
+  position: sticky;
+  top: var(--header-height);
+  height: fit-content;
+  max-height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+  font-size: var(--fs-sm);
+}
+.toc-title {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.toc ul { list-style: none; padding-left: 0; margin: 0; }
+.toc li { margin-bottom: 6px; }
+.toc a {
+  color: var(--text-muted);
+  display: block;
+  padding: 3px 0 3px 12px;
+  border-left: 2px solid transparent;
+}
+.toc a:hover { color: var(--text-primary); text-decoration: none; }
+.toc a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+
+/* ---- Prev / Next lesson footer ---- */
+.lesson-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 3em;
+  padding-top: 1.6em;
+  border-top: 1px solid var(--border);
+}
+.lesson-nav a {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.lesson-nav a:hover { border-color: var(--accent); box-shadow: var(--shadow-sm); }
+.lesson-nav .dir { font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.lesson-nav .title { font-weight: 600; margin-top: 2px; }
+.lesson-nav .next { text-align: right; grid-column: 2; }
+.lesson-nav .prev-empty, .lesson-nav .next-empty { visibility: hidden; }
+
+/* ---- Footer ---- */
+.site-footer {
+  text-align: center;
+  padding: 30px 20px 50px;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1180px) {
+  .app-shell { grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+  .toc { display: none; }
+}
+@media (max-width: 860px) {
+  .search-box { display: none; }
+  .sidebar-toggle { display: flex; }
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed;
+    left: 0; top: var(--header-height);
+    width: 82vw; max-width: 320px;
+    height: calc(100vh - var(--header-height));
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    z-index: 90;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-backdrop {
+    display: none;
+    position: fixed; inset: var(--header-height) 0 0 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 80;
+  }
+  .sidebar-backdrop.open { display: block; }
+  .content { padding: 24px 18px 80px; }
+  .lesson-nav { grid-template-columns: 1fr; }
+  .lesson-nav .next { text-align: left; grid-column: 1; }
+}
+
+/* ---- Print ---- */
+@media print {
+  .site-header, .sidebar, .toc, .progress-bar, .lesson-nav, .sidebar-backdrop { display: none !important; }
+  .app-shell { grid-template-columns: 1fr; display: block; }
+  .content { max-width: 100%; padding: 0; }
+}
