@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Python: Quick Start — AI Engineering</title>
+<meta name="description" content="The practical essentials of Python on one page — code-first, minimal theory. Install, syntax, collections, control flow, functions, classes, errors." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell no-toc">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">7</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Coming soon</div>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Strands Agents</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>Python</span>
+    </nav>
+
+    <h1>Python Quick Start</h1>
+    <div class="meta-row">
+      <span class="badge badge-beginner">Quick Start</span>
+      <span class="badge badge-info">code-first</span>
+      <span class="badge badge-info">~15 min</span>
+    </div>
+    <p>The practical 20% of Python you use every day, on one page. Prefer a slow, gentle walk with nothing assumed? Take the <a href="../python/first-program.html">Python from Zero</a> track instead. Each section here links to the full lesson if you want depth.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Get the runnable code</div>
+      <p>A fuller, ready-to-run project for this quick start ships with the course: the Task Tracker app (classes, generators, decorators, error handling) with tests. It lives in <code>quickstart/code/python/</code> — open its <a href="code/python/README.md">README</a> for exact run steps and expected output.</p>
+    </div>
+
+
+    <h2 id="run">1. Run Python</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash"># No install: search "online python" and use any free web editor.
+# On your machine — install from python.org, then:
+python3 --version
+python3 hello.py      # run a file
+python3               # interactive shell (type code, press Enter)</code></pre>
+    </div>
+    <p>Python runs top to bottom. Indentation (4 spaces) defines blocks — it's part of the syntax, not decoration.</p>
+
+    <h2 id="basics">2. Variables, types, printing</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">name = "Ada"          # str  (text)
+age = 36              # int  (whole number)
+height = 1.7          # float (decimal)
+is_admin = True       # bool  (True / False)
+nothing = None        # "no value"
+
+print(f"{name} is {age}")     # f-string: drop values into text
+print(type(age))              # &lt;class 'int'&gt;
+age = int("30")               # convert text -> number  (input() is always text)</code></pre>
+    </div>
+    <p>Full detail: <a href="../python/numbers-and-text.html">Numbers &amp; Text</a>.</p>
+
+    <h2 id="collections">3. Collections</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">nums   = [1, 2, 3]                 # list  — ordered, changeable
+point  = (4, 5)                    # tuple — ordered, fixed
+unique = {1, 2, 3}                 # set   — unique, unordered
+person = {"name": "Ada", "age": 36} # dict  — key -&gt; value
+
+nums.append(4)          # add
+nums[0]                 # read by index (starts at 0)
+len(nums)               # count
+person["name"]          # look up by key
+person["city"] = "London"   # add / change a key</code></pre>
+    </div>
+    <p>Full detail: <a href="../python/lists.html">Lists</a> · <a href="../python/dictionaries.html">Dictionaries</a>.</p>
+
+    <h2 id="flow">4. Control flow</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">if age &gt;= 18:
+    print("adult")
+elif age &gt;= 13:
+    print("teen")
+else:
+    print("child")
+
+for n in nums:               # loop over items
+    print(n)
+
+for i in range(3):           # 0, 1, 2
+    print(i)
+
+while age &gt; 0:               # loop while condition holds
+    age = age - 1</code></pre>
+    </div>
+    <p>Use <code>==</code> to compare, <code>=</code> to assign. Full detail: <a href="../python/making-decisions.html">Making Decisions</a> · <a href="../python/repeating.html">Loops</a>.</p>
+
+    <h2 id="functions">5. Functions</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">def greet(name, excited=False):     # excited has a default
+    msg = f"Hello, {name}"
+    return msg + "!" if excited else msg
+
+greet("Ada")               # "Hello, Ada"
+greet("Ada", excited=True) # "Hello, Ada!"</code></pre>
+    </div>
+    <p><code>return</code> hands a value back; <code>print</code> only shows it. Full detail: <a href="../python/functions.html">Functions</a>.</p>
+
+    <h2 id="comprehensions">6. Comprehensions (the Pythonic one-liners)</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">squares = [n * n for n in range(5)]          # [0, 1, 4, 9, 16]
+evens   = [n for n in range(10) if n % 2 == 0]
+lengths = {w: len(w) for w in ["hi", "hey"]} # dict comprehension</code></pre>
+    </div>
+    <p>A compact way to build a list/dict from a loop. Reach for it when it stays readable.</p>
+
+    <h2 id="classes">7. Classes (OOP) in 20 seconds</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">class Dog:
+    def __init__(self, name):   # setup, runs on creation
+        self.name = name        # this object's data
+
+    def bark(self):
+        print(f"{self.name} says woof")
+
+class Puppy(Dog):               # inherits from Dog
+    def play(self):
+        print(f"{self.name} plays")
+
+Puppy("Milo").bark()   # inherited</code></pre>
+    </div>
+    <p><code>self</code> = "this object." Principles: encapsulation, inheritance, polymorphism, abstraction. Full detail: <a href="../python/classes.html">Objects &amp; Classes</a>.</p>
+
+    <h2 id="advanced">8. Generators &amp; decorators</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">import functools
+
+# generator — yields values one at a time (memory-friendly)
+def pending(tasks):
+    for task in tasks:
+        if not task.done:
+            yield task
+
+# decorator — wraps a function to add behaviour (wraps preserves its name)
+def log_calls(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        print(f"  · {func.__name__} -> {result!r}")
+        return result
+    return wrapper
+
+@log_calls
+def add(a, b):
+    return a + b</code></pre>
+    </div>
+    <p>You'll see <code>@</code> everywhere later (<code>@app.get</code>, <code>@tool</code>). These are the exact <code>pending()</code> generator and <code>log_calls</code> decorator used in <code>quickstart/code/python/task_tracker.py</code>. Full detail: <a href="../python/generators.html">Generators</a> · <a href="../python/decorators.html">Decorators</a>.</p>
+
+    <h2 id="errors">9. Error handling</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">try:
+    age = int(input("Age? "))
+except ValueError:
+    print("Please type a whole number.")
+finally:
+    print("always runs")</code></pre>
+    </div>
+    <p>Catch the specific error you expect (<code>ValueError</code>, <code>ZeroDivisionError</code>, <code>KeyError</code>…). Full detail: <a href="../python/error-handling.html">Handling Errors</a>.</p>
+
+    <h2 id="imports">10. Modules &amp; imports</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">import random                 # whole module
+random.randint(1, 6)
+
+from datetime import datetime # one thing from a module
+datetime.now()
+
+# pip installs third-party packages:
+# pip install requests</code></pre>
+    </div>
+
+    <h2 id="builtins">11. Handy built-ins</h2>
+    <table>
+      <thead><tr><th>Call</th><th>Does</th></tr></thead>
+      <tbody>
+        <tr><td><code>len(x)</code></td><td>Length of a string, list, dict…</td></tr>
+        <tr><td><code>range(a, b)</code></td><td>Numbers from a up to (not incl.) b.</td></tr>
+        <tr><td><code>enumerate(list)</code></td><td>Loop with an index: <code>for i, x in enumerate(...)</code>.</td></tr>
+        <tr><td><code>zip(a, b)</code></td><td>Pair up two lists item by item.</td></tr>
+        <tr><td><code>sorted(x)</code></td><td>Return a sorted copy.</td></tr>
+        <tr><td><code>sum / min / max</code></td><td>Totals and extremes of numbers.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="gotchas">12. Everyday gotchas</h2>
+    <table>
+      <thead><tr><th>Trap</th><th>Remember</th></tr></thead>
+      <tbody>
+        <tr><td><code>IndentationError</code></td><td>Indent block bodies with 4 spaces, consistently.</td></tr>
+        <tr><td><code>"2" + 2</code> errors</td><td>Text and numbers don't mix — convert with <code>int()</code>/<code>str()</code>.</td></tr>
+        <tr><td>Index starts at 0</td><td>First item is <code>list[0]</code>, last is <code>list[-1]</code>.</td></tr>
+        <tr><td><code>==</code> vs <code>=</code></td><td><code>==</code> compares; <code>=</code> assigns.</td></tr>
+        <tr><td>Mutable default args</td><td>Don't use <code>def f(x=[])</code>; use <code>None</code> then create inside.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">Where to go next</div>
+      <p>Want the gentle, nothing-assumed version? Start at <a href="../python/first-program.html">Python from Zero, Lesson 1</a>. FastAPI, MCP, and more quick starts are on the way.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

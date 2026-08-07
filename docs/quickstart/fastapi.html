@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FastAPI: Quick Start — AI Engineering</title>
+<meta name="description" content="Turn Python functions into a web API fast — code-first essentials: install, routes, path/query params, Pydantic bodies, async, auto docs, errors." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell no-toc">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">7</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Coming soon</div>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Strands Agents</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>FastAPI</span>
+    </nav>
+
+    <h1>FastAPI Quick Start</h1>
+    <div class="meta-row">
+      <span class="badge badge-intermediate">Quick Start</span>
+      <span class="badge badge-info">code-first</span>
+      <span class="badge badge-info">~15 min</span>
+    </div>
+    <p><strong>FastAPI</strong> turns ordinary Python functions into a <em>web API</em> — a program other apps (and browsers) can call over the internet. You write a function, add one line above it, and FastAPI handles the web plumbing, validates the data, and even generates interactive docs. New to Python? Skim the <a href="python.html">Python Quick Start</a> first.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Get the runnable code</div>
+      <p>A fuller, ready-to-run project for this quick start ships with the course: a Task API with routers, Pydantic v2 models, middleware, DI, and pytest tests. It lives in <code>quickstart/code/fastapi/</code> — open its <a href="code/fastapi/README.md">README</a> for exact run steps and expected output.</p>
+    </div>
+
+
+    <h2 id="install">1. Install &amp; run</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">pip install "fastapi[standard]" uvicorn
+
+# save the code below as main.py, then run the dev server:
+uvicorn main:app --reload      # main = file, app = the FastAPI object
+# now open http://127.0.0.1:8000  and  http://127.0.0.1:8000/docs</code></pre>
+    </div>
+    <p><code>--reload</code> restarts the server automatically when you edit the file. <code>uvicorn</code> is the program that actually runs your app.</p>
+
+    <h2 id="hello">2. Hello, API</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")          # handle GET requests to "/"
+def home():
+    return {"message": "Hello, API!"}</code></pre>
+    </div>
+    <p>Visit <code>/</code> and you get back JSON: <code>{"message": "Hello, API!"}</code>. That <code>@app.get("/")</code> is a <a href="../python/decorators.html">decorator</a> — it wires your function to a web address. Returning a Python <code>dict</code> automatically becomes JSON.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">🌐 The 4 verbs you'll use</div>
+      <p><code>@app.get</code> reads data · <code>@app.post</code> creates · <code>@app.put</code> updates · <code>@app.delete</code> removes. Same pattern for each.</p>
+    </div>
+
+    <h2 id="path-query">3. Path &amp; query parameters</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python"># Path parameter: part of the URL.  /items/42
+@app.get("/items/{item_id}")
+def get_item(item_id: int):        # type hint -> FastAPI converts &amp; validates
+    return {"item_id": item_id}
+
+# Query parameters: after the ?.  /search?q=cats&amp;limit=5
+@app.get("/search")
+def search(q: str, limit: int = 10):   # limit has a default
+    return {"query": q, "limit": limit}</code></pre>
+    </div>
+    <p>The type hints (<code>item_id: int</code>) aren't decoration — FastAPI uses them to convert and validate input. Send <code>/items/abc</code> and it returns a clean 422 error automatically, no code needed.</p>
+
+    <h2 id="body">4. Request bodies with Pydantic</h2>
+    <p>For <code>POST</code>/<code>PUT</code>, the data arrives in the request <em>body</em> as JSON. Describe its shape with a Pydantic <code>BaseModel</code> and FastAPI validates it for you:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from enum import Enum
+from pydantic import BaseModel, Field
+
+class Priority(str, Enum):
+    high = "high"
+    medium = "medium"
+    low = "low"
+
+class TaskCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=120)
+    priority: Priority = Priority.medium      # optional, defaults to medium
+
+@app.post("/tasks")
+def create_task(data: TaskCreate):   # FastAPI parses &amp; validates the JSON body
+    return {"received": data.title, "priority": data.priority}</code></pre>
+    </div>
+    <p>Post <code>{"title": "Write docs", "priority": "high"}</code> and it just works. Post an empty title and you get an automatic, descriptive validation error. This is the <code>models.py</code> from <code>quickstart/code/fastapi/</code>, and this validation is the reason FastAPI is loved.</p>
+
+    <h2 id="response">5. Response model &amp; status codes</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">class Task(TaskCreate):          # adds server-set fields to TaskCreate
+    id: int
+    done: bool = False
+
+@app.post("/tasks", response_model=Task, status_code=201)
+def create_task(data: TaskCreate):
+    return store.create(data)    # response_model shapes what goes back out</code></pre>
+    </div>
+    <p><code>response_model=Task</code> guarantees the output shape (and hides fields you don't include). <code>status_code=201</code> means "created." <code>Task</code> inherits from <code>TaskCreate</code>, so it reuses the same validation.</p>
+
+    <h2 id="async">6. Async endpoints</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@app.get("/slow")
+async def slow():                 # use async when you await I/O
+    data = await fetch_from_db()   # e.g. a database or another API
+    return data</code></pre>
+    </div>
+    <p>Use <code>async def</code> when your function <code>await</code>s something (a database, another API). It lets one server handle many requests while waiting. Plain <code>def</code> is fine when there's nothing to await.</p>
+
+    <h2 id="docs">7. Free interactive docs</h2>
+    <p>You don't write these — FastAPI generates them from your type hints:</p>
+    <table>
+      <thead><tr><th>URL</th><th>What you get</th></tr></thead>
+      <tbody>
+        <tr><td><code>/docs</code></td><td>Swagger UI — try every endpoint from the browser.</td></tr>
+        <tr><td><code>/redoc</code></td><td>Clean, readable API reference.</td></tr>
+        <tr><td><code>/openapi.json</code></td><td>The machine-readable spec (used by tools &amp; SDKs).</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="errors">8. Returning errors</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi import HTTPException, status
+
+@app.get("/tasks/{task_id}", response_model=Task)
+def get_task(task_id: int):
+    task = store.get(task_id)
+    if task is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="task not found")
+    return task</code></pre>
+    </div>
+    <p><code>raise HTTPException(...)</code> sends a proper HTTP error (like 404) with a JSON message, instead of crashing.</p>
+
+    <h2 id="depends">9. Dependencies (shared logic)</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi import Depends
+
+class TaskStore:                     # a stand-in for a database
+    def list(self) -> list[Task]: ...
+
+_store = TaskStore()
+def get_store() -> TaskStore:        # the dependency provider
+    return _store
+
+@app.get("/tasks", response_model=list[Task])
+def list_tasks(store: TaskStore = Depends(get_store)):   # injected
+    return store.list()</code></pre>
+    </div>
+    <p><code>Depends</code> runs shared setup (a store, a DB connection, auth) before your endpoint and passes the result in — write it once, use it everywhere. This is the <code>store.py</code> pattern from the code project; tests can inject their own store.</p>
+
+    <h2 id="routers">10. Routers — split a growing app into files</h2>
+    <p>One <code>main.py</code> with every route gets unwieldy fast. An <strong>APIRouter</strong> is a mini-app: you group related routes in their own file, then plug it into the main app. Same decorators, just <code>@router</code> instead of <code>@app</code>.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>routers/users.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi import APIRouter, Depends, status
+
+router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+@router.get("", response_model=list[Task])       # GET /tasks
+async def list_tasks(store: TaskStore = Depends(get_store)):
+    return store.list()
+
+@router.post("", response_model=Task, status_code=status.HTTP_201_CREATED)
+async def create_task(data: TaskCreate, store: TaskStore = Depends(get_store)):
+    return store.create(data)</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi import FastAPI
+from .routers import tasks
+
+app = FastAPI(title="Task API")
+
+app.include_router(tasks.router)     # plug the router in</code></pre>
+    </div>
+    <p>The <code>prefix="/tasks"</code> is added to every route in that file, so you don't repeat it. <code>tags=["tasks"]</code> groups these endpoints under a "tasks" heading in the <code>/docs</code> page — instantly tidier. This mirrors <code>app/routers/tasks.py</code> in the code project.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">🧩 Handy extras on a router</div>
+      <p>Apply things to a whole group at once: <code>APIRouter(prefix="/admin", dependencies=[Depends(verify_admin)])</code> protects every admin route with one line. That pairs the <a href="#depends">dependencies</a> idea with routers.</p>
+    </div>
+
+    <h2 id="middleware">11. Middleware (runs on every request)</h2>
+    <p><strong>Middleware</strong> is code that wraps <em>every</em> request: it runs just before the request reaches your endpoint, and again just after the response is built. Think of a security desk everyone passes on the way in and out — perfect for logging, timing, adding headers, or auth checks you want applied everywhere.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">import time
+from fastapi import FastAPI, Request
+
+app = FastAPI(title="Task API")
+
+@app.middleware("http")
+async def add_timing_header(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)   # run the actual endpoint
+    elapsed_ms = (time.perf_counter() - start) * 1000
+    response.headers["X-Process-Time-ms"] = f"{elapsed_ms:.2f}"
+    return response</code></pre>
+    </div>
+    <p>The one rule: call <code>await call_next(request)</code> to pass control to your endpoint (or the next middleware), then do something with the <code>response</code> before returning it. Code <em>before</em> that line runs on the way in; code <em>after</em> runs on the way out.</p>
+
+    <h3 id="cors">The one you'll almost always need: CORS</h3>
+    <p>By default a browser blocks a web page from calling your API if it's on a different address. <strong>CORS middleware</strong> lets you allow specific front-ends. FastAPI ships with a ready-made one:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # tighten to real origins in production
+    allow_methods=["*"],
+    allow_headers=["*"],
+)</code></pre>
+    </div>
+    <p>Two ways to add middleware: the <code>@app.middleware("http")</code> decorator for your own logic, or <code>app.add_middleware(SomeMiddleware, ...)</code> for prebuilt ones like CORS, GZip, or trusted-hosts.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">🔁 Middleware vs. dependencies</div>
+      <p>Use <strong>middleware</strong> for cross-cutting concerns on <em>all</em> requests (logging, timing, CORS). Use <a href="#depends"><strong>dependencies</strong></a> when only <em>some</em> routes need it (like auth on protected endpoints). Order matters: middleware added later runs "outermost," wrapping the ones added before it.</p>
+    </div>
+
+    <h2 id="cheatsheet">12. Mini cheat sheet</h2>
+    <table>
+      <thead><tr><th>You want to…</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td>Read data</td><td><code>@app.get("/path")</code></td></tr>
+        <tr><td>Create data</td><td><code>@app.post("/path")</code> + a Pydantic body</td></tr>
+        <tr><td>Grab a URL part</td><td><code>/{id}</code> + <code>id: int</code> param</td></tr>
+        <tr><td>Grab a <code>?key=value</code></td><td>add a param with a default</td></tr>
+        <tr><td>Validate input</td><td>a <code>BaseModel</code> + type hints</td></tr>
+        <tr><td>Return an error</td><td><code>raise HTTPException(404, ...)</code></td></tr>
+        <tr><td>Split into files</td><td><code>APIRouter(prefix=...)</code> + <code>app.include_router(...)</code></td></tr>
+        <tr><td>Run on every request</td><td><code>@app.middleware("http")</code></td></tr>
+        <tr><td>Run it</td><td><code>uvicorn main:app --reload</code></td></tr>
+        <tr><td>See the docs</td><td>open <code>/docs</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="gotchas">13. Everyday gotchas</h2>
+    <table>
+      <thead><tr><th>Trap</th><th>Remember</th></tr></thead>
+      <tbody>
+        <tr><td>Forgot type hints</td><td>No hint = no validation and no docs for that field.</td></tr>
+        <tr><td>Route order matters</td><td>Put <code>/tasks/new</code> <em>before</em> <code>/tasks/{id}</code>, or "new" is read as an id.</td></tr>
+        <tr><td><code>async</code> everywhere</td><td>Only use <code>async def</code> when you actually <code>await</code>; otherwise plain <code>def</code>.</td></tr>
+        <tr><td>Blocking calls in async</td><td>A slow non-await call inside <code>async def</code> stalls the whole server.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>A FastAPI service is how you put a program — later, an AI agent — online for others to call. The full, from-zero FastAPI track (routing, validation, dependencies, testing, deployment) is coming soon. Meanwhile, solid on the language basics? See the <a href="python.html">Python Quick Start</a>.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>
