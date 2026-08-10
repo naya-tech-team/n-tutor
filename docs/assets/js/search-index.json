@@ -24,16 +24,58 @@
     "keywords": ["fastmcp", "mcp", "model context protocol", "quick start", "quickstart", "tool", "resource", "prompt", "server", "agent", "stdio", "claude desktop", "context", "code first"]
   },
   {
+    "title": "Transcripts — Overview",
+    "url": "transcript/index.html",
+    "track": "Transcripts",
+    "keywords": ["transcript", "transcripts", "session", "sessions", "walkthrough", "narration", "spoken", "recording", "speaker notes", "script", "talk", "index", "overview"]
+  },
+  {
+    "title": "Python: Session Transcript",
+    "url": "transcript/python.html",
+    "track": "Transcripts",
+    "keywords": ["python", "transcript", "session", "walkthrough", "narration", "basics", "variables", "collections", "loops", "functions", "comprehensions", "classes", "generators", "decorators", "error handling", "gotchas", "q&a"]
+  },
+  {
+    "title": "FastAPI: Session Transcript",
+    "url": "transcript/fastapi.html",
+    "track": "Transcripts",
+    "keywords": ["fastapi", "transcript", "session", "walkthrough", "narration", "api", "uvicorn", "pydantic", "validation", "response model", "async", "swagger", "docs", "httpexception", "depends", "router", "middleware", "cors", "q&a"]
+  },
+  {
+    "title": "FastMCP: Session Transcript",
+    "url": "transcript/fastmcp.html",
+    "track": "Transcripts",
+    "keywords": ["fastmcp", "mcp", "transcript", "session", "walkthrough", "narration", "talk", "recording", "speaker notes", "timecodes", "demo", "tool", "resource", "prompt", "context", "sampling", "stdio", "claude desktop", "q&a"]
+  },
+  {
+    "title": "A2A: Session Transcript",
+    "url": "transcript/a2a.html",
+    "track": "Transcripts",
+    "keywords": ["a2a", "agent2agent", "transcript", "session", "walkthrough", "narration", "agent card", "skill", "executor", "event queue", "task lifecycle", "delegation", "orchestrator", "discovery", "mcp vs a2a", "q&a", "strands", "ollama", "llama", "llama3.2", "local model", "a2aserver", "agent_factory", "multi-agent", "specialist"]
+  },
+  {
+    "title": "Strands: Session Transcript",
+    "url": "transcript/strands.html",
+    "track": "Transcripts",
+    "keywords": ["strands", "strands agents", "transcript", "session", "walkthrough", "narration", "agent loop", "tool", "bedrock", "model", "mcp client", "agents as tools", "swarm", "graph", "multi-agent", "conversation manager", "agent state", "session manager", "q&a"]
+  },
+  {
+    "title": "Terraform: Session Transcript",
+    "url": "transcript/terraform.html",
+    "track": "Transcripts",
+    "keywords": ["terraform", "transcript", "session", "walkthrough", "narration", "iac", "infrastructure as code", "hcl", "plan", "apply", "destroy", "provider", "resource", "variable", "local", "output", "for_each", "count", "module", "data source", "state", "backend", "locking", "state mv", "import", "moved", "workspace", "drift", "q&a"]
+  },
+  {
     "title": "A2A: Quick Start",
     "url": "quickstart/a2a.html",
     "track": "Quick Starts",
-    "keywords": ["a2a", "agent2agent", "agent to agent", "quick start", "quickstart", "agent card", "executor", "task", "lifecycle", "client", "delegation", "multi-agent", "a2a-sdk", "code first"]
+    "keywords": ["a2a", "agent2agent", "agent to agent", "quick start", "quickstart", "agent card", "executor", "task", "lifecycle", "client", "delegation", "multi-agent", "a2a-sdk", "code first", "strands", "ollama", "llama", "llama3.2", "local model", "a2aserver", "agent_factory", "agent skill", "orchestrator", "specialist", "artifact"]
   },
   {
     "title": "Strands: Quick Start",
     "url": "quickstart/strands.html",
     "track": "Quick Starts",
-    "keywords": ["strands", "strands agents", "quick start", "quickstart", "agent", "agent loop", "tool", "model", "bedrock", "mcp", "multi-agent", "swarm", "graph", "conversation manager", "code first"]
+    "keywords": ["strands", "strands agents", "quick start", "quickstart", "agent", "agent loop", "tool", "model", "bedrock", "mcp", "multi-agent", "swarm", "graph", "conversation manager", "code first", "ollama", "llama", "llama3.2", "local model", "ollamamodel", "a2aserver", "agent_factory", "a2aclienttoolprovider"]
   },
   {
     "title": "Terraform: Quick Start",

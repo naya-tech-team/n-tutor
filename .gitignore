@@ -32,5 +32,30 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Local environment files (.env.example IS committed — it documents the settings)
+.env
+
+# emp/: pidfiles and service logs written by `make up`
+.run/
+
+# Node / Expo (emp/ui also has its own .gitignore; package-lock.json IS committed)
+node_modules/
+.expo/
+
 # macOS
 .DS_Store
+
+**/docs/transcript/
+**/docs/plan/
+**/etp/
+**/emp/
+**/a2a/
+**/a2a-strands/
+**/strands/
+docs/quickstart/strands-course.html
+**/docs/quickstart/a2a.html
+**/docs/assets/js/search-index.json
+docs/quickstart/fastmcp.html
+docs/quickstart/strands.html
+
+**/uv.lock
