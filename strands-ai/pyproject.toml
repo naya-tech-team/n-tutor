@@ -1,0 +1,14 @@
+[project]
+name = "strands-ai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "strands-agents[a2a,ollama]>=1.51.0",
+    "strands-agents-tools>=0.8.6",
+    "pydantic-settings>=2.15.0",
+    "httpx2>=2.9.1",
+    "mcp>=1.29.0",
+    "fastmcp>=3.4.7",
+]
