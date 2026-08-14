@@ -157,9 +157,13 @@ flowchart LR
     subgraph D["Control it"]
         D1["13 Hooks"] --> D2["14 Conversation mgmt"] --> D3["15 Interrupts"] --> D4["16 Plugins"]
     end
+    subgraph E["Put it together"]
+        E1["17 Memory &amp; persistence"]
+    end
     A4 --> B1
     B3 --> C1
     C5 --> D1
+    D4 --> E1
 ```
 
 > **New here? Start with the [Quick Start Tutorial](app/01_quickstart/TUTORIAL.md)** —
@@ -184,6 +188,7 @@ flowchart LR
 | [14](app/14_conversation_management/) | **Conversation management** | The context window is full. Now what? |
 | [15](app/15_interrupts/) | **Interrupts** | How do I stop a bot rejecting a candidate on its own? |
 | [16](app/16_plugins/) | **Plugins** | How do I ship hooks + tools as one reusable unit? |
+| [17](app/17_memory_and_persistence/) | **Memory & persistence** | Seven layers of "what survives" — and the seams between them |
 
 > Lesson 02 (MCP) sits before 03 because it already existed in this repo. If you
 > are reading top-to-bottom for the first time, 03 → 04 → back to 02 also works.
@@ -207,9 +212,11 @@ mindmap
     Memory
       State
       Conversation manager
+      Context manager
       Session
       Storage
       Snapshot
+      Long-term memory
     Control
       Hooks
       Interrupts

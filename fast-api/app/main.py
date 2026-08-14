@@ -1,7 +1,12 @@
-"""FastAPI app entry point: middleware, CORS, and the tasks router.
+"""FastAPI app entry point: middleware, CORS, and the HR routers.
 
-Run:
-    uvicorn app.main:app --reload
+An HTTP face on the same domain the rest of the course uses: employees have
+rated skills, requisitions require skills, and /candidates decides who fits.
+
+Run it either way — both work:
+    uvicorn app.main:app --reload      # from the fast-api/ folder
+    python app/main.py                 # directly
+
 Then open http://127.0.0.1:8000/docs
 """
 
@@ -15,9 +20,20 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import tasks
+# Running this file directly puts `app/` on sys.path — NOT the project root — so
+# the `from app.models import ...` lines inside the routers would raise
+# `ModuleNotFoundError: No module named 'app'`. Adding the parent makes the same
+# absolute imports resolve under `python app/main.py`, `uvicorn app.main:app`,
+# and pytest alike, so there is only one import style in the codebase.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-app = FastAPI(title="Task API", version="1.0.0")
+from app.routers import candidates  # noqa: E402 — must follow the sys.path line above
+
+app = FastAPI(
+    title="HR Skills API",
+    version="1.0.0",
+    description="Employees, open requisitions, and a scoring engine that decides who fits.",
+)
 
 # CORS — allow a browser front-end to call this API.
 app.add_middleware(
@@ -43,7 +59,8 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-app.include_router(tasks.router)
+app.include_router(candidates.employees_router)
+app.include_router(candidates.requisitions_router)
 
 if __name__ == "__main__":
     import uvicorn

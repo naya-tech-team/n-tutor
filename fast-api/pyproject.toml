@@ -1,7 +1,7 @@
 [project]
 name = "fastapi-quickstart"
 version = "1.0.0"
-description = "Task API demonstrating FastAPI routers, middleware, CORS, and dependency injection"
+description = "HR Skills API demonstrating FastAPI routers, middleware, CORS, and dependency injection"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.141.1",

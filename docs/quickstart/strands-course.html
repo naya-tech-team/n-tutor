@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Strands Agents: Full Course Guide — AI Engineering</title>
+<meta name="description" content="The complete Strands Agents course: 17 lessons from your first agent to memory and persistence — tools, MCP, structured output, streaming, multi-agent, state, storage, sessions, snapshots, hooks, conversation and context management, interrupts, plugins. One worked domain throughout: matching employees to open requisitions." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">8</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="strands-course.html"><span class="badge-dot"></span> Strands: Full Course Guide</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Coming soon</div>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>Strands Full Course</span>
+    </nav>
+
+    <h1>Strands Agents — Full Course Guide</h1>
+    <div class="meta-row">
+      <span class="badge badge-advanced">Full Course</span>
+      <span class="badge badge-info">17 lessons</span>
+      <span class="badge badge-info">runnable code</span>
+      <span class="badge badge-info">~3.5 hours</span>
+    </div>
+
+    <p>The <a href="strands.html">Strands Quick Start</a> gets you an agent in fifteen minutes. <strong>This guide is the whole course</strong> — seventeen lessons that take that agent from a toy to something you would put in front of users: tools it can't misuse, memory that survives a restart, budgets it can't blow through, and a human in the loop when it matters.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Every lesson is runnable</div>
+      <p>The companion project lives in <code>strands-ai/</code>. Each lesson is a folder with a <code>README.md</code> (the write-up) and a <code>main.py</code> (the demo). Every output shown on this page came from an actual run against a local model — including the ones that go wrong.</p>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">One domain, seventeen lessons</div>
+      <p>Every example runs on the same small world: <strong>employees have rated skills, requisitions require skills, and something has to decide who fits.</strong> Twelve people, six open roles, a skill catalogue with aliases (<code>"pyspark"</code> → <code>"Apache Spark"</code>) — all in <code>app/_shared/hr_data.py</code>, in memory, no database.</p>
+      <p><code>match(employee, job)</code> returns a score, the skills that matched, the gaps, and any <em>blockers</em> — a missing mandatory skill. <strong>It is arithmetic, never a model call.</strong> The model's job is to find the right people to score, call the tool and explain the result — not to invent a percentage. A score nobody can reproduce by hand is a score nobody will defend in a hiring review.</p>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    E["EMPLOYEES<br/>12 people, skills rated 1-5"] --> M["match()"]
+    J["JOBS<br/>6 open requisitions,<br/>min level + mandatory + weight"] --> M
+    S["SKILLS<br/>canonical names + aliases"] -.-> M
+    M --> R["score %, verdict,<br/>matched, gaps, blockers"]
+      </pre>
+      <div class="caption">Swap these dicts for real HRMS calls and every lesson keeps working unchanged.</div>
+    </div>
+
+    <p>Two employees worth memorising, because they show up on every page below: <strong>E1002 Priya Raman</strong> (Senior Data Engineer, Bengaluru, on the bench, Spark 5 / Python 4 / SQL 5) scores <strong>100%</strong> on requisition <strong>J2001</strong>. <strong>E1005 Vikram Iyer</strong> has no SQL on record, so he is <em>blocked</em> on J2001 no matter how good the rest of his profile looks.</p>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">Versions this was written against</div>
+      <p><code>strands-agents 1.51.0</code> · <code>strands-agents-tools 0.8.6</code> · Python 3.12. The SDK moves quickly — if an import fails, check that module's <code>__init__.py</code> in your virtualenv before assuming the guide is wrong.</p>
+    </div>
+
+    <h2 id="map">1. The course map</h2>
+    <p>Seventeen lessons in five groups. Each group answers one question about production agents.</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    subgraph A["Build it"]
+        A1["01 First agent"] --> A2["02 MCP tools"] --> A3["03 Adding tools"] --> A4["04 Using tools"]
+    end
+    subgraph B["Shape the output"]
+        B1["05 Structured"] --> B2["06 Streaming"] --> B3["07 Multi-agent"]
+    end
+    subgraph C["Understand the engine"]
+        C1["08 Agent loop"] --> C2["09 State"] --> C3["10 Storage"] --> C4["11 Sessions"] --> C5["12 Snapshots"]
+    end
+    subgraph D["Control it"]
+        D1["13 Hooks"] --> D2["14 Conversation mgmt"] --> D3["15 Interrupts"] --> D4["16 Plugins"]
+    end
+    subgraph E["Put it together"]
+        E1["17 Memory &amp; persistence"]
+    end
+    A4 --> B1
+    B3 --> C1
+    C5 --> D1
+    D4 --> E1
+      </pre>
+      <div class="caption">Build it → shape it → understand it → control it → wire it together. You can stop after any group and have something useful.</div>
+    </div>
+
+    <table>
+      <thead><tr><th>#</th><th>Lesson</th><th>The question it answers</th></tr></thead>
+      <tbody>
+        <tr><td>01</td><td><strong>First example</strong></td><td>What is the minimum that runs?</td></tr>
+        <tr><td>02</td><td><strong>MCP tools</strong></td><td>How do I borrow the HR team's tools without importing their code?</td></tr>
+        <tr><td>03</td><td><strong>Adding tools</strong></td><td>How does a Python function become a tool?</td></tr>
+        <tr><td>04</td><td><strong>Using tools</strong></td><td>Who decides when a tool runs — and can I overrule it?</td></tr>
+        <tr><td>05</td><td><strong>Structured responses</strong></td><td>How do I get a typed object instead of prose?</td></tr>
+        <tr><td>06</td><td><strong>Streaming responses</strong></td><td>How do I show progress instead of a spinner?</td></tr>
+        <tr><td>07</td><td><strong>Multi agents</strong></td><td>Screening, outreach and fairness review in one agent — how do I split it?</td></tr>
+        <tr><td>08</td><td><strong>Agent loop</strong></td><td>What actually happens between prompt and answer?</td></tr>
+        <tr><td>09</td><td><strong>State</strong></td><td>Where do I put facts the model must not hallucinate?</td></tr>
+        <tr><td>10</td><td><strong>Storage</strong></td><td>Where do bytes go — disk, S3, memory?</td></tr>
+        <tr><td>11</td><td><strong>Session management</strong></td><td>How does a conversation survive a restart?</td></tr>
+        <tr><td>12</td><td><strong>Snapshots</strong></td><td>How do I rewind an agent to a past moment?</td></tr>
+        <tr><td>13</td><td><strong>Hooks</strong></td><td>How do I inject logging / auth / retries without forking?</td></tr>
+        <tr><td>14</td><td><strong>Conversation management</strong></td><td>The context window is full. Now what?</td></tr>
+        <tr><td>15</td><td><strong>Interrupts</strong></td><td>How do I stop a bot rejecting a candidate on its own?</td></tr>
+        <tr><td>16</td><td><strong>Plugins</strong></td><td>How do I ship hooks + tools as one reusable unit?</td></tr>
+        <tr><td>17</td><td><strong>Memory &amp; persistence</strong></td><td>Seven layers of "what survives" — and the seams between them</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Lesson 02 sits early on purpose</div>
+      <p>MCP appears before "adding tools" because it already existed in the repo. Reading top-to-bottom for the first time, <strong>03 → 04 → back to 02</strong> also works.</p>
+    </div>
+
+    <h2 id="setup">2. Setup — three commands</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">cd strands-ai
+uv sync                      # strands-agents + strands-agents-tools
+
+ollama pull qwen2.5:7b       # read section 3 before choosing
+ollama serve
+
+uv run app/00_tutorial/tutorial.py     # the 11-step walkthrough</code></pre>
+    </div>
+    <p>No API keys, no cloud account, nothing leaves your machine. Everything the lessons persist lands under <code>.run/</code> — <code>rm -rf .run</code> resets the whole course to a clean slate.</p>
+
+    <h2 id="model">3. Choosing a model — read this first</h2>
+    <div class="callout callout-danger">
+      <div class="callout-title">⚠️ This one decision breaks more tutorials than any bug</div>
+      <p>Strands hands the model a list of tools and lets it decide. <strong>Everything depends on how well your model calls tools</strong> — and weak models fail in a specific, recognisable way: they <em>print</em> the tool call as text instead of making it.</p>
+    </div>
+
+    <p>One prompt — <em>"We're filling J2001. Open it."</em> — through lesson 17's desk agent, two local models, verbatim traces. The work is finished on the first tool call in both cases.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>llama3.2 (3B) — done at cycle 1, then eight cycles of nothing</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">[1] open_requisition({"job_id": "J2001"})                          -> Now working J2001 …  ✅
+[2] find_candidates({"job_id": "J2001", "location": "Bengaluru"})  -> ValidationError: skill required
+[3] find_candidates({"job_title": "Senior Data Engineer", …})      -> ValidationError: skill required
+[4] find_candidates({"job_title": "Senior Data Engineer"})         -> ValidationError: skill required
+[5] find_candidates({"job_title": "Senior Data Engineer"})         -> ValidationError: skill required   &lt;-- identical to [4]
+[6] find_candidates({"location": "Bengaluru"})                     -> ValidationError: skill required
+stop_reason: limit_turns   answer: ''</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>qwen2.5:7b — one call, one answer, stops</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">[1] open_requisition({"job_id": "J2001"})   -> Now working J2001 — Senior Data Engineer in Bengaluru, 6+ years.
+stop_reason: end_turn   cycles: 2
+answer: Job ID: J2001, Senior Data Engineer, Bengaluru</code></pre>
+    </div>
+    <p>Look at cycle 5: it is <strong>byte-identical to cycle 4</strong>. That is the signature of a model that has run out of ideas — it has no new information after a bare validation error, so it reshuffles the same wrong guess until something stops it. Lesson 17 shows the two fixes (a tool that answers the call it actually received, and a turn cap that guarantees termination).</p>
+    <p>Override per run without editing a file — real environment variables beat <code>.env</code>:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">OLLAMA_MODEL=qwen2.5:7b uv run app/00_tutorial/tutorial.py</code></pre>
+    </div>
+    <p>If your agent starts <em>describing</em> tool calls instead of making them, that is a model problem, not a prompt problem. Reach for a bigger model before you rewrite anything.</p>
+
+    <h2 id="loop">4. The one diagram to memorize</h2>
+    <p>Every feature in the rest of this course plugs into exactly one place in this loop. Learn it now and the other sixteen lessons become "where does this attach?"</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    S["agent(prompt)"] --> A["append user message"]
+    A --> CM["conversation manager<br/>trims / summarizes"]
+    CM --> M["MODEL CALL<br/>messages + tool specs + system prompt"]
+    M --> SR{"stop_reason"}
+    SR -->|"tool_use"| T["run the requested tools"]
+    T --> AR["append toolResult messages"]
+    AR --> CM
+    SR -->|"end_turn / limit_* / max_tokens"| R["AgentResult"]
+    SR -->|"interrupt"| P["pause and return"]
+      </pre>
+      <div class="caption">One cycle = one model call + the tools it asked for. Repeat until the model stops asking.</div>
+    </div>
+
+    <p>Which means, in four words: <strong>Model ⇄ Tools, wrapped in Memory, watched by Hooks.</strong></p>
+
+    <table>
+      <thead><tr><th>Lesson</th><th>Attaches at</th></tr></thead>
+      <tbody>
+        <tr><td>14 · Conversation management</td><td>before every model call — decides what messages survive</td></tr>
+        <tr><td>13 · Hooks &amp; 16 · Plugins</td><td>before/after model, before/after each tool, on message added</td></tr>
+        <tr><td>15 · Interrupts</td><td>inside a tool or before-tool hook — pauses the whole loop</td></tr>
+        <tr><td>11 · Sessions</td><td>after invocation / after message — persists what happened</td></tr>
+        <tr><td>17 · Memory</td><td>before each model call — injects recall into the model input</td></tr>
+        <tr><td>17 · Context offloader</td><td>after a tool returns — swaps an oversized result for a preview</td></tr>
+        <tr><td>04 · Limits</td><td>checked at the top of each cycle</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">"Repeat" means recursion, not a while-loop</div>
+      <p>Each cycle calls <code>recurse_event_loop</code> — one Python stack frame deeper. A model that keeps calling tools does not churn harmlessly; it walks off the stack and you get <code>EventLoopException: maximum recursion depth exceeded</code> several hundred paid model calls later. This is why <code>limits=</code> is not optional in unattended code. Lesson 17 has the full mechanism.</p>
+    </div>
+
+    <h2 id="part1">5. Part 1 — Build it (lessons 01–04)</h2>
+
+    <h3 id="first-agent">Your first agent</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from strands import Agent, tool
+from _shared import employees_with_skill, make_model, skill_level
+
+@tool
+def find_candidates(skill: str, min_level: int = 3) -> str:
+    """Find bench employees who have a skill at or above a proficiency level.
+
+    Args:
+        skill: Skill name or alias, e.g. "pyspark" or "Apache Spark"
+        min_level: Minimum proficiency, 1 (aware) to 5 (expert). Default 3.
+    """
+    people = employees_with_skill(skill, min_level=min_level, available_only=True)
+    if not people:
+        return f"Nobody on the bench is at level {min_level}+ in {skill!r}."
+    return "\n".join(f"{e['employee_id']} {e['name']} — level {skill_level(e, skill)}" for e in people)
+
+agent = Agent(tools=[find_candidates], model=make_model())
+result = agent("Who on the bench knows pyspark at level 4 or better?")</code></pre>
+    </div>
+    <p>No routing, no <code>if intent ==</code>. The <strong>model</strong> reads the tool's name, docstring and type hints and decides to call it — including translating the user's <em>"pyspark"</em> into the <code>skill</code> argument. That is what "model-driven" means: you add capability by adding functions.</p>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">You did not get a string back</div>
+      <p><code>agent(...)</code> returns an <strong>AgentResult</strong>. <code>str(result)</code> gives the text, but the field you will actually grep for in every incident is <code>result.stop_reason</code>. Branch on that, never on the text of the answer.</p>
+    </div>
+
+    <table>
+      <thead><tr><th><code>stop_reason</code></th><th>Meaning</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td><code>end_turn</code></td><td>finished normally</td><td>use the answer</td></tr>
+        <tr><td><code>max_tokens</code></td><td>the model's own output cap</td><td>answer is truncated — retry or raise the cap</td></tr>
+        <tr><td><code>limit_turns</code> / <code>limit_total_tokens</code> / <code>limit_output_tokens</code></td><td><em>your</em> budget cap fired</td><td>inspect and decide; <code>agent.messages</code> is still valid</td></tr>
+        <tr><td><code>interrupt</code></td><td>waiting for a human</td><td>collect responses, re-invoke (lesson 15)</td></tr>
+        <tr><td><code>cancelled</code></td><td><code>agent.cancel()</code> was called</td><td>clean up</td></tr>
+        <tr><td><code>guardrail_intervened</code> / <code>content_filtered</code></td><td>policy stopped it</td><td>surface a safe message</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="tools-in">Four ways a capability gets in</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    A["tools=[ ... ]"] --> B["@tool function"]
+    A --> C["imported module<br/>strands_tools.calculator"]
+    A --> D["ToolProvider<br/>MCPClient"]
+    A --> E["another Agent<br/>agent.as_tool()"]
+      </pre>
+      <div class="caption">All four arrive in the same registry. The model cannot tell them apart.</div>
+    </div>
+
+    <h3 id="docstrings">The docstring is the API contract</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    F["def find_candidates(<br/>skill: str,<br/>min_level: int = 3)<br/><br/>'''Find bench employees…<br/>Args: skill: e.g. 'pyspark'''"]
+    F -->|"@tool introspects"| S["JSON schema:<br/>name, description,<br/>inputSchema"]
+    S --> M["Model picks the tool<br/>and fills the args"]
+      </pre>
+    </div>
+    <table>
+      <thead><tr><th>Your Python</th><th>What the model sees</th></tr></thead>
+      <tbody>
+        <tr><td>function name</td><td>tool <code>name</code></td></tr>
+        <tr><td>docstring summary</td><td>tool <code>description</code></td></tr>
+        <tr><td>type hints</td><td><code>inputSchema</code> property types</td></tr>
+        <tr><td><code>Args:</code> section</td><td>per-argument descriptions</td></tr>
+        <tr><td>default values</td><td>optional parameters</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Docstrings are not documentation here — they are prompt.</strong> A vague docstring is a tool the model will misuse.</p>
+
+    <h3 id="tool-context">Tools that need the agent</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from strands import tool, ToolContext
+
+@tool(context=True)
+def open_requisition(job_id: str, tool_context: ToolContext) -> str:
+    """Set the requisition this conversation is working on.
+
+    Args:
+        job_id: e.g. "J2001"
+    """
+    job = get_job(job_id)
+    if job is None:
+        return f"No such requisition {job_id!r}."
+    tool_context.agent.state.set("job_id", job["job_id"])   # get() returns a COPY — set it back
+    return f"Now working {job['job_id']} — {job['title']} in {job['location']}."</code></pre>
+    </div>
+    <p><strong>The model extracts, the tool stores.</strong> A model is good at pulling <em>"we're filling J2001"</em> out of a sentence and bad at still knowing it twenty turns later — especially once the conversation manager has thrown those turns away. Play to both strengths.</p>
+    <p>The <code>tool_context</code> parameter is invisible to the model. It carries three things:</p>
+    <ul class="checklist">
+      <li><code>tool_context.agent</code> — the calling agent: its <code>state</code>, <code>messages</code>, <code>model</code>.</li>
+      <li><code>tool_context.tool_use</code> — this call's <code>toolUseId</code> and raw input.</li>
+      <li><code>tool_context.invocation_state</code> — kwargs passed into <code>agent(...)</code> for this run.</li>
+    </ul>
+    <p>It is also the handle you use to pause for a human (lesson 15).</p>
+
+    <h3 id="mcp">Borrowing tools over MCP</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from mcp import stdio_client, StdioServerParameters
+from strands import Agent
+from strands.tools.mcp import MCPClient
+
+# The HR team owns employee data. They publish one MCP server; we speak the
+# protocol to it. Nothing here imports their code.
+hr = MCPClient(lambda: stdio_client(
+    StdioServerParameters(command=sys.executable, args=["hr_mcp_server.py"])
+))
+
+with hr:                          # the block is load-bearing: leaving it kills the server
+    agent = Agent(tools=[*hr.list_tools_sync(), shortlist_candidate], model=make_model())
+    print(agent.tool_names)
+    # ['find_by_skill', 'score_match', 'rank_for_job', 'rank_jobs_for_person', 'shortlist_candidate']</code></pre>
+    </div>
+    <p>You pass the <em>client</em>, not a list of tools — <code>MCPClient</code> is a <code>ToolProvider</code>, so the agent asks the server "what can you do?" on connect. Those four HR tool names were never typed in your codebase; they came off the wire, and they mix freely with your own local tools in one registry.</p>
+    <p>A server publishes three kinds of thing, and only the first is famous:</p>
+    <table>
+      <thead><tr><th>Kind</th><th>What it is</th><th>Who drives it</th></tr></thead>
+      <tbody>
+        <tr><td><code>tools</code></td><td>actions with arguments</td><td>the model chooses</td></tr>
+        <tr><td><code>resources</code></td><td>data read by URI — <code>hr://bench</code>, <code>hr://employees/E1002</code></td><td><strong>you</strong>: no model call, no tokens</td></tr>
+        <tr><td><code>prompts</code></td><td>the question itself, authored by the team that owns the data</td><td>you render, the model answers</td></tr>
+      </tbody>
+    </table>
+    <p>Resources are the underused one: <code>hr.read_resource_sync("hr://employees/E1002")</code> fetches a profile with the model entirely uninvolved. And a <em>prompt</em> lets HR — not you — own the definition of a good screening note.</p>
+    <div class="callout callout-danger">
+      <div class="callout-title">Leaving the <code>with</code> block kills the tools</div>
+      <p>Outside it the subprocess is gone and those tool names are unusable. <strong>A dead MCP server looks like an agent that quietly starts improvising</strong> — it still has the tool <em>names</em> in its history, so it makes plausible answers up.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Debugging an MCP client that will not start</div>
+      <p>The stdio transport swallows the subprocess's real error into <code>unhandled errors in a TaskGroup</code>, which tells you nothing. <strong>Always run the server command by hand</strong> — <code>uvx strands-agents-mcp-server</code> — to see what actually failed. (For us it was a TLS-interception cert blocking PyPI; <code>--system-certs</code> fixed it.)</p>
+    </div>
+
+    <h3 id="using-tools">Overruling the model</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph MD["Model-driven — the default"]
+        A["agent('who fits J2001?')"] --> B["model emits tool_use"] --> C["Strands runs score_match"] --> D["result back to model"] --> E["prose answer"]
+    end
+    subgraph DC["Direct — you decide"]
+        F["agent.tool.score_match(<br/>employee_id='E1002', job_id='J2001')"] --> G["Strands runs score_match"] --> H["ToolResult returned to you"]
+    end
+      </pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">result = agent.tool.score_match(employee_id="E1002", job_id="J2001")
+# {'toolUseId': '...', 'status': 'success',
+#  'content': [{'text': 'score=100 verdict=strong blockers=none gaps: none'}]}
+
+# still recorded in agent.messages, so the next model turn sees it.
+# opt out when the call is plumbing, not conversation:
+agent.tool.score_match(employee_id="E1005", job_id="J2001", record_direct_tool_call=False)</code></pre>
+    </div>
+    <p>This is also how you write a <strong>test</strong> for an agent's tools: no model, no sampling, no guessing what it will decide to call.</p>
+
+    <h3 id="errors">Let the model recover</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@tool(context=True)
+def screen_candidate(employee_id: str, tool_context: ToolContext) -> str:
+    """Score a candidate against the open requisition and add them to the shortlist."""
+    employee = get_employee(employee_id)
+    if employee is None:
+        # Directive, not just descriptive. A bare "not found" invites a model to
+        # try E1148, E1149, E1150… A tool's error message is a prompt too.
+        return (f"No employee {employee_id!r} exists. Do not guess employee ids — "
+                "call find_candidates and screen only the ids it returned.")
+    ...</code></pre>
+    </div>
+    <p>An error result goes back to the model as text, and the model reads it and corrects itself. <strong>Write error messages for the model, not for a log.</strong> A raised exception is caught too, but a deliberate message tells the model <em>how</em> to fix itself.</p>
+    <div class="callout callout-danger">
+      <div class="callout-title">Measured: the difference between "not found" and an instruction</div>
+      <p>The first version of that tool returned a bare <em>"No employee E1148."</em> — and llama3.2 answered it by trying <code>E1149</code>, then <code>E1150</code>, then <code>E1151</code>, until the turn cap fired. Adding <em>"do not guess employee ids — call find_candidates first"</em> ends the loop, because it gives the model somewhere to go. <strong>Every tool result is the next thing the model reads, so it steers behaviour exactly as much as your system prompt does.</strong></p>
+    </div>
+
+    <h3 id="limits">Budget caps — the runaway safety valve</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">result = agent("Screen E1002, then summarise the shortlist.", limits={"turns": 1})
+result.stop_reason        # 'limit_turns'
+len(agent.messages)       # 3 — still re-invokable
+
+# all three dimensions; omit any for no cap on it
+agent(prompt, limits={"turns": 8, "total_tokens": 50_000, "output_tokens": 4_000})</code></pre>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">A limit that fires is not an error</div>
+      <p>No exception is raised. If you do not check <code>stop_reason</code>, a truncated run looks exactly like a successful one. Token caps are <em>soft</em> — one oversized response can overshoot by a turn, since checks happen at turn boundaries. On a simultaneous trip the priority is <code>turns</code> → <code>total_tokens</code> → <code>output_tokens</code>.</p>
+    </div>
+    <p>Caps are checked at the <strong>top</strong> of each cycle, which is what makes them safe to combine with everything in lesson 17: tools the previous cycle requested have already finished and their results are appended, so <code>agent.messages</code> ends on a complete exchange, the session persists a coherent conversation, and the next turn resumes normally.</p>
+
+    <h2 id="part2">6. Part 2 — Shape the output (lessons 05–07)</h2>
+
+    <h3 id="structured">Structured responses</h3>
+    <div class="usecase">
+      <span class="usecase-label">Problem</span>
+      <p>A hiring manager sends a paragraph of wishful thinking; somebody has to turn it into a requisition row with a real skills list. Prose cannot go into a database column. So teams write a second prompt asking for JSON, then a regex to find it, then a try/except because the model wrapped it in a code fence, then a validator because it invented a field. That whole pipeline is a bug farm.</p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>python — the real schema from lesson 05</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from pydantic import BaseModel, Field
+from typing import Literal
+
+class SkillRequirement(BaseModel):
+    """One skill a role needs."""
+    skill: str = Field(description="Canonical skill name, e.g. 'Apache Spark' not 'pyspark'")
+    min_level: int = Field(ge=1, le=5, description="1 aware, 3 working independently, 5 expert")
+    mandatory: bool = Field(description="True only if a candidate without it cannot do the job")
+
+class Requisition(BaseModel):
+    """An open role, extracted from a hiring manager's message."""
+    title: str = Field(description="Job title, under 6 words")
+    department: str
+    location: str = Field(description="City, or 'Remote' if none is stated")
+    min_experience_years: int = Field(ge=0, le=25)
+    seniority: Literal["junior", "mid", "senior", "lead"]
+    required_skills: list[SkillRequirement] = Field(description="3 to 6 skills, mandatory ones first")
+
+req = agent(hiring_manager_message, structured_output_model=Requisition).structured_output
+req.seniority             # 'senior' — a real enum value, already validated</code></pre>
+    </div>
+    <p>The input is deliberately messy, the way real ones are:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>the message being parsed</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">We're drowning in the retail lakehouse work. I need someone senior in Bengaluru who can
+own our pyspark pipelines end to end — strong python, strong SQL, and they must be able to
+run Airflow without hand-holding. Databricks experience would be a bonus. Six-plus years ideally.</code></pre>
+    </div>
+    <p>Note what the schema is quietly doing: <code>"Canonical skill name, e.g. 'Apache Spark' not 'pyspark'"</code> makes the model normalise vocabulary, and <code>mandatory</code>'s description — <em>"True only if a candidate without it cannot do the job"</em> — is the entire difference between a blocker and a nice-to-have. <strong>Field descriptions are where the business rules go.</strong></p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    P["Pydantic model"] -->|"converted to a tool spec"| M["Model"]
+    U["User message"] --> M
+    M -->|"calls the output tool<br/>with typed args"| V["Pydantic validation"]
+    V --> R["result.structured_output"]
+    V -.->|"invalid"| M
+      </pre>
+      <div class="caption">Strands turns your schema into a tool the model must call — which is why it works on any tool-capable model.</div>
+    </div>
+    <p>A paragraph of system prompt does less work than one good <code>description=</code>. <code>Literal[...]</code> makes an invalid value structurally impossible.</p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">Verified limit: nesting is expensive</div>
+      <p><code>Requisition</code> nests — a <code>list[SkillRequirement]</code> inside it — and that is exactly where small local models start to fail. Strands raises <code>StructuredOutputException</code> rather than handing you a half-filled object. Lesson 05 wraps all three demos in <code>try/except</code> for that reason, and prints "this is a model limit, not a code bug" rather than hiding it. On a small model, prefer two flat calls over one nested schema — and catch that exception rather than letting it 500.</p>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">Structured output validates types, not truth</div>
+      <p>Nothing stops a model returning <code>score=87</code> for a candidate the matcher scored 61. That is why <code>GapReport</code>'s fields say <em>"the score returned by score_match, unchanged"</em> and <em>"use exactly the verdict returned by the tool"</em>, and why the lesson-05 prompt says <strong>"do not recompute them"</strong>. <strong>Compute what you can in tools; let the model fill in only what needs judgement.</strong></p>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>python — tools first, then forced into the schema</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">class GapReport(BaseModel):
+    """Why one candidate does or does not clear the bar."""
+    employee_id: str
+    verdict: Literal["strong", "possible", "weak", "blocked"] = Field(
+        description="Use exactly the verdict returned by the score_match tool")
+    score: int = Field(ge=0, le=100, description="The score returned by score_match, unchanged")
+    blocking_skill: str | None = Field(description="The one mandatory skill they miss, or null")
+    development_action: str = Field(description="One concrete step to close the gap, under 15 words")
+
+report = agent("Can E1010 take the Analytics Engineer role J2003?",
+               structured_output_model=GapReport).structured_output</code></pre>
+    </div>
+    <p>E1010 (Divya Pillai) is the interesting case the course is built around: 52% on J2003, blocked by exactly <em>one</em> mandatory skill she has never used. That is the shape of decision a recruiter actually has to make — and <code>development_action</code> is where the model earns its keep.</p>
+    <p><code>agent.structured_output(Model, prompt)</code> is <strong>deprecated</strong> — it bypasses the tool loop. Use <code>structured_output_model=</code> on the agent or the invocation.</p>
+
+    <h3 id="streaming">Streaming responses</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">agent = Agent(tools=[...], callback_handler=None)   # None silences the default printer
+
+async for event in agent.stream_async(prompt):
+    if "data" in event:
+        print(event["data"], end="", flush=True)
+    elif "current_tool_use" in event and event["current_tool_use"].get("name"):
+        print(f"&lt;calling {event['current_tool_use']['name']}&gt;")
+    elif "result" in event:
+        print(event["result"].stop_reason)</code></pre>
+    </div>
+    <p>Events are plain dicts — branch on the key:</p>
+    <table>
+      <thead><tr><th>Key</th><th>Meaning</th><th>Typical use</th></tr></thead>
+      <tbody>
+        <tr><td><code>init_event_loop</code></td><td>invocation starting</td><td>start a timer</td></tr>
+        <tr><td><code>start_event_loop</code></td><td>a new cycle begins</td><td>"thinking…"</td></tr>
+        <tr><td><code>data</code></td><td>a chunk of assistant text</td><td>stream to the UI</td></tr>
+        <tr><td><code>current_tool_use</code></td><td>tool call being assembled</td><td>"calling <code>get_weather</code>…"</td></tr>
+        <tr><td><code>tool_stream_event</code></td><td>progress from a streaming tool</td><td>progress bar</td></tr>
+        <tr><td><code>reasoningText</code></td><td>extended-thinking text</td><td>show/hide a reasoning pane</td></tr>
+        <tr><td><code>message</code></td><td>a message committed to history</td><td>audit log</td></tr>
+        <tr><td><code>result</code></td><td>the final <code>AgentResult</code></td><td>close the stream</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-warning">
+      <div class="callout-title">Two traps, both common</div>
+      <p><strong>1.</strong> Leaving the default <code>callback_handler</code> on <em>and</em> iterating <code>stream_async</code> prints everything twice. <strong>2.</strong> <code>current_tool_use</code> fires repeatedly as the model streams the tool's JSON arguments — deduplicate on <code>toolUseId</code> if you only want one notification per call.</p>
+    </div>
+
+    <h4 id="tool-progress">Tools that report progress</h4>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@tool
+async def screen_all(job_id: str) -> str:
+    """Score every bench employee against a requisition, reporting progress."""
+    bench = [e for e in EMPLOYEES if e["availability"] == "bench"]
+    for i, employee in enumerate(bench, 1):
+        yield f"scored {i}/{len(bench)}: {employee['name']}"
+    yield f"Screened {len(bench)} candidates for {job_id}."   # the LAST yield is the tool result</code></pre>
+    </div>
+
+    <h3 id="multi">Multi-agent — choose the pattern first</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    Q1{"Is the order of work<br/>known in advance?"}
+    Q1 -->|"Yes, fixed pipeline"| G["<b>Graph</b><br/>you define the DAG"]
+    Q1 -->|"No"| Q2{"Should one agent stay<br/>in charge of the outcome?"}
+    Q2 -->|"Yes"| T["<b>Agent-as-tool</b><br/>coordinator calls specialists"]
+    Q2 -->|"No, peers self-organise"| S["<b>Swarm</b><br/>agents hand off to each other"]
+      </pre>
+      <div class="caption">The API is easy. Choosing the pattern is the actual work.</div>
+    </div>
+
+    <table>
+      <thead><tr><th>Pattern</th><th>Who routes</th><th>Determinism</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Agent-as-tool</strong></td><td>the coordinator's model</td><td>medium</td><td>assistants with specialist backends</td></tr>
+        <tr><td><strong>Swarm</strong></td><td>whichever agent is speaking</td><td>low</td><td>open-ended investigation</td></tr>
+        <tr><td><strong>Graph</strong></td><td>you, in code</td><td>high</td><td>pipelines, approvals, compliance</td></tr>
+      </tbody>
+    </table>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <button class="tab-btn active">Agent-as-tool</button>
+        <button class="tab-btn">Swarm</button>
+        <button class="tab-btn">Graph</button>
+      </div>
+      <div class="tab-panel active">
+        <div class="code-block">
+          <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">coordinator = Agent(
+    system_prompt="Use screener to rank candidates, then recruiter to draft the outreach note.",
+    tools=[screener.as_tool(), recruiter.as_tool()],
+)
+coordinator("Find the best person for J2001 and write to them.")
+
+# preserve_context=False (default) resets the sub-agent before each call
+# preserve_context=True  makes it remember across calls</code></pre>
+        </div>
+      </div>
+      <div class="tab-panel">
+        <div class="code-block">
+          <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">from strands.multiagent import Swarm
+
+swarm = Swarm(
+    nodes=[screener, recruiter, fairness_reviewer],
+    entry_point=screener,
+    max_handoffs=6,
+    max_iterations=6,
+    node_timeout=120.0,
+    repetitive_handoff_detection_window=4,     # break A-B-A-B ping-pong
+    repetitive_handoff_min_unique_agents=3,
+)
+result = swarm("Fill J2001 from the bench, and have the shortlist reviewed for fairness.")
+[n.node_id for n in result.node_history]       # the path actually taken</code></pre>
+        </div>
+      </div>
+      <div class="tab-panel">
+        <div class="code-block">
+          <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">from strands.multiagent import GraphBuilder
+
+builder = GraphBuilder()
+builder.add_node(screener, "screen")
+builder.add_node(recruiter, "outreach")
+builder.add_node(fairness_reviewer, "review")
+builder.add_edge("screen", "outreach")
+builder.add_edge("outreach", "review")
+builder.set_entry_point("screen")
+
+graph = builder.build()
+result = graph("Fill requisition J2001 from the bench.")
+result.execution_order        # [screen, outreach, review]
+result.results["review"]      # that node's output</code></pre>
+          <p>Hiring is exactly the case for a Graph: <strong>the fairness review must run, and must run last.</strong> "The model usually remembers to review" is not a compliance story.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">Verified: swarms need a strong model</div>
+      <p>On llama3.2, the swarm above ping-pongs <code>screener → recruiter → screener → recruiter</code>, and one agent emits the raw handoff JSON as <em>text</em> instead of calling the tool. The identical task through the Graph completes cleanly every time. <strong>Check your model before designing around a swarm.</strong></p>
+    </div>
+    <p><code>name</code> and <code>description</code> are load-bearing in every pattern — one agent reads another's identity to decide what it is for. A vague <code>description</code> is the number-one cause of multi-agent systems that route badly.</p>
+
+    <h2 id="part3">7. Part 3 — Understand the engine (lessons 08–12)</h2>
+
+    <h3 id="cycles">Cycles and cost</h3>
+    <p>Instrument the loop with a hook and it stops being mysterious:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>output</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">── invocation start ──
+  cycle 1: → model
+  cycle 1: ← model (stop_reason=tool_use)
+  cycle 1:   ⚙ open_requisition({'job_id': 'J2001'})
+  cycle 1:   ✓ open_requisition -> success
+  cycle 2: → model
+  cycle 2: ← model (stop_reason=end_turn)</code></pre>
+    </div>
+    <p>The last cycle produces no tool call — it is the model writing the answer. Budget for roughly <code>n_tools + 1</code> model calls, and remember <strong>context grows every cycle</strong>, so cost is superlinear.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">m = result.metrics
+m.cycle_count                                    # how many model calls
+m.accumulated_usage                              # input / output / total tokens
+m.tool_metrics["score_match"].call_count         # .error_count, .total_time
+result.context_size                              # what this turn actually cost
+result.projected_context_size                    # early warning for lesson 14</code></pre>
+    </div>
+
+    <h3 id="state">State — three stores, three audiences</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph AG["Agent"]
+        MSG["<b>agent.messages</b><br/>conversation history<br/>the model reads this<br/>trimmed by conversation manager"]
+        ST["<b>agent.state</b><br/>key to JSON value<br/>model never sees it<br/>persisted by sessions"]
+    end
+    INV["<b>invocation_state</b><br/>kwargs for one call<br/>model never sees it<br/>gone when the call ends"]
+    INV -.->|"passed into agent(...)"| AG
+      </pre>
+    </div>
+    <table>
+      <thead><tr><th></th><th><code>messages</code></th><th><code>state</code></th><th><code>invocation_state</code></th></tr></thead>
+      <tbody>
+        <tr><td>Model sees it</td><td><strong>yes</strong></td><td>no</td><td>no</td></tr>
+        <tr><td>Lifetime</td><td>until trimmed</td><td>agent lifetime</td><td>one invocation</td></tr>
+        <tr><td>Survives restart</td><td>with a session</td><td>with a session</td><td>never</td></tr>
+        <tr><td>Good for</td><td>dialogue</td><td>open requisition, shortlist, counters</td><td>recruiter id, tenant id, request id</td></tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">agent("Screen E1002 for the open requisition.",
+      invocation_state={"tenant_id": "acme-prod", "recruiter_id": "R-8812"})
+
+@tool(context=True)
+def screen_candidate(employee_id: str, tool_context: ToolContext) -> str:
+    recruiter = tool_context.invocation_state.get("recruiter_id", "unattributed")
+    ...                                    # model cannot see or change this
+    shortlist.append({"employee_id": employee_id, "score": result["score"],
+                      "screened_by": recruiter})</code></pre>
+    </div>
+    <p><strong>This is how you do multi-tenancy and attribution safely.</strong> The model cannot leak, confuse, or be talked into changing a value it never sees — which matters when that id is what the audit trail blames the shortlist on.</p>
+    <div class="callout callout-warning">
+      <div class="callout-title">Two state gotchas that cost real debugging time</div>
+      <p><code>state.get()</code> returns a <strong>deep copy</strong> — <code>agent.state.get("shortlist").append(x)</code> silently does nothing at all. Read, mutate, <code>set()</code> back. And state is <strong>invisible to the model</strong> by design: setting it does not "tell" the model anything; a tool must return the value.</p>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">State validates JSON on write — deliberately</div>
+      <p><code>agent.state.set("seen", {"E1002", "E1003"})</code> raises <code>ValueError</code>, because a <code>set</code> is not JSON. State exists to be persisted (lesson 11) and snapshotted (lesson 12), so anything that cannot round-trip is rejected <em>at the point of the bug</em> — not three days later when a session tries to serialize it.</p>
+    </div>
+    <p>State also enforces ordering that a system prompt can only request. <code>screen_candidate</code> refuses to run at all until a requisition is open:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">job_id = agent.state.get("job_id")
+if not job_id:
+    return "No requisition is open. Call open_requisition first."</code></pre>
+    </div>
+    <p>A workflow rule enforced in code, not hoped for in a prompt.</p>
+
+    <h3 id="storage">Storage — four methods over bytes</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">class Storage(Protocol):
+    async def write(self, key: str, data: bytes) -> None: ...
+    async def read(self, key: str) -> bytes | None: ...      # None when missing, not an error
+    async def delete(self, key: str) -> None: ...
+    async def list(self, query: str) -> list[str]: ...</code></pre>
+    </div>
+    <p>No transactions, no schemas, no query language — that is the design. Anything can implement it in twenty lines, and every persistence feature consumes it.</p>
+    <table>
+      <thead><tr><th>Backend</th><th>Constructor</th><th>Use for</th></tr></thead>
+      <tbody>
+        <tr><td><code>InMemoryStorage</code></td><td><code>InMemoryStorage()</code></td><td>tests, ephemeral runs</td></tr>
+        <tr><td><code>LocalFileStorage</code></td><td><code>LocalFileStorage("./.strands/")</code></td><td>local dev, single-box deploys</td></tr>
+        <tr><td><code>S3Storage</code></td><td><code>S3Storage(bucket="b", prefix="agents/")</code></td><td>production, multi-instance</td></tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+      <div class="code-block-header"><span>python — namespacing is the feature you will actually use</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">root = S3Storage(bucket="my-agents")
+data_bu = root.namespace("bu/data-analytics")
+platform_bu = root.namespace("bu/platform")
+
+await data_bu.write("open_reqs.json", b'["J2001","J2003"]')
+await platform_bu.write("open_reqs.json", b'["J2005"]')   # a different object entirely
+await data_bu.list("")                                     # neither desk can list the other's</code></pre>
+    </div>
+    <p>Namespaces nest, and a namespaced view <em>is</em> a <code>Storage</code> — so hand a per-business-unit view to a session manager and isolation becomes structural, not a convention someone has to remember. This is how one deployment serves several hiring desks without one desk ever listing another's candidates.</p>
+    <div class="callout callout-tip">
+      <div class="callout-title">A custom backend is ~20 lines, and that is a compliance control</div>
+      <p>Lesson 10 builds a <code>PiiRedactingStorage</code> that wraps another store and strips candidate email addresses before anything is persisted. A shortlist needs employee ids and scores; it does not need inboxes. Structural typing means there is no base class to inherit — implement the four methods and <code>isinstance(store, Storage)</code> is already <code>True</code>.</p>
+    </div>
+
+    <h3 id="sessions">Sessions — surviving a restart</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+sequenceDiagram
+    participant P as Process
+    participant A as Agent
+    participant S as SessionManager
+    participant D as Storage
+    P->>A: Agent(session_manager=...)
+    A->>S: AgentInitializedEvent
+    S->>D: read session
+    D-->>A: messages + state restored
+    Note over A: conversation happens
+    A->>S: MessageAdded / AfterInvocation
+    S->>D: persist
+      </pre>
+      <div class="caption">Restore happens at construction, not on first invocation.</div>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>output — same script, run twice</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">run A — messages at boot: 0
+run A — messages after : 4
+run B — messages at boot: 4   &lt;-- restored from disk
+run B — state restored  : {'job_id': 'J2001', 'shortlist': [
+                            {'employee_id': 'E1002', 'name': 'Priya Raman', 'score': 100}]}
+run B — "Remind me which requisition is open and who is already shortlisted."
+     -> The open requisition is J2001, and Priya Raman is shortlisted with a perfect score.</code></pre>
+    </div>
+    <p><strong><code>session_id</code> is a business key, not plumbing.</strong> One conversation per open requisition — <code>session_id="req-J2001"</code> — is what makes <em>"where were we on J2001?"</em> a question the desk can answer on Thursday.</p>
+    <table>
+      <thead><tr><th></th><th>Message-log</th><th>Snapshot</th></tr></thead>
+      <tbody>
+        <tr><td>Classes</td><td><code>FileSessionManager</code>, <code>S3SessionManager</code></td><td><code>SnapshotSessionManager</code></td></tr>
+        <tr><td>Writes</td><td>one small file per message</td><td>one blob per save</td></tr>
+        <tr><td>Graph / Swarm</td><td><strong>yes</strong></td><td>no — single agents only</td></tr>
+        <tr><td>Time-travel restore</td><td>no</td><td><strong>yes</strong></td></tr>
+        <tr><td>Backend</td><td>its own layout</td><td>any <code>Storage</code></td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-warning">
+      <div class="callout-title">Keys are forever</div>
+      <p><code>session_id</code> identifies the conversation; <code>agent_id</code> identifies the agent within it. Both become storage keys — change one and you silently orphan the history. Tools, prompts and hooks are <em>code</em>, not data: they are never persisted, so re-register them.</p>
+    </div>
+
+    <h3 id="snapshots">Snapshots — rewind an agent</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">checkpoint = agent.take_snapshot(preset="session", app_data={"label": "before-widening-search"})
+
+agent("Widen the search: any location, drop the experience floor to 3 years.")  # a branch
+agent.load_snapshot(checkpoint)                                    # the widening never happened
+
+blob = json.dumps(checkpoint.to_dict())          # plain JSON — store it anywhere
+other.load_snapshot(Snapshot.from_dict(json.loads(blob)))</code></pre>
+    </div>
+    <p><code>preset="session"</code> captures <code>messages</code>, <code>state</code>, <code>conversation_manager_state</code>, <code>interrupt_state</code> and <code>model_state</code>. Because a <code>Snapshot</code> is plain JSON, it is also a <em>transport</em>: one Postgres row or queue message is how a half-finished screening moves from the recruiter's process to the hiring manager's.</p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    T1["screen E1002"] --> T2["📸 checkpoint"] --> T3a["widen to any location"]
+    T2 --> T3b["keep the Bengaluru-only rule"]
+      </pre>
+      <div class="caption">Sessions answer "where were we?". Snapshots answer "where were we at that moment?".</div>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>python — time travel through session history</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">cp1 = await manager.save_snapshot(agent, is_latest=False)   # explicit checkpoint
+await agent.invoke_async("Record: Vikram Iyer (E1005) — no SQL on record, reject.")
+
+await manager.list_snapshot_ids(agent)                      # UUIDv7 — sorted = chronological
+await manager.restore_snapshot(agent, snapshot_id=cp1)      # rewind
+await manager.save_snapshot(agent, is_latest=True)          # ← make the rewind durable
+await manager.restore_snapshot(agent)                       # no id = latest</code></pre>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">Line 5 is not optional</div>
+      <p><code>restore_snapshot</code> loads the old state into the <em>object</em>. It does <strong>not</strong> move the session's <code>snapshot_latest</code> pointer — which still points at the state you just rewound <em>from</em>. Skip that <code>save_snapshot(is_latest=True)</code> and the next restart comes back holding the mistake you just undid. (Running another invocation also re-saves latest.)</p>
+    </div>
+    <table>
+      <thead><tr><th>Scenario</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>"Undo my last screening decision"</td><td><code>take_snapshot</code> per turn, <code>load_snapshot</code> on undo</td></tr>
+        <tr><td>A/B two shortlists from one context</td><td>one snapshot, two agents</td></tr>
+        <tr><td>Debugging a bad run</td><td>restore the checkpoint before it, replay</td></tr>
+        <tr><td>Long approval workflows</td><td>checkpoint before the risky step</td></tr>
+        <tr><td>Hand a screening to a colleague</td><td><code>to_dict()</code> → their process → <code>from_dict()</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="part4">8. Part 4 — Control it (lessons 13–16)</h2>
+
+    <h3 id="hooks">Hooks — observe, block, rewrite</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    S["agent(prompt)"] --> BI["BeforeInvocationEvent"]
+    BI --> BM["BeforeModelCallEvent"]
+    BM --> M["model call"]
+    M --> AM["AfterModelCallEvent"]
+    AM --> BT["BeforeToolCallEvent"]
+    BT --> T["tool runs"]
+    T --> AT["AfterToolCallEvent"]
+    AT --> BM
+    AM --> AI["AfterInvocationEvent"]
+    AI --> R["AgentResult"]
+      </pre>
+    </div>
+    <p>Write a function, type-hint the event, and it runs at exactly that point — for <em>every</em> tool, not just the one you remembered to wrap.</p>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <button class="tab-btn active">1. Observe</button>
+        <button class="tab-btn">2. Block</button>
+        <button class="tab-btn">3. Rewrite</button>
+      </div>
+      <div class="tab-panel active">
+        <div class="code-block">
+          <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">def audit_tool_calls(event: BeforeToolCallEvent) -> None:
+    print(f"[audit] {event.tool_use['name']} {event.tool_use['input']}")
+
+agent = Agent(tools=[...], hooks=[audit_tool_calls])   # event type read from the hint</code></pre>
+          <p>Hiring is regulated and audited. <strong>"Every profile read is logged"</strong> is a hook, not a line in each tool.</p>
+        </div>
+      </div>
+      <div class="tab-panel">
+        <div class="code-block">
+          <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">def block_adverse_actions(event: BeforeToolCallEvent) -> None:
+    if event.tool_use["name"].startswith("reject_"):
+        event.cancel_tool = (
+            "Rejections require a human recruiter. Recommend the decision and explain why, "
+            "but state clearly that it has not been actioned."
+        )</code></pre>
+        </div>
+        <p>The tool never runs, and your string is handed to the model as the tool result — so the model explains the refusal to the user in its own words. <strong>That is the whole authorization pattern.</strong> A model may <em>recommend</em> a rejection; it may not <em>execute</em> one.</p>
+      </div>
+      <div class="tab-panel">
+        <div class="code-block">
+          <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">def redact_compensation(event: AfterToolCallEvent) -> None:
+    """Salary band never reaches the model, so it can never reach a candidate."""
+    for block in event.result.get("content", []):
+        if "text" in block and "band B4" in block["text"]:
+            block["text"] = block["text"].replace("band B4", "band [REDACTED]")
+
+# also: event.selected_tool = other_tool   (swap the implementation)
+#       event.retry = True                 (re-run a failed tool)</code></pre>
+        </div>
+        <p>The tool stays simple and returns the full record; the <em>policy</em> about what the model may see lives in one place. Change the rule once, not in nine tools.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>Event</th><th>Fires</th><th>Mutable fields</th></tr></thead>
+      <tbody>
+        <tr><td><code>AgentInitializedEvent</code></td><td>agent constructed</td><td><em>sync callbacks only</em></td></tr>
+        <tr><td><code>BeforeInvocationEvent</code></td><td>start of a request</td><td><code>cancel</code>, <code>messages</code></td></tr>
+        <tr><td><code>BeforeModelCallEvent</code></td><td>before each model call</td><td><code>cancel</code></td></tr>
+        <tr><td><code>AfterModelCallEvent</code></td><td>after each model call</td><td><code>retry</code></td></tr>
+        <tr><td><code>BeforeToolCallEvent</code></td><td>before <strong>each</strong> tool</td><td><code>cancel_tool</code>, <code>selected_tool</code>, <code>tool_use</code></td></tr>
+        <tr><td><code>AfterToolCallEvent</code></td><td>after <strong>each</strong> tool</td><td><code>result</code>, <code>retry</code>, <code>cancel_message</code></td></tr>
+        <tr><td><code>AfterToolsEvent</code></td><td>after the batch</td><td><code>end_turn</code></td></tr>
+        <tr><td><code>MessageAddedEvent</code></td><td>any message appended</td><td><em>read-only in practice</em></td></tr>
+        <tr><td><code>AfterInvocationEvent</code></td><td>end of request</td><td><code>resume</code></td></tr>
+      </tbody>
+    </table>
+    <p>Ordering: lower <code>order=</code> runs first (<code>HookOrder.SDK_FIRST</code> −100 → <code>SDK_LAST</code> 100). <strong><code>After*</code> events run in reverse</strong>, so a Before/After pair nests like a context manager.</p>
+
+    <h3 id="conversation">Conversation management</h3>
+    <div class="usecase">
+      <span class="usecase-label">Problem</span>
+      <p><code>agent.messages</code> only grows. Cost rises every cycle (you resend the whole history), latency rises with it, and eventually the model rejects the request outright — in production, on your most engaged user.</p>
+    </div>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    Q1{"Does old context<br/>still matter?"}
+    Q1 -->|"No"| SW["<b>SlidingWindow</b><br/>drop the oldest"]
+    Q1 -->|"Yes"| Q2{"Can you afford<br/>extra model calls?"}
+    Q2 -->|"Yes"| SUM["<b>Summarizing</b><br/>compress the oldest"]
+    Q2 -->|"No"| SW
+    SUM --> AUTO["<b>context_manager='auto'</b><br/>summarize + offload big tool results"]
+      </pre>
+    </div>
+    <p>Six turns of a screening conversation. Turn 1 names the requisition, turn 2 states the hard rule, turns 3–5 discuss candidates, and the last turn asks <em>"which requisition am I filling, and what was my hard rule?"</em>. The rule was <strong>Spark level 4 minimum, must be on the bench</strong>:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>output — real numbers, qwen2.5:7b</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">Null                                    kept 12  ✓ "…Spark level 4 minimum and on the bench"   376 tok
+SlidingWindow(window_size=4)            kept  4  ✗ "…must have both Kafka and SQL skills"      168 tok
+SlidingWindow(window_size=6,pin_first=4) kept 10  ✓ "…Spark level 4 minimum and on the bench"   382 tok
+Summarizing(summary_ratio=0.5)          kept 12  ✓ "…Spark level 4 minimum and on the bench"   382 tok</code></pre>
+    </div>
+    <p>Look at line 2. It did not say "I don't know" — it <strong>confidently stated the wrong rule</strong>, reconstructed from the most recent candidate discussed (Vikram Iyer, Kafka 4, no SQL). A forgetful agent does not sound forgetful; it sounds certain.</p>
+    <div class="callout callout-danger">
+      <div class="callout-title"><code>pin_first</code> counts messages, not turns — and getting it wrong looks like it working</div>
+      <p>One turn is a user message <em>plus</em> an assistant message, and more once tools are involved. Pinning the two opening turns is <code>pin_first=4</code>, not <code>2</code>. With <code>pin_first=2</code> the hard rule — stated in turn <em>two</em> — is trimmed like anything else, and the agent answers with the wrong rule just as confidently as line 2 above. That off-by-one-turn is a real bug we hit writing lesson 17.</p>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">Pinning caps how much you can reclaim</div>
+      <p>Pin 4 messages of a 6-message window and the trimmer logs <em>"all messages in trim range are pinned, unable to reduce"</em> — note the history above grew to 10, past <code>window_size</code>. That is the trade, not a bug. Pin a small fraction of a large window.</p>
+    </div>
+    <div class="callout callout-tip">
+      <div class="callout-title">The shortlist does not belong in the transcript</div>
+      <p>Nothing in that table can lose a fact that lives in <code>agent.state</code>. Conversation management is a decision about <em>dialogue</em>; durable facts should never have been in the dialogue in the first place.</p>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">The default is already trimming</div>
+      <p>If you never configured this, you are running <code>SlidingWindowConversationManager(window_size=40)</code> and silently dropping history. There is no warning and no event — the model just stops knowing things.</p>
+    </div>
+
+    <h3 id="interrupts">Interrupts — human in the loop</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+sequenceDiagram
+    participant U as Your app
+    participant A as Agent
+    participant H as Hook / Tool
+    U->>A: agent("Reject E1003 — Spark too low for J2001")
+    A->>H: about to run reject_candidate
+    H->>H: event.interrupt("approve_rejection", reason=...)
+    H-->>A: InterruptException
+    A-->>U: AgentResult(stop_reason="interrupt", interrupts=[...])
+    Note over U: minutes or days pass.<br/>Process may restart.
+    U->>A: agent([{"interruptResponse": {...}}])
+    A->>H: re-run — interrupt() now RETURNS the answer
+    H->>A: proceed (or cancel_tool)
+    A-->>U: AgentResult(stop_reason="end_turn")
+      </pre>
+      <div class="caption">interrupt() raises the first time and returns the answer the second. Your code reads as if the human replied instantly.</div>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>python — asking from a hook (the tool stays unaware)</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">RISKY_TOOLS = {"reject_candidate"}      # tools that change a person's record
+
+class ApprovalGate(HookProvider):
+    def register_hooks(self, registry: HookRegistry, **_) -> None:
+        registry.add_callback(BeforeToolCallEvent, self.approve)
+
+    def approve(self, event: BeforeToolCallEvent) -> None:
+        if event.tool_use["name"] not in RISKY_TOOLS:
+            return
+        answer = event.interrupt("approve_rejection", reason=event.tool_use)
+        if answer != "yes":
+            event.cancel_tool = "The recruiter declined this rejection."</code></pre>
+    </div>
+    <p>The rule in hiring: an agent may screen, rank and draft all day, but <strong>a human approves anything that touches a person's record.</strong> Note the tool itself is untouched — it does not know it is gated.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>python — handling the pause</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">result = agent("Reject E1003 — their Spark level is too low for J2001.")
+
+while result.stop_reason == "interrupt":
+    for i in result.interrupts:
+        print(i.name, i.reason)          # render this to your UI
+    payload = [{"interruptResponse": {"interruptId": i.id, "response": "yes"}}
+               for i in result.interrupts]
+    result = agent(payload)              # resume</code></pre>
+    </div>
+    <p>Interrupt state is part of the session and of <code>preset="session"</code> snapshots — so a different process, hours later, can resume the same paused agent. Durable human-in-the-loop with no queue of your own.</p>
+    <div class="callout callout-warning">
+      <div class="callout-title">The hook re-runs on resume</div>
+      <p>Everything before the <code>interrupt()</code> call executes twice. Keep that code free of side effects. Also: always <em>loop</em> on <code>stop_reason == "interrupt"</code> — a resumed pass can raise new interrupts.</p>
+    </div>
+
+    <h3 id="plugins">Plugins — ship it as one unit</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    subgraph H["Hook"]
+        H1["one callback"]
+    end
+    subgraph P["Plugin"]
+        P1["@hook methods"]
+        P2["@tool methods"]
+        P3["own state"]
+        P4["init_agent() setup"]
+    end
+    H1 -->|"grows into"| P
+      </pre>
+      <div class="caption">A hook is a function. A plugin is a feature — the unit you publish, version and reuse.</div>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from strands import tool
+from strands.plugins import Plugin, hook
+
+class ProfileAccessGuard(Plugin):
+    """How many candidate profiles may one request read? A data-minimisation rule."""
+    name = "profile-access-guard"           # stable id — required
+
+    def __init__(self, max_profiles: int = 3) -> None:
+        self.max_profiles = max_profiles
+        self.reserved = 0
+        super().__init__()                  # discovers @hook and @tool methods — call this LAST
+
+    @hook
+    def _reset(self, event: BeforeInvocationEvent) -> None:
+        self.reserved = 0
+
+    @hook
+    def _enforce(self, event: BeforeToolCallEvent) -> None:
+        if event.tool_use["name"] != "read_profile":
+            return
+        if self.reserved >= self.max_profiles:
+            event.cancel_tool = (
+                f"Profile access limit of {self.max_profiles} reached for this request."
+            )
+            return
+        self.reserved += 1                  # reserve BEFORE — see below
+
+    @tool
+    def remaining_profile_quota(self) -> str:
+        """Report how many more candidate profiles may be read in this request."""
+        return f"{max(0, self.max_profiles - self.reserved)} profile reads remaining"
+
+    def init_agent(self, agent) -> None:
+        agent.state.set("profile_quota", self.max_profiles)
+
+agent = Agent(tools=[read_profile], plugins=[ProfileAccessGuard(max_profiles=3)])
+agent.tool_names        # ['read_profile', 'remaining_profile_quota'] — the plugin's tool is there</code></pre>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">The bug this course actually hit — reserve in Before, not After</div>
+      <p>Tools in one turn run <strong>concurrently</strong>, so <em>every</em> <code>BeforeToolCallEvent</code> fires before the first <code>AfterToolCallEvent</code>. A counter that only increments in <code>After</code> reads zero at every check and enforces nothing — five profiles sail through a limit of three. Reserve up front, reconcile in <code>After</code>. This bites every quota, rate-limit and budget plugin you will ever write.</p>
+    </div>
+    <p><code>MultiAgentPlugin</code> is the orchestrator-level counterpart (hooks only — orchestrators have no tool registry); lesson 16 uses one to time every node in a Graph. Ships with the SDK under <code>strands.vended_plugins</code>: <code>ContextOffloader</code>, <code>ContextInjector</code>, <code>AgentSkills</code>, <code>Goal</code>, <code>Steering</code>.</p>
+
+    <h2 id="part5">9. Part 5 — Put it together (lesson 17)</h2>
+
+    <div class="usecase">
+      <span class="usecase-label">Problem</span>
+      <p>A requisition stays open for weeks. The recruiter states a hard rule on Monday, screens eleven people on Tuesday, closes the laptop, and comes back on Thursday asking "so who do I interview?". Somewhere in there the context window filled up, the process restarted, one screening turned out to be a bad idea, and the same manager opened a second requisition where Monday's rule still applies.</p>
+    </div>
+
+    <p>Lesson 17 is the integration lesson: <strong>seven mechanisms, each covering a different span of time</strong>, and the interesting bugs living in the seams between them. Every mechanism answers the same question — <em>what survives?</em> — with a different answer.</p>
+
+    <table>
+      <thead><tr><th>Layer</th><th>Survives</th><th>Model can read it</th><th>Where it lives</th></tr></thead>
+      <tbody>
+        <tr><td><code>invocation_state</code></td><td>one <code>agent(...)</code> call</td><td><strong>no</strong></td><td>nowhere — a dict passed in</td></tr>
+        <tr><td><strong>State</strong> (<code>agent.state</code>)</td><td>the conversation</td><td><strong>no</strong></td><td>in the agent, persisted by a session</td></tr>
+        <tr><td><strong>Conversation mgmt</strong></td><td>the context window</td><td><strong>yes</strong> — it <em>is</em> what the model reads</td><td><code>agent.messages</code></td></tr>
+        <tr><td><strong>Context mgmt</strong></td><td>the window, incl. oversized tool results</td><td>preview only</td><td>messages + a Storage</td></tr>
+        <tr><td><strong>Session</strong></td><td>a process restart</td><td>replayed into messages</td><td>a Storage backend</td></tr>
+        <tr><td><strong>Snapshots</strong></td><td>a decision you regret</td><td>replayed into messages</td><td>memory, or a Storage</td></tr>
+        <tr><td><strong>Memory</strong></td><td>the requisition, the session, the agent</td><td>injected per call</td><td>a <code>MemoryStore</code></td></tr>
+        <tr><td><strong>Storage</strong></td><td>— it <em>is</em> the disk</td><td>no</td><td>bytes under string keys</td></tr>
+      </tbody>
+    </table>
+    <p>Eight rows for seven mechanisms: <strong>State ships two stores with very different lifetimes</strong>, and conflating them is the first bug.</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    subgraph AGENT["The agent object"]
+        MSG["<b>agent.messages</b><br/>the model reads this"]
+        ST["<b>agent.state</b><br/>job_id, shortlist<br/>private, JSON-validated"]
+    end
+    INV["<b>invocation_state</b><br/>recruiter_id, tenant_id<br/>dies when the call returns"]
+    CM["<b>Conversation manager</b><br/>trims or summarizes<br/>before every model call"]
+    CTX["<b>Context manager</b><br/>= conversation manager<br/>+ context offloader"]
+    MEM["<b>Memory</b><br/>MemoryStore, keyed by desk<br/>injected per call"]
+    SNAP["<b>Snapshot</b><br/>messages + state +<br/>manager state, as JSON"]
+    SESS["<b>Session manager</b><br/>writes it down, restores on boot"]
+    STORE[("<b>Storage</b><br/>write · read · delete · list")]
+    INV -.->|"one call only"| AGENT
+    CM --> MSG
+    CTX --> CM
+    CTX -->|"oversized tool results"| STORE
+    MEM -.->|"folded into model input"| MSG
+    AGENT --> SNAP
+    SNAP --> SESS
+    SESS --> STORE
+    MEM --> STORE
+      </pre>
+      <div class="caption">Everything bottoms out in Storage. Sessions, snapshots, offloaded results and memory are four opinions about <em>what</em> to write down — through one four-method interface.</div>
+    </div>
+
+    <h3 id="context-mgmt">Context management — the strategy, not just the trimmer</h3>
+    <p>A conversation manager shrinks the <em>dialogue</em>. It does nothing about the other half of the problem: <strong>one tool result that does not fit at all.</strong> One string of config composes both:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">agent = Agent(context_manager="auto", ...)
+
+# equivalent to:
+SummarizingConversationManager(summary_ratio=0.3,
+                               proactive_compression={"compression_threshold": 0.85})
+ContextOffloader(storage=InMemoryStorage(), max_result_tokens=1_500, preview_tokens=750)</code></pre>
+    </div>
+    <p>Lesson 17's <code>candidate_dossier</code> tool returns a candidate's full profile, their fit against all six requisitions, the whole bench for comparison and the skill catalogue — <strong>8,369 characters, about 2,092 tokens.</strong> Over the threshold, so the model never sees it:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>output — what the model got instead</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">[Offloaded: 1 blocks, ~2,093 tokens]
+Tool result was offloaded to external storage due to size.
+Use the preview below if it answers your question.
+If you need more detail, use retrieve_offloaded_content with a reference and: …
+
+context size: 2204 tokens   (3727 without the offloader)
+offloaded blobs on disk: offloader/tooluse_4e574c0b…_0  (8,383 bytes)</code></pre>
+    </div>
+    <p>It also injects a <code>retrieve_offloaded_content</code> tool, so the full text is one tool call away and costs nothing until the model asks. Check <code>agent.tool_names</code> — a tool you never wrote is in the list.</p>
+    <div class="callout callout-danger">
+      <div class="callout-title">Two traps in one line of config</div>
+      <p><strong>1.</strong> The offloader <code>"auto"</code> builds for you is <strong>in-memory</strong>. Pair it with a session and restart, and the restored messages hold references to blobs that no longer exist. Pass your own <code>ContextOffloader(storage=LocalFileStorage(...))</code> in <code>plugins=</code> — <code>"auto"</code> detects one and skips adding its own.<br/>
+      <strong>2.</strong> …and supplying it <em>resets its thresholds</em>. A bare <code>ContextOffloader(storage=...)</code> defaults to <code>max_result_tokens=2500</code>, not the <code>1500</code> <code>"auto"</code> would have used — so results between the two sail through un-offloaded and nothing warns you. We shipped that bug and caught it only because the blob count printed zero.</p>
+    </div>
+
+    <h3 id="memory">Memory — what outlives the requisition</h3>
+    <p>A session remembers <strong>one conversation</strong>. Open J2004 and Monday's rule from J2001 is unreachable, because it is in a different session. Memory is the store that is not keyed by conversation.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from strands.memory import MemoryManager
+from strands.vended_memory_stores import TestMemoryStore
+
+store = TestMemoryStore(name="hiring-desk", path=".run/memory/hiring-desk.json")
+
+agent = Agent(memory_manager=MemoryManager(stores=[store], add_tool_config=True), ...)</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Piece</th><th>What it does</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Search tool</strong></td><td>registers <code>search_memory</code> so the model can look things up deliberately</td><td>on</td></tr>
+        <tr><td><strong>Add tool</strong></td><td>registers <code>add_memory</code> so the model can write things down</td><td><strong>off</strong> — opt in</td></tr>
+        <tr><td><strong>Injection</strong></td><td>searches the store before every model call, folds hits into the model input</td><td>on, 5 entries</td></tr>
+        <tr><td><strong>Extraction</strong></td><td>after N turns, distils the conversation into entries and writes them</td><td>off — per store</td></tr>
+      </tbody>
+    </table>
+    <p>Injection is the one people miss. Nothing in the conversation asks for it:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>output — a new session, a different requisition</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">messages at boot: 0   (new session — J2001's conversation is unreachable)
+&gt; "I'm opening J2004, ML Engineer in Bengaluru. Before I screen any candidate,
+   what does this desk expect on total experience for senior roles?"
+
+injection will retrieve:
+  Hiring manager Naveen never accepts a candidate below 6 years of total experience…
+
+-&gt; Based on the hiring desk memory, Naveen expects at least 6 years of total
+   experience for senior data roles.</code></pre>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">Injected memory never enters the transcript</div>
+      <p>It is folded into the model input for one call — not appended to <code>agent.messages</code>. So the session does not persist it and the conversation manager cannot trim it away. That cuts both ways: your standing rules can never be forgotten, and <strong>you pay for them on every single call.</strong></p>
+    </div>
+    <p><code>TestMemoryStore</code> is one JSON file ranked by <em>keyword overlap</em>. A question that shares no vocabulary with a stored fact retrieves nothing, and the agent then says "no standing rules" with total confidence — so print <code>manager.search(question)</code> when a demo looks broken. Swap in <code>BedrockKnowledgeBaseStore</code> for real semantic search; the <code>MemoryStore</code> protocol is just <code>search</code> plus optionally <code>add</code> / <code>add_messages</code>.</p>
+
+    <h3 id="seams">The seams — six facts that need two layers to see</h3>
+    <ol>
+      <li><strong>A snapshot is what a session writes.</strong> <code>SnapshotSessionManager</code> has no separate format — it captures the same <code>Snapshot</code> as <code>take_snapshot(preset="session")</code>. One is the storage policy for the other.</li>
+      <li><strong>Trimming is not destructive on disk.</strong> A message-log session keeps every message, and restores from <code>offset=conversation_manager.removed_message_count</code>. The audit record stays complete; the agent comes back holding only the untrimmed tail.</li>
+      <li><strong>Memory injection never enters the transcript</strong> — see above.</li>
+      <li><strong>State is JSON-validated because state is what gets persisted.</strong> The rejection happens at the point of the bug, not at save time three days later.</li>
+      <li><strong><code>restore_snapshot</code> does not move <code>snapshot_latest</code>.</strong> Follow it with <code>save_snapshot(is_latest=True)</code> or the next restart returns the mistake.</li>
+      <li><strong>A rewind under a <em>message-log</em> session is not durable.</strong> <code>load_snapshot</code> shortens <code>agent.messages</code> in memory; it does not delete the files <code>FileSessionManager</code> already wrote, so the abandoned branch comes back on the next boot. If undo must survive a restart, the session has to be snapshot-based.</li>
+    </ol>
+
+    <h3 id="where-fact">Where does this fact go?</h3>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    Q1{"Must the model<br/>reason about it?"}
+    Q1 -->|"No"| Q2{"Outlive this call?"}
+    Q2 -->|"No"| INV["invocation_state<br/><i>recruiter id, tenant id</i>"]
+    Q2 -->|"Yes"| ST["agent.state<br/><i>open req, shortlist</i>"]
+    Q1 -->|"Yes"| Q3{"Outlive this<br/>conversation?"}
+    Q3 -->|"No"| MSG["say it in the conversation<br/><i>and pick a conversation manager</i>"]
+    Q3 -->|"Yes"| Q4{"Same conversation later,<br/>or any conversation?"}
+    Q4 -->|"Same one"| SESS["session manager<br/><i>reopen J2001 on Thursday</i>"]
+    Q4 -->|"Any"| MEM["memory<br/><i>this manager's standing rules</i>"]
+      </pre>
+    </div>
+    <p>And for the <em>thing</em> rather than the fact: too big for context → <strong>context offloader</strong>; might need undoing → <strong>snapshot</strong>; bytes have to land somewhere → <strong>storage</strong>.</p>
+
+    <h3 id="e2e">The end-to-end run</h3>
+    <p>Part 8 of the lesson wires all seven into one desk across a week — and prints what survived what:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>output — one desk, Monday to next Tuesday</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">Monday    — open J2001, screen E1002 + E1003, pull a 2,000-token dossier
+Monday    — "Remember: never below 6 years of experience"     → written to memory
+Monday pm — checkpoint → widen the search → restore → 20 messages back to 16
+Tuesday   — new process, same session_id: 16 messages restored, minus the experiment
+Next week — new session for J2004: memory still returns Monday's rule
+
+layer                 scope                     proof
+invocation_state      one call                  gone, but attributed the shortlist to R-8812
+agent.state           the conversation          [business_unit, job_id, max_shortlist, shortlist]
+conversation manager  the context window        18 messages carried forward
+context offloader     the context window        1 offloaded blob on disk
+session + snapshot    the requisition           restored into a new process
+memory                the desk                  1 entry, readable from any session
+storage               everything above          .run/lesson17/</code></pre>
+    </div>
+    <div class="callout callout-tip">
+      <div class="callout-title">The one sentence to keep</div>
+      <p><strong><code>invocation_state</code> is a call. <code>state</code> is a conversation. A session is a requisition. Memory is the desk. Storage is the disk.</strong> The conversation manager decides what the model still gets to read, and a snapshot is how you take a decision back.</p>
+    </div>
+
+    <h2 id="tutorial">10. The 11-step guided tutorial</h2>
+    <p>If you prefer building one thing over reading seventeen lessons, the companion tutorial builds a single <strong>resourcing assistant</strong>, adding exactly one idea per step. The job: requisition J2001 is open, twelve people are in the directory, and somebody has to decide who to interview.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">uv run app/00_tutorial/tutorial.py          # every step, in order
+uv run app/00_tutorial/tutorial.py 5        # just step 5
+uv run app/00_tutorial/tutorial.py 3 4 5    # a range you care about</code></pre>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>The smallest thing that works</h4><p><code>Agent(model=...)</code> — three lines, no tools yet.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>You did not get a string back</h4><p><code>AgentResult</code>, <code>stop_reason</code>, tokens, cycles.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Give it a hand: one tool</h4><p><code>find_candidates</code> — the model reads the docstring and calls it.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Three tools, and the model chains them</h4><p>Search → shortlist → report. Nothing routes this.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Watch the loop</h4><p>A hook prints every tool call; metrics show the cost.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><h4>Stream it</h4><p><code>stream_async</code> instead of a blocking call.</p></div></div>
+      <div class="step"><div class="step-num">7</div><div class="step-body"><h4>A typed object instead of prose</h4><p><code>structured_output_model=ShortlistReport</code>.</p></div></div>
+      <div class="step"><div class="step-num">8</div><div class="step-body"><h4>Survive a restart</h4><p>Two agent objects, one <code>session_id</code> — the second wakes up remembering.</p></div></div>
+      <div class="step"><div class="step-num">9</div><div class="step-body"><h4>A guardrail it cannot talk past</h4><p>A hook refuses to approach employees already staffed on a project.</p></div></div>
+      <div class="step"><div class="step-num">10</div><div class="step-body"><h4>Everything at once</h4><p>Tools + state + session + guardrail + typed output.</p></div></div>
+      <div class="step"><div class="step-num">11</div><div class="step-body"><h4>Someone else's tools, over MCP</h4><p>Steps 1–10 owned every tool. Real teams do not: HR owns employee data.</p></div></div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">A trap worth stealing from step 3</div>
+      <p>An early draft loaded only <code>find_candidates</code> but left <code>shortlist_candidate</code> named in the system prompt. The model promptly hallucinated a call to the tool that did not exist. <strong>If a prompt references a tool the agent lacks, the model will invent one.</strong> Keep the prompt and <code>tools=</code> in sync — and note the mirror image from lesson 17: a prompt that lists four tools reads to a small model as four steps it is expected to perform.</p>
+    </div>
+
+    <h2 id="troubleshooting">11. Troubleshooting</h2>
+    <table>
+      <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Model <em>prints</em> a tool call instead of making one</td><td>model too weak at tool use</td><td>bigger model — <code>OLLAMA_MODEL=qwen2.5:7b</code></td></tr>
+        <tr><td><code>NoCredentialsError</code> / Bedrock errors</td><td>no <code>model=</code> passed</td><td>pass an explicit model object</td></tr>
+        <tr><td>Every line printed twice</td><td><code>callback_handler</code> on <em>and</em> iterating <code>stream_async</code></td><td><code>callback_handler=None</code></td></tr>
+        <tr><td>Model invents a tool</td><td>prompt names a tool that is not loaded</td><td>keep prompt and <code>tools=</code> in sync</td></tr>
+        <tr><td>Tool never fires</td><td>vague docstring or missing type hints</td><td>rewrite the docstring for the model</td></tr>
+        <tr><td><code>StructuredOutputException</code></td><td>schema too complex for the model</td><td>flatten it, or use a bigger model</td></tr>
+        <tr><td>Agent forgets across restarts</td><td>no <code>session_manager</code></td><td>add one; check <code>agent_id</code> is stable</td></tr>
+        <tr><td>Agent forgets <em>within</em> a long chat</td><td>sliding window (default 40) dropped it</td><td><code>pin_first=</code>, or a summarizing manager</td></tr>
+        <tr><td><code>ConcurrencyException</code></td><td>two invocations on one agent at once</td><td>one agent per conversation</td></tr>
+        <tr><td>Budget / quota plugin enforces nothing</td><td>counting in <code>AfterToolCallEvent</code></td><td>reserve in <code>BeforeToolCallEvent</code></td></tr>
+        <tr><td>MCP client will not start</td><td>subprocess failure hidden in a TaskGroup error</td><td>run the server command by hand</td></tr>
+        <tr><td>MCP tools silently stop working</td><td>you left the <code>with</code> block; the server is dead</td><td>keep the client open for the agent's lifetime</td></tr>
+        <tr><td>Numbers are wrong</td><td>the model did the math</td><td>force a tool: "never do arithmetic yourself"</td></tr>
+        <tr><td><code>EventLoopException: maximum recursion depth exceeded</code></td><td>runaway tool loop — the agent loop recurses per cycle</td><td><code>limits={"turns": n}</code>; then fix the tool that is looping</td></tr>
+        <tr><td>Model retries the same tool with the same wrong args</td><td>a required param it would never think to supply, plus a bare validation error</td><td>make the param optional and return guidance instead</td></tr>
+        <tr><td>Agent keeps working after the request was satisfied</td><td>system prompt reads as a checklist of tools</td><td>"do only what the user asked; then stop and reply"</td></tr>
+        <tr><td>Restored agent references missing offloaded blobs</td><td><code>context_manager="auto"</code> offloader is in-memory</td><td>pass <code>ContextOffloader(storage=LocalFileStorage(...))</code></td></tr>
+        <tr><td>Big tool results are not being offloaded</td><td>you supplied the plugin, so it reset to <code>max_result_tokens=2500</code></td><td>restate <code>1_500</code> / <code>preview_tokens=750</code></td></tr>
+        <tr><td>Undo comes back after a restart</td><td><code>restore_snapshot</code> did not move <code>snapshot_latest</code></td><td>follow with <code>save_snapshot(is_latest=True)</code></td></tr>
+        <tr><td>Memory returns nothing for an obvious question</td><td><code>TestMemoryStore</code> ranks by keyword overlap</td><td>print <code>manager.search(q)</code>; use a semantic store</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="cheatsheet">12. Cheat sheet</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from strands import Agent, tool, ToolContext
+
+# create
+agent = Agent(model=..., tools=[...], system_prompt="...", callback_handler=None)
+
+# invoke
+result = agent("prompt")                                  # blocking
+result = await agent.invoke_async("prompt")               # async
+async for event in agent.stream_async("prompt"): ...      # streamed
+result = agent("prompt", structured_output_model=MyModel) # typed
+result = agent("prompt", limits={"turns": 8})             # budgeted — do this
+result = agent("prompt", invocation_state={"recruiter_id": "R-8812"})   # request scope
+
+# read
+str(result); result.stop_reason; result.structured_output; result.metrics
+result.context_size                                   # what this turn cost
+
+# tools
+agent.tool_names                                      # what the model can see
+agent.tool.score_match(employee_id="E1002", job_id="J2001")   # call it yourself
+
+# memory — five different lifetimes
+agent.state.set("job_id", "J2001")                    # private, survives the conversation
+agent.messages                                        # what the model sees
+agent.take_snapshot(preset="session")                 # point-in-time capture
+Agent(session_manager=FileSessionManager(session_id="req-J2001", ...))   # survives restart
+Agent(memory_manager=MemoryManager(stores=[store]))   # survives the requisition
+
+# context
+Agent(context_manager="auto")                         # summarize + offload
+Agent(conversation_manager=SlidingWindowConversationManager(window_size=40, pin_first=4))
+
+# control
+agent.add_hook(fn)                                    # event type from the type hint
+agent.cancel()                                        # stop mid-run
+agent.cleanup()                                       # release MCP clients etc.</code></pre>
+    </div>
+
+    <table>
+      <thead><tr><th>You want to…</th><th>Reach for</th></tr></thead>
+      <tbody>
+        <tr><td>Bound an unattended run</td><td><code>limits={"turns": n}</code> — not optional; the loop recurses</td></tr>
+        <tr><td>Remember something across requisitions</td><td><code>MemoryManager(stores=[...])</code></td></tr>
+        <tr><td>Keep a 2,000-token tool result out of context</td><td><code>ContextOffloader(storage=..., max_result_tokens=1_500)</code></td></tr>
+        <tr><td>Block a dangerous tool</td><td><code>event.cancel_tool = "..."</code> on <code>BeforeToolCallEvent</code></td></tr>
+        <tr><td>Ask a human first</td><td><code>event.interrupt(name, reason=...)</code></td></tr>
+        <tr><td>Keep a fact out of the model's reach</td><td><code>invocation_state</code></td></tr>
+        <tr><td>Survive a restart</td><td><code>session_manager=FileSessionManager(...)</code></td></tr>
+        <tr><td>Rewind to a past moment</td><td><code>SnapshotSessionManager</code> + <code>restore_snapshot</code></td></tr>
+        <tr><td>Stop blowing the context window</td><td><code>context_manager="auto"</code></td></tr>
+        <tr><td>Isolate tenants in storage</td><td><code>storage.namespace("tenants/acme")</code></td></tr>
+        <tr><td>Package a feature for your team</td><td><code>Plugin</code> with <code>@hook</code> + <code>@tool</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="check">13. Check yourself</h2>
+
+    <div class="quiz-card">
+      <div class="quiz-question">An agent answers a two-tool question. How many model calls did that take?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">One — the model plans everything up front</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">Two — one per tool</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">Three — one per tool, plus one to write the answer</button></li>
+      </ul>
+      <div class="quiz-explanation">One cycle = one model call + the tools it asked for. The final cycle produces no tool call — it is the model writing the answer. Budget for <code>n_tools + 1</code>, and remember context grows every cycle, so cost is superlinear.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">You set <code>agent.state["recruiter_id"]</code>. Why does the model still not know the recruiter?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">State is write-only</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">State is never sent to the model — a tool must return the value</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">You need to call <code>agent.sync()</code> first</button></li>
+      </ul>
+      <div class="quiz-explanation"><code>agent.state</code> is deliberately invisible to the model — that is what makes it safe for recruiter ids, tenant ids and auth. Only <code>agent.messages</code> is sent. (Also note <code>state.get()</code> returns a deep copy, so mutating the result does nothing; <code>set()</code> it back.)</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">Your unattended agent dies with <code>EventLoopException: maximum recursion depth exceeded</code>. What happened?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="true">A tool loop never ended, and each cycle is one deeper Python stack frame</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">The conversation history grew past the context window</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">A tool called the agent recursively</button></li>
+      </ul>
+      <div class="quiz-explanation">The agent loop is recursion, not iteration — each cycle calls <code>recurse_event_loop</code>. The only natural exit is the model returning <code>end_turn</code>, so a looping model walks off the stack. <code>limits={"turns": n}</code> is checked at the top of each cycle and returns cleanly instead. Then fix the cause: usually a required tool parameter the model would never think to supply, answered with a bare validation error.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">A rule the manager stated on requisition J2001 must still apply when they open J2004 next week. Where does it go?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false"><code>agent.state</code> — it is durable and private</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">The session, with <code>pin_first</code> so it is never trimmed</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">Memory — a <code>MemoryStore</code>, which is not keyed by conversation</button></li>
+      </ul>
+      <div class="quiz-explanation">State and sessions are both scoped to <em>one conversation</em>. Open a new <code>session_id</code> for J2004 and everything from J2001 is unreachable — that is the point of a session key. Memory is the layer keyed by the desk rather than the conversation, and injection surfaces it without anyone asking.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">Your cost-guard plugin counts spend in <code>AfterToolCallEvent</code> and never blocks anything. Why?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">After-hooks do not fire for successful tools</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">Tools in one turn run concurrently, so every Before fires before the first After</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">Plugin state resets between tool calls</button></li>
+      </ul>
+      <div class="quiz-explanation">The counter reads zero at every check. Reserve the cost in <code>BeforeToolCallEvent</code> and reconcile in <code>After</code>. This is a real bug we hit building this course — $0.05 went through a $0.03 budget.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <p style="margin-top:22px;">Flip these until they are automatic:</p>
+    <div class="card-grid">
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">What ends the agent loop?</div>
+        <div class="flashcard-back">A <code>stop_reason</code> other than <code>tool_use</code>.</div>
+      </div></div>
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">What does the model read to pick a tool?</div>
+        <div class="flashcard-back">Name + docstring + type hints. Docstrings are prompt.</div>
+      </div></div>
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">Where do you put a recruiter or tenant id?</div>
+        <div class="flashcard-back"><code>invocation_state</code> — the model never sees it.</div>
+      </div></div>
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">Session vs. memory?</div>
+        <div class="flashcard-back">A session is one conversation. Memory is every conversation this desk ever had.</div>
+      </div></div>
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">Why does an unbounded tool loop crash rather than spin?</div>
+        <div class="flashcard-back">The loop recurses — one stack frame per cycle. Cap it with <code>limits</code>.</div>
+      </div></div>
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">How do you block a tool without editing it?</div>
+        <div class="flashcard-back"><code>event.cancel_tool = "reason"</code> on <code>BeforeToolCallEvent</code>.</div>
+      </div></div>
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">Known order of work → which multi-agent pattern?</div>
+        <div class="flashcard-back">Graph. Coordinator in charge → agent-as-tool. Let them figure it out → Swarm.</div>
+      </div></div>
+      <div class="flashcard"><div class="flashcard-inner">
+        <div class="flashcard-front">Interrupt: what happens on the second call?</div>
+        <div class="flashcard-back">It <em>returns</em> the human's answer instead of raising.</div>
+      </div></div>
+    </div>
+
+    <h2 id="next">14. Where this goes next</h2>
+    <ul class="checklist">
+      <li>Give your agent real tools from an <a href="fastmcp.html">MCP server</a> instead of hand-written ones.</li>
+      <li>Let it delegate across teams and frameworks with <a href="a2a.html">A2A</a>.</li>
+      <li>Put it behind an HTTP endpoint with <a href="fastapi.html">FastAPI</a> — the SSE generator in lesson 06 drops straight into <code>StreamingResponse</code>.</li>
+      <li>Deploy it (AWS AgentCore — coming soon to this course).</li>
+    </ul>
+
+    <div class="callout callout-tip" style="margin-top:28px;">
+      <div class="callout-title">The four things worth remembering</div>
+      <p><strong>1.</strong> One cycle = one model call + its tools — and it <em>recurses</em>, so cap it. <strong>2.</strong> Docstrings, field descriptions and tool error messages are all prompt, not documentation. <strong>3.</strong> <code>stop_reason</code> is the only branch you need. <strong>4.</strong> Policy belongs in hooks, never in the system prompt — a prompt is a suggestion, a hook is a rule. <strong>5.</strong> Pick the layer by how long the fact must survive: a call, a conversation, a requisition, or the desk.</p>
+    </div>
+  </main>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="toc-title">On This Page</div>
+    <ul id="toc-list"></ul>
+  </aside>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

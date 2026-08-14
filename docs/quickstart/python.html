@@ -91,7 +91,18 @@
     <p>The practical 20% of Python you use every day, on one page. Prefer a slow, gentle walk with nothing assumed? Take the <a href="../python/first-program.html">Python from Zero</a> track instead. Each section here links to the full lesson if you want depth.</p>
     <div class="callout callout-note">
       <div class="callout-title">⬇️ Get the runnable code</div>
-      <p>A fuller, ready-to-run project for this quick start ships with the course: the Task Tracker app (classes, generators, decorators, error handling) with tests. It lives in <code>quickstart/code/python/</code> — open its <a href="code/python/README.md">README</a> for exact run steps and expected output.</p>
+      <p>A fuller, ready-to-run project for this quick start ships with the course: the <strong>Skills Matcher</strong> app (classes, generators, decorators, error handling) with tests. It lives in <code>python/</code>:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">cd python
+python3 skills_matcher.py     # run it
+python3 -m pytest -q          # 14 tests</code></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">One domain across the whole course</div>
+      <p>Every track here — Python, <a href="fastapi.html">FastAPI</a>, <a href="fastmcp.html">FastMCP</a>, <a href="strands-course.html">Strands</a> — uses the same small world: <strong>employees have skills rated 1–5, requisitions require skills, and something has to decide who fits.</strong> Learn the domain once and you can concentrate on the <em>technology</em> in every later track.</p>
     </div>
 
 
@@ -109,93 +120,111 @@ python3               # interactive shell (type code, press Enter)</code></pre>
     <h2 id="basics">2. Variables, types, printing</h2>
     <div class="code-block">
       <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">name = "Ada"          # str  (text)
-age = 36              # int  (whole number)
-height = 1.7          # float (decimal)
-is_admin = True       # bool  (True / False)
-nothing = None        # "no value"
+      <pre><code class="language-python">name = "Priya Raman"    # str   (text)
+level = 5               # int   (whole number)
+experience = 8.5        # float (decimal)
+on_bench = True         # bool  (True / False)
+bench_since = None      # "no value"
 
-print(f"{name} is {age}")     # f-string: drop values into text
-print(type(age))              # &lt;class 'int'&gt;
-age = int("30")               # convert text -> number  (input() is always text)</code></pre>
+print(f"{name} is level {level}")   # f-string: drop values into text
+print(type(level))                  # &lt;class 'int'&gt;
+level = int("4")                    # convert text -> number  (input() is always text)</code></pre>
     </div>
     <p>Full detail: <a href="../python/numbers-and-text.html">Numbers &amp; Text</a>.</p>
 
     <h2 id="collections">3. Collections</h2>
     <div class="code-block">
       <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">nums   = [1, 2, 3]                 # list  — ordered, changeable
-point  = (4, 5)                    # tuple — ordered, fixed
-unique = {1, 2, 3}                 # set   — unique, unordered
-person = {"name": "Ada", "age": 36} # dict  — key -&gt; value
+      <pre><code class="language-python">bench     = ["E1002", "E1003", "E1005"]        # list  — ordered, changeable
+location  = ("Bengaluru", "India")             # tuple — ordered, fixed
+mandatory = {"Python", "Apache Spark", "SQL"}  # set   — unique, unordered
+skills    = {"Python": 4, "Apache Spark": 5}   # dict  — key -&gt; value
 
-nums.append(4)          # add
-nums[0]                 # read by index (starts at 0)
-len(nums)               # count
-person["name"]          # look up by key
-person["city"] = "London"   # add / change a key</code></pre>
+bench.append("E1006")       # add
+bench[0]                    # read by index (starts at 0)
+len(bench)                  # count
+skills["Python"]            # look up by key
+skills["SQL"] = 5           # add / change a key
+"SQL" in mandatory          # sets are for fast "is it in here?" questions
+skills.get("Kafka", 0)      # 0 when they have never used it — no crash</code></pre>
     </div>
     <p>Full detail: <a href="../python/lists.html">Lists</a> · <a href="../python/dictionaries.html">Dictionaries</a>.</p>
 
     <h2 id="flow">4. Control flow</h2>
     <div class="code-block">
       <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">if age &gt;= 18:
-    print("adult")
-elif age &gt;= 13:
-    print("teen")
+      <pre><code class="language-python">if level &gt;= 4:
+    print("meets the bar")
+elif level &gt;= 3:
+    print("close — a coaching problem")
 else:
-    print("child")
+    print("not yet")
 
-for n in nums:               # loop over items
-    print(n)
+for employee_id in bench:        # loop over items
+    print(employee_id)
 
-for i in range(3):           # 0, 1, 2
+for i in range(3):               # 0, 1, 2
     print(i)
 
-while age &gt; 0:               # loop while condition holds
-    age = age - 1</code></pre>
+while level &lt; 5:                 # loop while condition holds
+    level = level + 1</code></pre>
     </div>
     <p>Use <code>==</code> to compare, <code>=</code> to assign. Full detail: <a href="../python/making-decisions.html">Making Decisions</a> · <a href="../python/repeating.html">Loops</a>.</p>
 
     <h2 id="functions">5. Functions</h2>
     <div class="code-block">
       <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">def greet(name, excited=False):     # excited has a default
-    msg = f"Hello, {name}"
-    return msg + "!" if excited else msg
+      <pre><code class="language-python">def describe(name, level=3):        # level has a default
+    label = "expert" if level &gt;= 5 else "working"
+    return f"{name}: {label} (L{level})"
 
-greet("Ada")               # "Hello, Ada"
-greet("Ada", excited=True) # "Hello, Ada!"</code></pre>
+describe("Priya Raman")             # "Priya Raman: working (L3)"
+describe("Priya Raman", level=5)    # "Priya Raman: expert (L5)"</code></pre>
     </div>
     <p><code>return</code> hands a value back; <code>print</code> only shows it. Full detail: <a href="../python/functions.html">Functions</a>.</p>
 
     <h2 id="comprehensions">6. Comprehensions (the Pythonic one-liners)</h2>
     <div class="code-block">
       <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">squares = [n * n for n in range(5)]          # [0, 1, 4, 9, 16]
-evens   = [n for n in range(10) if n % 2 == 0]
-lengths = {w: len(w) for w in ["hi", "hey"]} # dict comprehension</code></pre>
+      <pre><code class="language-python">ids     = [e["employee_id"] for e in employees]              # pull one field out
+seniors = [e for e in employees if e["experience_years"] &gt;= 6]  # filter
+levels  = {s: lvl for s, lvl in skills.items() if lvl &gt;= 4}   # dict comprehension</code></pre>
     </div>
     <p>A compact way to build a list/dict from a loop. Reach for it when it stays readable.</p>
 
     <h2 id="classes">7. Classes (OOP) in 20 seconds</h2>
     <div class="code-block">
       <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">class Dog:
-    def __init__(self, name):   # setup, runs on creation
-        self.name = name        # this object's data
+      <pre><code class="language-python">class Employee:
+    def __init__(self, employee_id, name, skills):  # setup, runs on creation
+        self.employee_id = employee_id              # this object's data
+        self.name = name
+        self.skills = skills
 
-    def bark(self):
-        print(f"{self.name} says woof")
+    def level(self, skill):
+        """0, not an error, when they have never used it."""
+        return self.skills.get(skill, 0)
 
-class Puppy(Dog):               # inherits from Dog
-    def play(self):
-        print(f"{self.name} plays")
-
-Puppy("Milo").bark()   # inherited</code></pre>
+priya = Employee("E1002", "Priya Raman", {"Python": 4, "SQL": 5})
+priya.level("Python")     # 4
+priya.level("Kafka")      # 0</code></pre>
     </div>
     <p><code>self</code> = "this object." Principles: encapsulation, inheritance, polymorphism, abstraction. Full detail: <a href="../python/classes.html">Objects &amp; Classes</a>.</p>
+    <p>A <code>@dataclass</code> writes <code>__init__</code> for you — that is what the Skills Matcher actually uses:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from dataclasses import dataclass, field
+
+@dataclass
+class Employee:
+    employee_id: str
+    name: str
+    location: str
+    skills: dict[str, int] = field(default_factory=dict)   # never `= {}` — see gotchas
+
+    def level(self, skill: str) -&gt; int:
+        return self.skills.get(skill, 0)</code></pre>
+    </div>
 
     <h2 id="advanced">8. Generators &amp; decorators</h2>
     <div class="code-block">
@@ -203,10 +232,11 @@ Puppy("Milo").bark()   # inherited</code></pre>
       <pre><code class="language-python">import functools
 
 # generator — yields values one at a time (memory-friendly)
-def pending(tasks):
-    for task in tasks:
-        if not task.done:
-            yield task
+def candidates_for(matches):
+    """Only the people who are not blocked, best score first."""
+    for match in sorted(matches, key=lambda m: m.score, reverse=True):
+        if not match.blockers:
+            yield match
 
 # decorator — wraps a function to add behaviour (wraps preserves its name)
 def log_calls(func):
@@ -218,22 +248,30 @@ def log_calls(func):
     return wrapper
 
 @log_calls
-def add(a, b):
-    return a + b</code></pre>
+def add(employee_id, name, location, skills):
+    ...</code></pre>
     </div>
-    <p>You'll see <code>@</code> everywhere later (<code>@app.get</code>, <code>@tool</code>). These are the exact <code>pending()</code> generator and <code>log_calls</code> decorator used in <code>quickstart/code/python/task_tracker.py</code>. Full detail: <a href="../python/generators.html">Generators</a> · <a href="../python/decorators.html">Decorators</a>.</p>
+    <p><strong>Lazy is the point.</strong> <code>next(bench.candidates_for(j2001))</code> scores only as many people as it takes to find the first viable one — it does not build a list of everybody first.</p>
+    <p>You'll see <code>@</code> everywhere later (<code>@app.get</code>, <code>@mcp.tool</code>, <code>@tool</code>). These are the exact <code>candidates_for()</code> generator and <code>log_calls</code> decorator used in <code>python/skills_matcher.py</code>. Full detail: <a href="../python/generators.html">Generators</a> · <a href="../python/decorators.html">Decorators</a>.</p>
 
     <h2 id="errors">9. Error handling</h2>
     <div class="code-block">
       <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">try:
-    age = int(input("Age? "))
-except ValueError:
-    print("Please type a whole number.")
+      <pre><code class="language-python">class BenchError(Exception):
+    """Your own error type — clearer to callers than a bare ValueError."""
+
+def add(employee_id, level):
+    if not 1 &lt;= level &lt;= 5:
+        raise BenchError(f"level must be 1..5, got {level}")
+
+try:
+    add("E1002", level=9)
+except BenchError as exc:
+    print(f"  ✗ rejected: {exc}")     # ✗ rejected: level must be 1..5, got 9
 finally:
     print("always runs")</code></pre>
     </div>
-    <p>Catch the specific error you expect (<code>ValueError</code>, <code>ZeroDivisionError</code>, <code>KeyError</code>…). Full detail: <a href="../python/error-handling.html">Handling Errors</a>.</p>
+    <p>Catch the specific error you expect (<code>ValueError</code>, <code>KeyError</code>, or one you defined). A custom exception lets a caller handle <em>your</em> failures without accidentally swallowing unrelated bugs. Full detail: <a href="../python/error-handling.html">Handling Errors</a>.</p>
 
     <h2 id="imports">10. Modules &amp; imports</h2>
     <div class="code-block">
@@ -275,7 +313,7 @@ datetime.now()
 
     <div class="callout callout-note" style="margin-top:28px;">
       <div class="callout-title">Where to go next</div>
-      <p>Want the gentle, nothing-assumed version? Start at <a href="../python/first-program.html">Python from Zero, Lesson 1</a>. FastAPI, MCP, and more quick starts are on the way.</p>
+      <p>Want the gentle, nothing-assumed version? Start at <a href="../python/first-program.html">Python from Zero, Lesson 1</a>. Then take the same domain further: put it behind an HTTP API with <a href="fastapi.html">FastAPI</a>, expose it to an AI with <a href="fastmcp.html">FastMCP</a>, or hand it to an agent with <a href="strands-course.html">Strands</a>.</p>
     </div>
   </main>
 </div>

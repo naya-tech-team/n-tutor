@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>A2A: Quick Start — AI Engineering</title>
+<meta name="description" content="Let independently-built AI agents discover and delegate to each other — code-first with the A2A protocol: agent cards, executors, servers, clients, the task lifecycle, and a three-agent Strands system running on a local llama." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell no-toc">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">7</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Coming soon</div>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Strands Agents</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>A2A</span>
+    </nav>
+
+    <h1>A2A Quick Start</h1>
+    <div class="meta-row">
+      <span class="badge badge-advanced">Quick Start</span>
+      <span class="badge badge-info">code-first</span>
+      <span class="badge badge-info">runs locally</span>
+      <span class="badge badge-info">~25 min</span>
+    </div>
+    <p><strong>A2A</strong> (Agent2Agent) is an open protocol — started by Google, now under the Linux Foundation — that lets <em>independently built</em> AI agents discover each other and delegate work, even across different teams, frameworks, or companies. If MCP gives one agent tools, A2A lets one agent hand a task to <em>another agent</em>. New to MCP? See the <a href="fastmcp.html">FastMCP Quick Start</a> — the two are complementary.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Get the runnable code</div>
+      <p>A ready-to-run project ships with the course in <code>a2a-strands/</code>: <strong>three agents on three ports</strong> — an orchestrator that discovers two specialists and delegates real hiring work to them, built with <a href="strands.html">Strands Agents</a> and running entirely on a local model via Ollama. No API keys, nothing leaves your machine. Sections 1–7 below are the raw protocol; <a href="#strands">section 8</a> is that project.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">One domain across the whole course</div>
+      <p>Every track here uses the same small world: <strong>employees have skills rated 1–5, requisitions require skills, and some of those are mandatory.</strong> A candidate below a mandatory bar is <em>blocked</em> — they cannot be shortlisted however high the score. In this track you will watch that one fact travel across three processes without ever being re-derived. See it in <a href="python.html">Python</a>, over HTTP in <a href="fastapi.html">FastAPI</a>, exposed to an AI in <a href="fastmcp.html">FastMCP</a>, and agent-side in the <a href="strands-course.html">Strands course</a>.</p>
+    </div>
+
+
+    <h2 id="install">1. Install</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">pip install "a2a-sdk[http-server]" uvicorn httpx</code></pre>
+    </div>
+
+    <h2 id="idea">2. The big picture</h2>
+    <p>Two roles, connected over plain HTTP:</p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    C["<b>Client agent</b><br/>needs work done"]
+    S["<b>Remote agent</b><br/>does the work"]
+    C -->|"1 · GET /.well-known/agent-card.json"| S
+    C -->|"2 · send message → task created"| S
+    S -->|"3 · task updates, then the result"| C
+      </pre>
+      <div class="caption">A client reads the remote agent's public "business card" from a fixed URL, then sends it a task and receives the result.</div>
+    </div>
+    <ul class="checklist">
+      <li><strong>Agent Card</strong> — a JSON document at a well-known URL describing what an agent is and can do.</li>
+      <li><strong>Task</strong> — a unit of work with a lifecycle (submitted → working → completed/failed).</li>
+      <li><strong>Message / parts</strong> — the content exchanged (text, data, files).</li>
+    </ul>
+    <p>These are <em>roles</em>, not fixed identities. A real agent is usually both at once — a server to whoever called it, and a client to the specialists it calls.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">🧠 The one distinction to hold on to</div>
+      <p><strong>A tool is a function. An agent is a colleague.</strong> You <em>call</em> a function and get a value back. You <em>delegate</em> to a colleague — who has their own judgement, may come back with a question, and may take a while. That difference is why A2A has a task lifecycle and MCP does not.</p>
+    </div>
+
+    <h2 id="card">3. The Agent Card (discovery)</h2>
+    <p>The card advertises the agent. It's served at <code>/.well-known/agent-card.json</code> so any client can find it:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from a2a.types import AgentCard, AgentSkill, AgentCapabilities
+
+HOST, PORT = "127.0.0.1", 9001
+
+skill = AgentSkill(
+    id="candidate_screening",
+    name="Candidate screening and ranking",
+    description=(
+        "Score internal employees against an open requisition and rank the best "
+        "available candidates. Returns match percentages, verdicts, skill gaps and "
+        "blocking mandatory skills. Use for any question about who fits a role."
+    ),
+    tags=["recruiting", "screening", "matching", "hr"],
+    examples=["Who are the top candidates for J2001?", "Score E1002 against J2001."],
+)
+
+card = AgentCard(
+    name="Talent Screening Agent",
+    description="Scores and ranks internal candidates against open requisitions.",
+    version="1.0.0",
+    url=f"http://{HOST}:{PORT}/",
+    default_input_modes=["text"],
+    default_output_modes=["text"],
+    capabilities=AgentCapabilities(streaming=True),
+    skills=[skill],
+)</code></pre>
+    </div>
+    <p>The <code>skills</code> are the key part — clear names and descriptions are how <em>another</em> agent decides to delegate to yours (just like a good tool docstring in MCP). Note the <code>examples</code>: a remote model matches its need against those strings, so they earn their place.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">The card is a contract, not documentation</div>
+      <p>Everything a caller knows about you comes from this JSON at a fixed URL. If the description says "ranks candidates" and the agent actually rewrites job adverts, no amount of correct code will save the delegation — the calling model chose you by reading prose.</p>
+    </div>
+
+    <h2 id="agent">4. Build the agent (its logic)</h2>
+    <p>Your agent's behaviour lives in an <strong>AgentExecutor</strong> with two methods: <code>execute</code> (do the work) and <code>cancel</code> (stop it):</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from a2a.server.agent_execution import AgentExecutor, RequestContext
+from a2a.server.events import EventQueue
+from a2a.utils import new_agent_text_message
+
+class ScreeningExecutor(AgentExecutor):
+    async def execute(self, context: RequestContext, event_queue: EventQueue):
+        user_text = context.get_user_input()             # what the caller sent
+        job_id = user_text.strip().split()[-1]           # the agent's "brain",
+        reply = rank_candidates_as_text(job_id)          # here: a plain lookup
+        await event_queue.enqueue_event(                 # send a result back
+            new_agent_text_message(reply)
+        )
+
+    async def cancel(self, context: RequestContext, event_queue: EventQueue):
+        raise NotImplementedError                        # nothing long-running to stop</code></pre>
+    </div>
+    <p>You read the incoming message from <code>context</code>, do your work (call an LLM, a tool, another service…), and push results onto the <code>event_queue</code>. That's the whole contract — and note the "brain" here is deliberately not a model at all, just a lookup, to keep the protocol in focus. <a href="#strands">Section 8</a> swaps it for a real agent and the rest stays identical.</p>
+
+    <h2 id="serve">5. Run the server</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from a2a.server.apps import A2AStarletteApplication
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryTaskStore
+import uvicorn
+
+handler = DefaultRequestHandler(
+    agent_executor=ScreeningExecutor(),
+    task_store=InMemoryTaskStore(),      # remembers tasks in memory
+)
+app = A2AStarletteApplication(agent_card=card, http_handler=handler)
+
+if __name__ == "__main__":
+    uvicorn.run(app.build(), host=HOST, port=PORT)</code></pre>
+    </div>
+    <p>Run <code>python server.py</code>. Your agent is now live at <code>http://127.0.0.1:9001</code>, card and all.</p>
+
+    <h2 id="client">6. Call it from another agent (the client)</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>client.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">import asyncio
+from uuid import uuid4
+import httpx
+from a2a.client import A2ACardResolver, ClientFactory, ClientConfig
+from a2a.types import Message, Part, Role, TextPart
+
+BASE_URL = "http://127.0.0.1:9001"
+
+async def main():
+    async with httpx.AsyncClient(timeout=120) as http:
+        # 1. discover the agent by reading its card
+        card = await A2ACardResolver(http, BASE_URL).get_agent_card()
+
+        # 2. build a client bound to that agent
+        client = ClientFactory(ClientConfig(httpx_client=http)).create(card)
+
+        # 3. send a message and collect the reply
+        message = Message(
+            role=Role.user,
+            message_id=uuid4().hex,
+            parts=[Part(root=TextPart(text="Who are the top 2 candidates for J2001?"))],
+        )
+        last_task = None
+        async for event in client.send_message(message):
+            if isinstance(event, tuple):        # (Task, update) — a streaming server
+                last_task = event[0]            # the Task is cumulative: keep the newest
+
+        print("".join(
+            part.root.text
+            for artifact in (last_task.artifacts or [])
+            for part in artifact.parts
+            if getattr(part.root, "text", None)
+        ))
+
+asyncio.run(main())</code></pre>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">The trap that returns an empty string</div>
+      <p>The obvious first guess is <code>for part in event.parts</code> — and against a compliant streaming server it silently yields <strong>nothing</strong>, because the events are <code>(Task, TaskArtifactUpdateEvent)</code> <em>tuples</em> and a tuple has no <code>.parts</code>. No error, no warning, just an empty reply and an afternoon spent blaming the server. (This page's own project shipped that bug first.)</p>
+      <p>What actually arrives:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>the event stream, unpacked</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-text">(Task, TaskArtifactUpdateEvent)   ← the answer, growing one token per event
+(Task, TaskArtifactUpdateEvent)
+(Task, TaskArtifactUpdateEvent)   ← …dozens of these…
+(Task, TaskStatusUpdateEvent)     ← working → completed</code></pre>
+      </div>
+      <p>The <code>Task</code> is <em>cumulative</em> — every event carries the whole task so far — so keep the last one and read <code>task.artifacts[*].parts[*].text</code> at the end. Do not try to stitch the deltas yourself.</p>
+    </div>
+    <p>Discover → connect → send. In a real system, an <em>orchestrator</em> agent does exactly this to hand sub-tasks to specialist agents. This is the client in <code>a2a-strands/app/a2a_call.py</code>, which also falls back to plain <code>Message</code> events for servers that do not stream.</p>
+
+    <h2 id="lifecycle">7. The task lifecycle</h2>
+    <p>A2A tasks aren't just request/response — they can take time and report progress. Every task moves through states:</p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+sequenceDiagram
+    participant C as Client agent
+    participant R as Remote agent
+    C->>R: send message
+    R-->>C: task created · submitted
+    R-->>C: status update · working
+    R-->>C: status update · working
+    Note over R: (may run for minutes)
+    R-->>C: artifact · the result
+    R-->>C: status update · completed (final)
+      </pre>
+      <div class="caption">One send, many events back. This is why the client loops with <code>async for</code> instead of awaiting a single response.</div>
+    </div>
+    <table>
+      <thead><tr><th>State</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>submitted</code></td><td>Received, not started yet.</td></tr>
+        <tr><td><code>working</code></td><td>In progress.</td></tr>
+        <tr><td><code>input-required</code></td><td>Paused — needs more info from the caller.</td></tr>
+        <tr><td><code>completed</code></td><td>Done; an <em>artifact</em> (the result) is available.</td></tr>
+        <tr><td><code>failed</code> / <code>canceled</code></td><td>Errored out, or stopped on request.</td></tr>
+        <tr><td><code>rejected</code></td><td>The agent declined to even attempt it (e.g. not authorised).</td></tr>
+      </tbody>
+    </table>
+    <p>To continue an <code>input-required</code> task, the client sends another message reusing the same <strong>task ID</strong> — that's how multi-turn delegation works.</p>
+
+    <h2 id="strands">8. Real agents: Strands on a local llama</h2>
+    <p>Everything above is the protocol by hand. The agent's "brain" in <a href="#agent">§4</a> was a single <code>.upper()</code> call — deliberately, to keep the protocol in focus. Now put a real agent inside that envelope.</p>
+    <p><a href="strands.html">Strands Agents</a> does two things for you here: it <em>is</em> the brain (a model, a system prompt, tools, a reasoning loop), and it ships an <code>A2AServer</code> that publishes that brain over A2A — <strong>no <code>AgentExecutor</code>, no card built by hand</strong>. And because the model is a swappable object, all of this runs on <code>llama3.2</code> on your own laptop.</p>
+
+    <h3 id="strands-picture">The system you'll build</h3>
+    <p>Three agents in three terminals. One asks; two answer.</p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    U(["You"])
+    O["<b>Hiring Orchestrator</b><br/>no data of its own"]
+    S["<b>Talent Screening Agent</b> :9001<br/>owns the HR data<br/>+ the scoring engine"]
+    W["<b>Recruiting Outreach Agent</b> :9002<br/>no tools at all"]
+    U --> O
+    O -->|"1 · A2A · who fits J2001?"| S
+    S -->|"2 · Priya 100% strong · Rahul 61% blocked"| O
+    O -->|"3 · A2A · draft a note from these facts"| W
+    W -->|"4 · a note to Priya, citing real skills"| O
+    O -->|"5 · the note"| U
+      </pre>
+      <div class="caption">Three separate processes. Nobody scripted that order — the orchestrator's model worked out from its tool descriptions that you cannot write to a candidate before you have screened one.</div>
+    </div>
+    <p>The two specialists are deliberately opposite: <strong>one owns a database and a scoring engine; the other has no tools whatsoever</strong> and can only write from facts it is handed. From the outside they are indistinguishable — same card format, same protocol, same task lifecycle. That is what a protocol buys you.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">Why <em>this</em> is the A2A example and not a Graph</div>
+      <p>Screening and outreach are owned by different teams. The scoring engine is HR's — copy it into your pipeline and you have forked the definition of "a good match", which drifts the day they change a weighting. The house style for candidate notes is Recruiting's. A <a href="strands-course.html">Graph or Swarm</a> would be simpler <em>if you owned both</em>; the moment you don't, the boundary is a network boundary.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">pip install "strands-agents[a2a,ollama]" httpx
+
+ollama serve             # the local model server
+ollama pull qwen2.5:7b   # see the note on models below</code></pre>
+    </div>
+
+    <h3 id="strands-model">a) Point an agent at the local llama</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>shared.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from strands.models.ollama import OllamaModel
+
+def make_model(temperature: float = 0.2) -> OllamaModel:
+    return OllamaModel(
+        host=settings.ollama_host,       # where Ollama listens
+        model_id=settings.ollama_model,
+        temperature=temperature,         # low — we want reliable tool picking
+    )</code></pre>
+    </div>
+    <p>That is the <em>only</em> local-model-specific code in the whole project. Swap it for <code>BedrockModel</code> or <code>AnthropicModel</code> and nothing else changes — the agents, the tools, and every line of A2A plumbing are model-agnostic.</p>
+
+    <h3 id="strands-server">b) Publish a Strands agent over A2A</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/screening_agent.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from a2a.types import AgentSkill
+from strands import Agent, tool
+from strands.multiagent.a2a import A2AServer
+
+@tool
+def rank_for_requisition(job_id: str, limit: int = 3) -&gt; str:
+    """Rank the best available candidates for an open requisition.
+
+    Use this for any question about who could fill a role, who is the
+    best fit, or who should be shortlisted.
+    """
+    print(f"  [screening] rank_for_requisition({job_id!r})", flush=True)
+    ...   # calls match() — arithmetic, never a model
+
+def build_screener(context_id: str) -&gt; Agent:
+    return Agent(
+        name="Talent Screening Agent",              # ← goes on the Agent Card
+        description="Scores and ranks internal candidates against open requisitions.",
+        model=make_model(),
+        tools=[rank_for_requisition, score_one],
+        hooks=[ToolBudget(max_calls=3)],            # ← see the caps section below
+        system_prompt="You are the talent screening desk. Call "
+                      "rank_for_requisition ONCE, then copy its line for each "
+                      "candidate straight into your answer — id, name, score, "
+                      "verdict, strengths AND blockers. Use the tool's verdict "
+                      "word exactly. Then stop.",
+    )
+
+SCREENING_SKILL = AgentSkill(
+    id="candidate_screening",
+    name="Candidate screening and ranking",
+    description="Score internal employees against an open requisition and rank "
+                "the best available candidates. Returns match percentages, "
+                "verdicts, skill gaps and blocking mandatory skills.",
+    tags=["recruiting", "screening", "matching", "hr"],
+    examples=["Who are the top candidates for J2001?"],
+)
+
+A2AServer(
+    agent_factory=build_screener,
+    host="127.0.0.1", port=9001,
+    skills=[SCREENING_SKILL],
+    enable_a2a_compliant_streaming=True,
+).serve()</code></pre>
+    </div>
+    <p>Compare that with <a href="#agent">§4</a>–<a href="#serve">§5</a>: the executor, the request handler, the task store and the hand-written <code>AgentCard</code> are all gone. <code>A2AServer</code> derives the card from the agent's <code>name</code> and <code>description</code>, mounts the endpoints, and runs the task lifecycle.</p>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Use <code>agent_factory</code>, not <code>agent=</code></div>
+      <p><code>A2AServer</code> calls your factory <strong>once per A2A context</strong> — one caller's ongoing conversation — so two callers never share message history. Passing a single <code>agent=</code> instance is deprecated for exactly that reason: it isn't multi-tenant safe, and every caller would write into the same conversation.</p>
+    </div>
+    <p>Your agent is now live. Prove it without writing any client at all:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">curl http://127.0.0.1:9001/.well-known/agent-card.json
+# -> "name": "Talent Screening Agent", "skills": [{"id": "candidate_screening", ...}]</code></pre>
+    </div>
+
+    <h3 id="strands-caps">c) Cap it — a service that loops is worse than a script that loops</h3>
+    <p>The Strands agent loop <strong>recurses</strong> once per cycle, so an agent that keeps calling its own tools walks off Python's stack rather than spinning. On a direct call you bound that at the call site:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>orchestrator.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">result = await orchestrator.invoke_async(question, limits={"turns": 8})</code></pre>
+    </div>
+    <p>Inside an <code>A2AServer</code> there <em>is</em> no call site — the server invokes the agent for you. A hook is the way in, because it attaches to the agent object and travels with it:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/tool_budget.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">class ToolBudget(HookProvider):
+    """Allow at most `max_calls` tool calls per invocation, then answer from what you have."""
+
+    def register_hooks(self, registry: HookRegistry, **_) -&gt; None:
+        registry.add_callback(BeforeInvocationEvent, self._reset)
+        registry.add_callback(BeforeToolCallEvent, self._enforce)
+
+    def _enforce(self, event: BeforeToolCallEvent) -&gt; None:
+        # Reserve BEFORE the tool runs: tools in one turn execute concurrently, so a
+        # counter incremented afterwards reads zero at every check and enforces nothing.
+        self._used += 1
+        if self._used &gt; self.max_calls:
+            event.cancel_tool = (
+                f"Tool budget of {self.max_calls} calls is used up. Do not call any "
+                "more tools. Answer now, using only what the earlier results told you."
+            )</code></pre>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">This is not hypothetical</div>
+      <p>While this project was being written the screening agent looped on its own tool — <code>rank_for_requisition('J2001')</code>, six times and climbing. From the orchestrator's side that is indistinguishable from a slow network: <strong>a request that never returns, with all the evidence in someone else's terminal.</strong> Cap both ends.</p>
+    </div>
+
+    <h3 id="strands-delegate">d) Delegate to it — a remote agent as a tool</h3>
+    <p>The other direction. Wrap the A2A call from <a href="#client">§6</a> in a function, put <code>@tool</code> on it, and a remote agent becomes something your model can choose to use:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/orchestrator.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from strands import Agent, tool
+from a2a_call import call_agent      # exactly the code from §6, made reusable
+
+@tool
+async def ask_screening_agent(job_id: str) -&gt; str:
+    """Get the ranked candidates for a requisition from the remote Screening Agent.
+
+    Use this FIRST for any hiring question — you must know who the candidates
+    are, and their scores, before you can ask for an outreach note.
+    """
+    return await call_agent(SCREENING_URL,
+                            f"Who are the top 2 available candidates for {job_id}?")
+
+@tool
+async def ask_outreach_agent(screening_facts: str = "") -&gt; str:
+    """Ask the remote Outreach Agent to draft a note to a candidate.
+
+    Pass the WHOLE reply from ask_screening_agent as one string — names, ids,
+    scores and blockers together. This agent has no HR access and cannot look
+    any of that up itself.
+    """
+    if not screening_facts.strip():          # ← see the callout below
+        return ('ask_outreach_agent needs the screening text. Call it again as '
+                'ask_outreach_agent(screening_facts="&lt;the entire reply you got '
+                'from ask_screening_agent, copied verbatim&gt;") — one string, not '
+                'separate fields, and do not retype the numbers.')
+    return await call_agent(OUTREACH_URL,
+                            f"Draft an outreach note using only these facts:\n{screening_facts}")
+
+orchestrator = Agent(
+    model=make_model(),
+    tools=[ask_screening_agent, ask_outreach_agent],
+    system_prompt="You run a hiring pipeline by delegating to two remote "
+                  "specialists. Every fact in your answer must have come back "
+                  "from a tool — you have no HR data of your own.",
+)
+await orchestrator.invoke_async(question, limits={"turns": 8})</code></pre>
+    </div>
+    <p>Read those two docstrings again — <em>"use this FIRST… before you can ask for an outreach note"</em>. That sentence is the entire routing logic. Nothing in the code sequences the calls; the model reads the descriptions and chains them. Same lesson as an MCP tool docstring and an <code>AgentSkill</code> description, for the third time: <strong>the prose is the interface.</strong></p>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Why <code>screening_facts</code> is optional</div>
+      <p>A small model reaches for the shape it is <em>thinking</em> in. Ask <code>llama3.2</code> to draft a note and it calls <code>ask_outreach_agent(candidate_name="Priya Raman", score="100", blockers="")</code> — five invented parameters instead of the one. If <code>screening_facts</code> were <strong>required</strong>, that is a bare pydantic validation error carrying no way forward, and the model reshuffles the same wrong guess until something stops it.</p>
+      <p>Making it optional and returning <em>instructions</em> turns a dead end into a recovery: in a real run llama3.2 gets it wrong, reads the message, and calls it correctly on the very next turn. <strong>A tool result is the next thing the model reads — write your failures as prompts.</strong></p>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">🪆 What just nested</div>
+      <p>When <code>ask_screening_agent</code> fires, the orchestrator's model calls a tool, which makes an HTTP request, which starts a task on another agent, whose model calls <em>its</em> tool, which runs <code>match()</code>. A tool call inside an agent inside another agent's tool call — three processes deep, and each layer only knows about the one below it.</p>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">🔁 The batteries-included shortcut</div>
+      <p><code>strands-agents-tools</code> ships <code>A2AClientToolProvider</code>, which generates delegation tools from a list of URLs: <code>Agent(tools=A2AClientToolProvider(known_agent_urls=[...]).tools)</code> — one line instead of twenty. Hand-writing them, as above, shows what an A2A call <em>is</em>, and gives the model typed parameters instead of a generic "send text to a URL" tool. Prefer the provider once you're on a larger model. It lives in <code>strands_tools.a2a_client</code>.</p>
+    </div>
+
+    <h3 id="strands-run">e) Run it</h3>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">cd a2a-strands
+
+uv run app/screening_agent.py    # terminal 1 — specialist, port 9001
+uv run app/outreach_agent.py     # terminal 2 — specialist, port 9002
+uv run app/raw_client.py         # terminal 3 — the protocol, no AI involved
+uv run app/orchestrator.py       # terminal 3 — the real thing</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>output — orchestrator.py, a real run</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">Discovering agents:
+  Talent Screening Agent at http://127.0.0.1:9001 — skills: candidate_screening
+  Recruiting Outreach Agent at http://127.0.0.1:9002 — skills: candidate_outreach_note
+
+Asking: We need to fill J2001. Find the best candidate and draft a note to them.
+
+Tool: ask_screening_agent({'job_id': 'J2001'})
+  → delegating to Screening Agent (http://127.0.0.1:9001): J2001
+
+Tool: ask_outreach_agent({'screening_facts': 'E1002 Priya Raman — 100% strong,
+  strengths: Python L4, Apache Spark L5, SQL L5, blockers: none
+  E1003 Rahul Menon — 61% blocked, strengths: Python L4, SQL L4,
+  blockers: Apache Spark'})
+  → delegating to Outreach Agent (http://127.0.0.1:9002)
+
+Hi Priya,
+
+We're looking for someone with strong Python and Apache Spark skills, and you
+have those at Levels 4 and 5. Would you like to chat about this opportunity?
+
+Best,
+[Your Name]
+
+[stop_reason: end_turn]</code></pre>
+    </div>
+    <p>Watch terminal 1 as that runs — <code>[screening] rank_for_requisition('J2001', limit=2)</code> appears the instant the orchestrator delegates. The wording differs every run, because three language models are generating prose; the <em>shape</em> is what stays constant: screen first, then write.</p>
+
+    <h3 id="strands-grounding">What it takes for that note to be correct</h3>
+    <p>Look at the output again. Rahul scores 61% and is <strong>blocked</strong> — J2001 marks Apache Spark mandatory and he is a level short. The note goes to Priya, and cites <em>Python L4, Apache Spark L5</em> — numbers that came out of <code>match()</code> three processes away. Four separate things had to hold:</p>
+    <ol>
+      <li><code>match()</code> computes the blocker — <strong>arithmetic, not a model call.</strong></li>
+      <li>The screening agent is told to use the verdict word <strong>exactly</strong>: <code>blocked</code> must not get softened to "consider with caution".</li>
+      <li>The orchestrator passes the screening text through <strong>verbatim</strong> instead of summarising it.</li>
+      <li>The outreach agent is told <strong>never to write to a candidate with blockers</strong>.</li>
+    </ol>
+    <p>Break any one and the pipeline sends a friendly note to someone who cannot do the job. Every one of those four was a bug in an earlier draft of this project — including a note that praised a candidate's "expertise in data analysis", a phrase that appears nowhere in the HR data. <strong>Grounding is not a property you get by using good models; it is a property you maintain at every hop.</strong></p>
+    <div class="callout callout-note">
+      <div class="callout-title">The failure mode to watch for</div>
+      <p>Each hop is a chance to paraphrase, and paraphrase is where facts die. The screening agent that reports "a score of 61%" without the word <em>blocked</em> has technically told the truth and practically caused the wrong outreach. When you design an A2A boundary, ask what the <em>next</em> agent needs — not what reads nicely.</p>
+    </div>
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Small models need blunter prompts</div>
+      <p><code>llama3.2</code> is a 3B model. Left to itself it will answer a hiring question from its own invented knowledge rather than delegating, so the real orchestrator's prompt says it outright: <em>"Every fact in your final answer must have come back from a tool — you have no HR data of your own."</em> It also needs the <code>screening_facts</code> recovery message above, and a turn cap to stop it re-delegating out of indecision. <code>qwen2.5:7b</code> runs the same pipeline cleanly in two tool calls. That verbosity is a property of the <strong>model size</strong>, not of A2A — but design for it, because the small model is the one that shows you where your interfaces are weak.</p>
+    </div>
+
+    <h2 id="vs-mcp">9. A2A vs. MCP — which do I use?</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>One agent needs a tool or data source</td><td><strong>MCP</strong></td></tr>
+        <tr><td>One agent delegates a task to another agent</td><td><strong>A2A</strong></td></tr>
+        <tr><td>Agents built by different teams must cooperate</td><td><strong>A2A</strong></td></tr>
+        <tr><td>A single, fixed function call in your own code</td><td>Neither — just call it</td></tr>
+      </tbody>
+    </table>
+    <p>They pair up: an agent often uses <strong>MCP</strong> to reach its own tools <em>and</em> <strong>A2A</strong> to delegate to other agents.</p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TB
+    O["<b>Orchestrator agent</b>"]
+    S["<b>Specialist agent</b><br/>(another team, another framework)"]
+    T1[("HR database")]
+    T2[("Payroll API")]
+    O -->|"<b>A2A</b> · delegate a task"| S
+    S -->|"<b>MCP</b> · call a tool"| T1
+    S -->|"<b>MCP</b> · call a tool"| T2
+      </pre>
+      <div class="caption">Different layers, not competitors: A2A crosses the boundary between agents, MCP crosses the boundary between an agent and its tools.</div>
+    </div>
+
+    <h2 id="cheatsheet">10. Mini cheat sheet</h2>
+    <p>The raw SDK (§3–§7):</p>
+    <table>
+      <thead><tr><th>You want to…</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td>Describe your agent</td><td><code>AgentCard(...)</code> + <code>AgentSkill(...)</code></td></tr>
+        <tr><td>Define its behaviour</td><td>subclass <code>AgentExecutor</code> (<code>execute</code>/<code>cancel</code>)</td></tr>
+        <tr><td>Send a result back</td><td><code>event_queue.enqueue_event(new_agent_text_message(...))</code></td></tr>
+        <tr><td>Serve it</td><td><code>A2AStarletteApplication(...).build()</code> + <code>uvicorn</code></td></tr>
+        <tr><td>Discover a remote agent</td><td><code>A2ACardResolver(...).get_agent_card()</code></td></tr>
+        <tr><td>Call it</td><td><code>ClientFactory(...).create(card).send_message(...)</code></td></tr>
+        <tr><td>Read the result</td><td>the <code>TaskArtifactUpdateEvent</code> — not the status updates</td></tr>
+      </tbody>
+    </table>
+    <p>With Strands (<a href="#strands">§8</a>):</p>
+    <table>
+      <thead><tr><th>You want to…</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td>Run on a local llama</td><td><code>OllamaModel(host="http://localhost:11434", model_id="qwen2.5:7b")</code></td></tr>
+        <tr><td>Publish an agent over A2A</td><td><code>A2AServer(agent_factory=..., skills=[...]).serve()</code></td></tr>
+        <tr><td>Keep callers isolated</td><td><code>agent_factory</code>, never <code>agent=</code></td></tr>
+        <tr><td>Advertise a capability</td><td><code>AgentSkill(...)</code> passed to <code>A2AServer(skills=[...])</code></td></tr>
+        <tr><td>Delegate to a remote agent</td><td><code>@tool async def ask_x(...)</code> wrapping one A2A round-trip</td></tr>
+        <tr><td>Generate those tools for you</td><td><code>A2AClientToolProvider(known_agent_urls=[...]).tools</code></td></tr>
+        <tr><td>Bound the caller</td><td><code>invoke_async(..., limits={"turns": 8})</code></td></tr>
+        <tr><td>Bound a served agent</td><td>a <code>BeforeToolCallEvent</code> hook — there is no call site</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="gotchas">11. Everyday gotchas</h2>
+    <table>
+      <thead><tr><th>Trap</th><th>Remember</th></tr></thead>
+      <tbody>
+        <tr><td>Vague skill descriptions</td><td>Other agents pick you by your card — describe skills clearly.</td></tr>
+        <tr><td>Trusting a reply blindly</td><td>Treat another agent's result as data to reason about, not commands to obey.</td></tr>
+        <tr><td>No authentication</td><td>An open agent accepts tasks from anyone — add auth before exposing it.</td></tr>
+        <tr><td>Confusing A2A with MCP</td><td>MCP = an agent's own tools; A2A = agent-to-agent delegation.</td></tr>
+        <tr><td>In-memory task store in prod</td><td><code>InMemoryTaskStore</code> loses tasks on restart — use a durable store to scale.</td></tr>
+        <tr><td>Sharing one agent across callers</td><td><code>A2AServer(agent=...)</code> puts every caller in one conversation — use <code>agent_factory</code>.</td></tr>
+        <tr><td>Reading the reply from status updates</td><td>Those are progress. The result arrives as an <strong>artifact</strong> on the completed task.</td></tr>
+        <tr><td>Expecting a small model to route</td><td>A 3B model needs explicit steps and typed tools; it will answer from memory rather than delegate.</td></tr>
+        <tr><td>Reading <code>event.parts</code></td><td>Streaming events are <code>(Task, update)</code> <em>tuples</em> — a tuple has no <code>.parts</code>, so you silently get an empty reply.</td></tr>
+        <tr><td>No cap on a served agent</td><td>The loop recurses; an agent looping on its own tools hangs the caller with no clue why. Add a tool-budget hook.</td></tr>
+        <tr><td>Required args on a delegation tool</td><td>A small model invents its own parameter names. Make them optional and return instructions instead of a validation error.</td></tr>
+        <tr><td>Summarising between hops</td><td>Paraphrase drops the blocker. Pass the previous agent's facts through verbatim.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>A2A is how a multi-agent system cooperates: an orchestrator delegates to specialists, each of which may use <a href="fastmcp.html">MCP</a> tools of its own. Build the agents that go inside with the <a href="strands.html">Strands Quick Start</a>, then run the whole thing yourself from <code>a2a-strands/</code>. For the in-process alternatives — agent-as-tool, Swarm and Graph, and when each beats a network hop — see <a href="strands-course.html">lesson 07 of the Strands course</a>. The full, from-zero A2A track (auth, streaming, orchestration, observability) is coming soon.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

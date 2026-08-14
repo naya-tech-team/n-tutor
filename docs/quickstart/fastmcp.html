@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FastMCP: Quick Start — AI Engineering</title>
+<meta name="description" content="Build an MCP server that gives an AI real tools and data — code-first with FastMCP: tools, resources, prompts, running, testing, and Claude Desktop." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell no-toc">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">7</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Coming soon</div>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP (full track)</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Strands Agents</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform</span>
+      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>FastMCP</span>
+    </nav>
+
+    <h1>FastMCP Quick Start</h1>
+    <div class="meta-row">
+      <span class="badge badge-advanced">Quick Start</span>
+      <span class="badge badge-info">code-first</span>
+      <span class="badge badge-info">~15 min</span>
+    </div>
+    <p><strong>MCP</strong> (Model Context Protocol) is a standard way to give an AI assistant real <em>tools</em> and <em>data</em> — so it can look things up and take actions instead of only chatting. <strong>FastMCP</strong> is the Python library for building an MCP <em>server</em>: you write normal functions, add a decorator, and the AI can call them. If FastAPI exposes functions to the web, FastMCP exposes them to an AI. New to decorators? See <a href="../python/decorators.html">Decorators</a>.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Get the runnable code</div>
+      <p>A fuller, ready-to-run project for this quick start ships with the course: the <strong>HR skills server</strong>, exposing the same domain the rest of the course uses. It lives in <code>mcp-server/app/main.py</code>:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">cd mcp-server
+uv run app/main.py            # HTTP on http://127.0.0.1:8000/mcp/
+fastmcp dev app/main.py       # …or poke at it in the browser inspector</code></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Why this server exists</div>
+      <p>The HR team owns employee data. They publish tools <em>once</em>, over a protocol — and Strands, Claude Desktop, an IDE, or your own script all consume the same four tools without importing a line of their code. <code>mcp-server/app/main.py</code> opens with the point: <em>"This file has no idea Strands exists."</em> That is the whole idea of MCP.</p>
+    </div>
+
+
+    <h2 id="install">1. Install</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">pip install fastmcp
+
+python -c "import fastmcp; print(fastmcp.__version__)"</code></pre>
+    </div>
+    <p>FastMCP also ships inside the official MCP SDK (<code>from mcp.server.fastmcp import FastMCP</code>) — the API below is the same either way.</p>
+
+    <h2 id="server">2. Your first MCP server</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastmcp import FastMCP
+
+from _shared import get_job
+
+mcp = FastMCP("hr-skills")           # give your server a name
+
+@mcp.tool(description="Get one open job requisition and the skills it requires.")
+def get_requisition(job_id: str) -&gt; dict:
+    """Args: job_id, e.g. "J2001"."""
+    job = get_job(job_id)
+    return job or {"error": f"no requisition {job_id}"}
+
+if __name__ == "__main__":
+    mcp.run(transport="http", show_banner=False, port=8000)   # serves /mcp/</code></pre>
+    </div>
+    <p>That's a complete MCP server. The <code>@mcp.tool</code> decorator turns <code>get_requisition</code> into something an AI can call. Run it with <code>uv run app/main.py</code> (or <code>fastmcp run app/main.py</code>). This is the real server in <code>mcp-server/app/main.py</code> — the next sections add its other three tools.</p>
+
+    <h2 id="tools">3. Tools — actions the AI can take</h2>
+    <p>A <strong>tool</strong> is just a Python function the AI may call. Two things matter enormously:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@mcp.tool(description="Find employees who have a skill at or above a given level.")
+def find_by_skill(skill: str, min_level: int = 3, available_only: bool = True) -&gt; list[dict]:
+    """Args: skill (name or alias, e.g. "pyspark"), min_level 1-5, available_only."""
+    return [
+        {"employee_id": e["employee_id"], "name": e["name"],
+         "location": e["location"], "availability": e["availability"]}
+        for e in employees_with_skill(skill, min_level=min_level, available_only=available_only)
+    ]
+
+@mcp.tool(description="Score one employee against one job and explain the gaps.")
+def score_match(employee_id: str, job_id: str) -&gt; dict:
+    """Args: employee_id e.g. "E1002", job_id e.g. "J2001"."""
+    employee, job = get_employee(employee_id), get_job(job_id)
+    if employee is None or job is None:
+        return {"error": f"unknown employee {employee_id!r} or job {job_id!r}"}
+    return match(employee, job)
+
+@mcp.tool(description="Rank the best available candidates for a job.")
+def shortlist(job_id: str, limit: int = 3) -&gt; list[dict]:
+    """Args: job_id, limit (how many candidates to return)."""
+    return rank_candidates(job_id, available_only=True, limit=limit)</code></pre>
+    </div>
+    <ul class="checklist">
+      <li><strong>Type hints</strong> (<code>min_level: int</code>, <code>-&gt; list[dict]</code>) tell the AI exactly what to send and what comes back — and FastMCP validates it.</li>
+      <li><strong>The docstring and <code>description=</code></strong> are not just documentation — they are how the AI <em>decides when to use the tool</em>. Write them for the model: say plainly what it does and when to reach for it.</li>
+      <li><strong>Defaults become optional arguments</strong>, so <code>min_level: int = 3</code> means the model may call <code>find_by_skill(skill="pyspark")</code> and still get something sensible.</li>
+    </ul>
+    <div class="callout callout-warning">
+      <div class="callout-title">Return an error, don't raise one</div>
+      <p><code>score_match</code> returns <code>{"error": …}</code> for an unknown id rather than raising. The model <em>reads</em> that string and can correct itself; an unhandled exception is just a failed call. Better still, say what to do next — <em>"unknown employee E1148; call find_by_skill and use an id it returned"</em> — or a weak model will try E1149, then E1150, until something stops it.</p>
+    </div>
+    <p>Notice what these four tools have in common: <strong>the scoring is arithmetic inside <code>match()</code>, never something the model works out.</strong> The AI decides <em>who</em> to score and explains the result; the number itself is reproducible by hand, which is what makes it defensible in a hiring review.</p>
+
+    <h2 id="resources">4. Resources — read-only data the AI can fetch</h2>
+    <p>Where a tool <em>does</em> something, a <strong>resource</strong> just <em>exposes data</em> for the AI to read (like a file or a config). Each has a URI:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@mcp.resource(
+    "hr://employees",
+    name="employee-directory",
+    description="Every employee: id, designation, location, availability, years of experience.",
+    mime_type="text/plain",
+)
+def employee_directory() -&gt; str:
+    return "\n".join(
+        f"{e['employee_id']}  {e['name']:&lt;22} {e['designation']:&lt;32} "
+        f"{e['location']:&lt;12} {e['availability']:&lt;10} {e['experience_years']}y"
+        for e in EMPLOYEES
+    )
+
+# A *template* resource: one URI shape, many documents.
+@mcp.resource(
+    "hr://employees/{employee_id}",
+    description="One employee's full profile including rated skills. e.g. hr://employees/E1002",
+    mime_type="application/json",
+)
+def employee_profile(employee_id: str) -&gt; dict:
+    """Returning a dict is fine — FastMCP serialises it to JSON for the wire."""
+    employee = get_employee(employee_id)
+    return employee or {"error": f"no employee {employee_id!r}"}</code></pre>
+    </div>
+    <p>Rule of thumb: use a <strong>tool</strong> for actions and anything with side effects; use a <strong>resource</strong> for "just give me this data."</p>
+    <div class="callout callout-tip">
+      <div class="callout-title">The reason resources are underrated</div>
+      <p><strong>You</strong> read a resource by URI — the model is not involved, so it costs no tokens and cannot be hallucinated.</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>client side</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-python">profile = await client.read_resource("hr://employees/E1002")   # no model call at all</code></pre>
+      </div>
+      <p>A <em>template</em> resource (<code>{employee_id}</code> in the URI) gives you one declaration and a whole family of documents. Reach for a resource whenever the answer does not depend on the question — a skill catalogue never changes per query, so making the model "call a tool" for it is pure waste.</p>
+    </div>
+
+    <h2 id="prompts">5. Prompts — reusable message templates</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@mcp.prompt(description="Screen one candidate against one requisition, using the server's own score.")
+def screen_candidate(employee_id: str, job_id: str) -&gt; str:
+    """Args: employee_id e.g. "E1010", job_id e.g. "J2003"."""
+    employee, job = get_employee(employee_id), get_job(job_id)
+    if employee is None or job is None:
+        return f"Reply exactly: 'No such employee {employee_id!r} or requisition {job_id!r}.'"
+
+    result = match(employee, job)
+    return (
+        f"Write a screening note for {result['name']} ({employee_id}) against "
+        f"{result['title']} ({job_id}).\n\n"
+        f"The matching engine has already decided this — do not recompute it:\n"
+        f"{json.dumps(result, indent=2)}\n\n"
+        "Cover, in this order and in three sentences total:\n"
+        "1. the score and verdict, in plain language;\n"
+        "2. the strongest matched skill and the most damaging gap;\n"
+        "3. a recommendation — interview, develop, or decline."
+    )</code></pre>
+    </div>
+    <p>A <strong>prompt</strong> is a saved, parameterised message the client can pull up on demand. Look at what this one is really doing: <strong>the score is computed on the server and embedded in the question.</strong> The model is not asked to judge the candidate — it is asked to <em>explain a decision that has already been made</em>, and told not to recompute it.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">Prompts are how the data owner keeps authorship</div>
+      <p>HR knows what a good screening note contains; your app does not. Shipping that as a prompt means the wording lives with the team that owns the definition — and improves for every client at once, without anyone shipping a new release.</p>
+    </div>
+    <p>A prompt can also return a <em>conversation</em> rather than one string, which lets the server pre-seed the assistant's turn to steer the format:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastmcp.prompts import Message
+
+@mcp.prompt(description="Brief a hiring manager on the current shortlist for a requisition.")
+def shortlist_brief(job_id: str, limit: str = "3") -&gt; list[Message]:
+    ranked = rank_candidates(job_id, available_only=True, limit=int(limit))
+    table = "\n".join(summarize_match(r) for r in ranked)
+    return [
+        Message(f"Brief me on the shortlist for {job_id}:\n{table}"),
+        Message("Here is the shortlist, strongest first:", role="assistant"),
+    ]</code></pre>
+    </div>
+
+    <h2 id="run">6. Running it: stdio vs. HTTP</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">mcp.run()                                   # default: stdio (local, for desktop apps)
+mcp.run(transport="http", host="127.0.0.1", port=8000)  # remote / networked</code></pre>
+    </div>
+    <table>
+      <thead><tr><th>Transport</th><th>Use when…</th></tr></thead>
+      <tbody>
+        <tr><td><code>stdio</code></td><td>The AI app runs the server locally (e.g. Claude Desktop launches it). Default.</td></tr>
+        <tr><td><code>http</code></td><td>The server runs somewhere on a network and clients connect to a URL.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="test">7. Test it fast</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal + python</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash"># Interactive inspector in the browser — click your tools to try them:
+fastmcp dev app/main.py</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>client.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">import asyncio
+from fastmcp import Client
+
+client = Client("http://127.0.0.1:8000/mcp/")   # the running HTTP server
+# Client("app/main.py") instead launches the file as a stdio subprocess
+
+async def main():
+    async with client:
+        tools = await client.list_tools()
+        print("tools    :", [t.name for t in tools])
+
+        result = await client.call_tool("score_match",
+                                        {"employee_id": "E1002", "job_id": "J2001"})
+        print("E1002/J2001:", result.data["score"], result.data["verdict"])
+
+        result = await client.call_tool("shortlist", {"job_id": "J2001", "limit": 3})
+        print("shortlist :", [(m["name"], m["score"]) for m in result.data])
+
+asyncio.run(main())</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>output — a real run</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">tools    : ['find_by_skill', 'get_requisition', 'score_match', 'shortlist']
+E1002/J2001: 100 strong
+shortlist : [('Priya Raman', 100), ('Rahul Menon', 61), ('Vikram Iyer', 50)]</code></pre>
+    </div>
+    <p>The <code>Client</code> is how <em>your</em> code (or an agent) talks to any MCP server — connect, list what it offers, then call a tool. Calling tools directly like this, with no model in the loop, is also the easiest way to <strong>test</strong> an MCP server: deterministic, fast, and no sampling to argue with.</p>
+    <div class="callout callout-danger">
+      <div class="callout-title">The <code>async with</code> block is load-bearing</div>
+      <p>Leave it and the connection closes — over stdio the server subprocess dies with it; over HTTP the session goes. Either way those tool names become unusable. In an agent this is nasty to debug, because the model still has the tool <em>names</em> in its history and will happily start improvising answers instead of calling anything.</p>
+    </div>
+
+    <h2 id="claude">8. Use it in Claude Desktop</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">fastmcp install claude-desktop app/main.py</code></pre>
+    </div>
+    <p>This registers your server so Claude Desktop can launch it and use your tools in a normal conversation — ask it <em>"who on the bench could fill J2001?"</em> and it will call <code>shortlist</code> itself. (Under the hood it adds an entry to the app's MCP config — you can also do that by hand.)</p>
+    <p>Nothing about the server changes to support this. The same four tools are consumed by Claude Desktop here, by a <a href="strands-course.html">Strands agent</a> in lesson 02 of the Strands course, and by the plain <code>Client</code> above. <strong>That is the payoff: write the tools once, and every AI client can use them.</strong></p>
+
+    <h2 id="context">9. Context — talk back to the AI &amp; the client</h2>
+    <p>Most tools just take inputs and return a value. But sometimes a tool needs to <em>communicate while it runs</em> — log what it's doing, report progress on a long job, read other data, or even ask the AI for help. That's what <strong>Context</strong> is for. Add a <code>ctx: Context</code> parameter to any tool (or resource, or prompt) and FastMCP injects it automatically — the caller never passes it.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>server.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastmcp import FastMCP, Context
+
+mcp = FastMCP("hr-skills")
+
+@mcp.tool
+async def screen_bench(job_id: str, employee_ids: list[str], ctx: Context) -&gt; str:
+    """Write a one-line screening note for each candidate, reporting progress."""
+    await ctx.info(f"Screening {len(employee_ids)} candidates for {job_id}")  # log to the client
+
+    notes = []
+    for i, employee_id in enumerate(employee_ids):
+        profile = await ctx.read_resource(f"hr://employees/{employee_id}")   # another resource
+        reply = await ctx.sample(                                            # ask the AI
+            f"One line on this candidate's fit for {job_id}:\n\n{profile}"
+        )
+        notes.append(reply.text)
+        await ctx.report_progress(progress=i + 1, total=len(employee_ids))   # move the bar
+
+    await ctx.info("Done")
+    return "\n".join(notes)</code></pre>
+    </div>
+    <p>You never pass <code>ctx</code> yourself — FastMCP spots the <code>Context</code> type hint and fills it in. (The parameter can be named anything; the <em>type</em> is what matters.)</p>
+
+    <h3 id="context-abilities">What the Context can do</h3>
+    <table>
+      <thead><tr><th>Call</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>ctx.debug / info / warning / error(msg)</code></td><td>Send a log message to the client (four severity levels).</td></tr>
+        <tr><td><code>ctx.report_progress(progress, total)</code></td><td>Update a progress indicator during a long task.</td></tr>
+        <tr><td><code>ctx.read_resource(uri)</code></td><td>Read another resource this server exposes, from inside a tool.</td></tr>
+        <tr><td><code>ctx.sample(prompt)</code></td><td>Ask the <em>client's</em> LLM to generate text — your server borrows the model. Returns a message with <code>.text</code>.</td></tr>
+        <tr><td><code>ctx.elicit(message, schema)</code></td><td>Pause and ask the <em>user</em> for extra input mid-tool.</td></tr>
+        <tr><td><code>ctx.request_id</code> · <code>ctx.client_id</code></td><td>Identify the current request and the connected client (handy for logs).</td></tr>
+        <tr><td><code>ctx.fastmcp</code></td><td>Reach the server instance itself (settings, other components).</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note">
+      <div class="callout-title">🧠 The clever one: <code>ctx.sample()</code></div>
+      <p>Normally the AI calls your tool. With <code>sample()</code>, your tool calls the AI back — it asks the client's model to do a sub-task (summarise, classify, draft text) without you needing your own API key. The model comes "for free" from whoever is using your server.</p>
+    </div>
+
+    <div class="callout callout-warn">
+      <div class="callout-title">⚠️ Two things to remember</div>
+      <p><strong>1.</strong> Context only exists <em>during a request</em> — you can't grab it at import time or in a background thread. <strong>2.</strong> Its methods are <code>async</code>, so use <code>async def</code> and <code>await</code> them (a plain <code>def</code> tool can still accept <code>ctx</code> for the sync-safe bits, but async is the norm here).</p>
+    </div>
+
+    <h2 id="cheatsheet">10. Mini cheat sheet</h2>
+    <table>
+      <thead><tr><th>You want to…</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td>Create a server</td><td><code>mcp = FastMCP("Name")</code></td></tr>
+        <tr><td>Let the AI take an action</td><td><code>@mcp.tool</code> on a function</td></tr>
+        <tr><td>Expose read-only data</td><td><code>@mcp.resource("uri://...")</code></td></tr>
+        <tr><td>Save a prompt template</td><td><code>@mcp.prompt</code></td></tr>
+        <tr><td>Run locally</td><td><code>mcp.run()</code> (stdio)</td></tr>
+        <tr><td>Run on a network</td><td><code>mcp.run(transport="http", port=8000)</code></td></tr>
+        <tr><td>Try it in a UI</td><td><code>fastmcp dev app/main.py</code></td></tr>
+        <tr><td>Call from code</td><td><code>Client("http://127.0.0.1:8000/mcp/")</code> → <code>call_tool(...)</code></td></tr>
+        <tr><td>Read data, no model</td><td><code>client.read_resource("hr://employees/E1002")</code></td></tr>
+        <tr><td>Install into Claude Desktop</td><td><code>fastmcp install claude-desktop app/main.py</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="gotchas">11. Everyday gotchas</h2>
+    <table>
+      <thead><tr><th>Trap</th><th>Remember</th></tr></thead>
+      <tbody>
+        <tr><td>Vague docstring</td><td>The AI reads it to pick tools — say what it does <em>and when to use it</em>.</td></tr>
+        <tr><td>Missing type hints</td><td>No hints = the AI can't tell what arguments to send.</td></tr>
+        <tr><td>Tool vs. resource mix-up</td><td>Action → tool; "just give me data" → resource.</td></tr>
+        <tr><td><code>print()</code> in a stdio server</td><td>stdio uses stdout to talk to the client — log via <code>ctx</code>, don't <code>print</code>.</td></tr>
+        <tr><td>Untrusted tool output</td><td>Treat what a tool returns as data, not instructions to the model.</td></tr>
+        <tr><td>Leaving the <code>async with</code></td><td>The subprocess dies with it and the agent quietly starts improvising.</td></tr>
+        <tr><td>Raising instead of returning</td><td>Return <code>{"error": "…and here is what to do next"}</code> — the model reads it and recovers.</td></tr>
+        <tr><td>Letting the model do the maths</td><td>Compute the score in the tool. A number nobody can reproduce is a number nobody will defend.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>An MCP server is how an agent gets hands and eyes. Next, hand these four tools to a model that decides when to call them — <a href="strands-course.html">lesson 02 of the Strands course</a> connects to this exact server, and lesson 11 of its tutorial mixes its tools with local ones in a single toolbox. Feeling the decorator style? It's the same idea as the <a href="fastapi.html">FastAPI Quick Start</a>, which exposes the same domain over HTTP instead.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

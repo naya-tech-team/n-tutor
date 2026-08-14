@@ -91,7 +91,27 @@
     <p><strong>FastAPI</strong> turns ordinary Python functions into a <em>web API</em> — a program other apps (and browsers) can call over the internet. You write a function, add one line above it, and FastAPI handles the web plumbing, validates the data, and even generates interactive docs. New to Python? Skim the <a href="python.html">Python Quick Start</a> first.</p>
     <div class="callout callout-note">
       <div class="callout-title">⬇️ Get the runnable code</div>
-      <p>A fuller, ready-to-run project for this quick start ships with the course: a Task API with routers, Pydantic v2 models, middleware, DI, and pytest tests. It lives in <code>quickstart/code/fastapi/</code> — open its <a href="code/fastapi/README.md">README</a> for exact run steps and expected output.</p>
+      <p>A fuller, ready-to-run project for this quick start ships with the course: the <strong>HR Skills API</strong> — routers, Pydantic v2 models, middleware and dependency injection over the same domain the rest of the course uses. It lives in <code>fast-api/</code>:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">cd fast-api
+uvicorn app.main:app --reload
+# then open http://127.0.0.1:8000/docs</code></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">The domain, in one line</div>
+      <p><strong>Employees have skills rated 1–5; requisitions require skills at a minimum level; some of those are mandatory.</strong> A candidate below a mandatory bar is <em>blocked</em> — no score saves them. Every endpoint below is a view onto that.</p>
+      <table>
+        <thead><tr><th>Endpoint</th><th>Does</th></tr></thead>
+        <tbody>
+          <tr><td><code>GET /employees?available_only=true</code></td><td>the directory, optionally just the bench</td></tr>
+          <tr><td><code>GET /requisitions/{job_id}</code></td><td>one open role and the skills it needs</td></tr>
+          <tr><td><code>GET /requisitions/{job_id}/candidates</code></td><td>everyone scored and ranked, best first</td></tr>
+          <tr><td><code>POST /requisitions/{job_id}/shortlist</code></td><td>shortlist someone — <strong>409</strong> if they are blocked</td></tr>
+        </tbody>
+      </table>
     </div>
 
 
@@ -127,17 +147,25 @@ def home():
     <h2 id="path-query">3. Path &amp; query parameters</h2>
     <div class="code-block">
       <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python"># Path parameter: part of the URL.  /items/42
-@app.get("/items/{item_id}")
-def get_item(item_id: int):        # type hint -> FastAPI converts &amp; validates
-    return {"item_id": item_id}
+      <pre><code class="language-python"># Path parameter: part of the URL.  /employees/E1002
+@app.get("/employees/{employee_id}")
+def get_employee(employee_id: str):    # type hint -> FastAPI converts &amp; validates
+    return {"employee_id": employee_id}
 
-# Query parameters: after the ?.  /search?q=cats&amp;limit=5
-@app.get("/search")
-def search(q: str, limit: int = 10):   # limit has a default
-    return {"query": q, "limit": limit}</code></pre>
+# Query parameters: after the ?.  /requisitions/J2001/candidates?limit=5
+@app.get("/requisitions/{job_id}/candidates")
+def rank_candidates(job_id: str, limit: int = 3):   # limit has a default
+    return {"job_id": job_id, "limit": limit}</code></pre>
     </div>
-    <p>The type hints (<code>item_id: int</code>) aren't decoration — FastAPI uses them to convert and validate input. Send <code>/items/abc</code> and it returns a clean 422 error automatically, no code needed.</p>
+    <p>The type hints aren't decoration — FastAPI uses them to convert and validate input. Ask for <code>?limit=abc</code> and it returns a clean 422 automatically, no code needed. You can go further and validate the <em>range</em> too:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi import Query
+
+@app.get("/requisitions/{job_id}/candidates")
+def rank_candidates(job_id: str, limit: int = Query(3, ge=1, le=20)):
+    ...        # ?limit=0 and ?limit=999 are now both rejected, with a clear message</code></pre>
+    </div>
 
     <h2 id="body">4. Request bodies with Pydantic</h2>
     <p>For <code>POST</code>/<code>PUT</code>, the data arrives in the request <em>body</em> as JSON. Describe its shape with a Pydantic <code>BaseModel</code> and FastAPI validates it for you:</p>
@@ -146,33 +174,43 @@ def search(q: str, limit: int = 10):   # limit has a default
       <pre><code class="language-python">from enum import Enum
 from pydantic import BaseModel, Field
 
-class Priority(str, Enum):
-    high = "high"
-    medium = "medium"
-    low = "low"
+class Availability(str, Enum):
+    bench = "bench"
+    allocated = "allocated"
 
-class TaskCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=120)
-    priority: Priority = Priority.medium      # optional, defaults to medium
+class SkillRating(BaseModel):
+    skill: str = Field(min_length=1, max_length=60, examples=["Apache Spark"])
+    level: int = Field(ge=1, le=5, description="1 aware · 3 works independently · 5 expert")
 
-@app.post("/tasks")
-def create_task(data: TaskCreate):   # FastAPI parses &amp; validates the JSON body
-    return {"received": data.title, "priority": data.priority}</code></pre>
+class EmployeeCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120, examples=["Priya Raman"])
+    location: str = Field(min_length=1, max_length=60)
+    availability: Availability = Availability.bench     # optional, defaults to bench
+    experience_years: float = Field(ge=0, le=50)
+    skills: list[SkillRating] = Field(default_factory=list)
+
+@app.post("/employees")
+def create_employee(data: EmployeeCreate):   # FastAPI parses &amp; validates the JSON body
+    return {"received": data.name, "skills": len(data.skills)}</code></pre>
     </div>
-    <p>Post <code>{"title": "Write docs", "priority": "high"}</code> and it just works. Post an empty title and you get an automatic, descriptive validation error. This is the <code>models.py</code> from <code>quickstart/code/fastapi/</code>, and this validation is the reason FastAPI is loved.</p>
+    <p>Post a skill at <code>"level": 9</code> and you get an automatic 422 naming the field and the rule — <strong>no route ever has to check a level again.</strong> Validating at the edge is why the scoring code in <code>store.py</code> is so short: by the time data reaches it, it is already known-good. This is <code>fast-api/app/models.py</code>.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">A <code>str</code> Enum earns its keep in the docs</div>
+      <p>Because <code>Availability</code> subclasses <code>str</code>, it serialises as plain JSON <em>and</em> shows up in <code>/openapi.json</code> as a fixed set — so <code>/docs</code> renders a dropdown instead of a free-text box, and client generators produce a real enum type.</p>
+    </div>
 
     <h2 id="response">5. Response model &amp; status codes</h2>
     <div class="code-block">
       <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
-      <pre><code class="language-python">class Task(TaskCreate):          # adds server-set fields to TaskCreate
-    id: int
-    done: bool = False
+      <pre><code class="language-python">class Employee(EmployeeCreate):     # adds server-set fields to EmployeeCreate
+    employee_id: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-@app.post("/tasks", response_model=Task, status_code=201)
-def create_task(data: TaskCreate):
-    return store.create(data)    # response_model shapes what goes back out</code></pre>
+@app.post("/employees", response_model=Employee, status_code=201)
+def create_employee(data: EmployeeCreate):
+    return store.create_employee(data)   # response_model shapes what goes back out</code></pre>
     </div>
-    <p><code>response_model=Task</code> guarantees the output shape (and hides fields you don't include). <code>status_code=201</code> means "created." <code>Task</code> inherits from <code>TaskCreate</code>, so it reuses the same validation.</p>
+    <p><code>response_model=Employee</code> guarantees the output shape (and hides fields you don't include). <code>status_code=201</code> means "created." <code>Employee</code> inherits from <code>EmployeeCreate</code>, so it reuses the same validation — the client cannot invent an <code>employee_id</code>, because that field only exists on the way out.</p>
 
     <h2 id="async">6. Async endpoints</h2>
     <div class="code-block">
@@ -200,59 +238,84 @@ async def slow():                 # use async when you await I/O
       <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
       <pre><code class="language-python">from fastapi import HTTPException, status
 
-@app.get("/tasks/{task_id}", response_model=Task)
-def get_task(task_id: int):
-    task = store.get(task_id)
-    if task is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="task not found")
-    return task</code></pre>
+@app.get("/employees/{employee_id}", response_model=Employee)
+def get_employee(employee_id: str):
+    employee = store.get_employee(employee_id)
+    if employee is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="employee not found")
+    return employee</code></pre>
     </div>
     <p><code>raise HTTPException(...)</code> sends a proper HTTP error (like 404) with a JSON message, instead of crashing.</p>
+    <p><strong>Pick the code that tells the client what to do next.</strong> Shortlisting a blocked candidate is not a 400 — the request was perfectly well-formed:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>routers/candidates.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">match = store.score(employee, requisition)
+if match.blockers:
+    raise HTTPException(
+        status.HTTP_409_CONFLICT,
+        detail=f"{match.name} is missing mandatory {', '.join(match.blockers)}",
+    )</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>real response</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">POST /requisitions/J2001/shortlist  {"employee_id": "E1005"}
+409  {"detail": "Vikram Iyer is missing mandatory Python, SQL"}</code></pre>
+    </div>
+    <p><strong>422</strong> "your JSON is wrong" · <strong>404</strong> "no such thing" · <strong>409</strong> "understood, but it conflicts with the current state". That distinction is what lets a client tell a bug apart from a business rule.</p>
 
     <h2 id="depends">9. Dependencies (shared logic)</h2>
     <div class="code-block">
       <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
       <pre><code class="language-python">from fastapi import Depends
 
-class TaskStore:                     # a stand-in for a database
-    def list(self) -> list[Task]: ...
+class HRStore:                       # a stand-in for an HRMS
+    def list_employees(self, available_only: bool = False) -> list[Employee]: ...
 
-_store = TaskStore()
-def get_store() -> TaskStore:        # the dependency provider
+_store = HRStore()
+def get_store() -> HRStore:          # the dependency provider
     return _store
 
-@app.get("/tasks", response_model=list[Task])
-def list_tasks(store: TaskStore = Depends(get_store)):   # injected
-    return store.list()</code></pre>
+@app.get("/employees", response_model=list[Employee])
+def list_employees(store: HRStore = Depends(get_store)):   # injected
+    return store.list_employees()</code></pre>
     </div>
-    <p><code>Depends</code> runs shared setup (a store, a DB connection, auth) before your endpoint and passes the result in — write it once, use it everywhere. This is the <code>store.py</code> pattern from the code project; tests can inject their own store.</p>
+    <p><code>Depends</code> runs shared setup (a store, a DB connection, auth) before your endpoint and passes the result in — write it once, use it everywhere. This is <code>fast-api/app/store.py</code>.</p>
+    <div class="callout callout-tip">
+      <div class="callout-title">Why this matters for tests</div>
+      <p>Because the store arrives through <code>Depends</code>, a test can swap it for a fresh one with <code>app.dependency_overrides[get_store] = lambda: HRStore()</code> — so no test can see another test's shortlist. A module-level global would make that impossible without monkey-patching.</p>
+    </div>
 
     <h2 id="routers">10. Routers — split a growing app into files</h2>
     <p>One <code>main.py</code> with every route gets unwieldy fast. An <strong>APIRouter</strong> is a mini-app: you group related routes in their own file, then plug it into the main app. Same decorators, just <code>@router</code> instead of <code>@app</code>.</p>
     <div class="code-block">
-      <div class="code-block-header"><span>routers/users.py</span><button class="copy-btn">Copy</button></div>
+      <div class="code-block-header"><span>routers/candidates.py</span><button class="copy-btn">Copy</button></div>
       <pre><code class="language-python">from fastapi import APIRouter, Depends, status
 
-router = APIRouter(prefix="/tasks", tags=["tasks"])
+employees_router = APIRouter(prefix="/employees", tags=["employees"])
+requisitions_router = APIRouter(prefix="/requisitions", tags=["requisitions"])
 
-@router.get("", response_model=list[Task])       # GET /tasks
-async def list_tasks(store: TaskStore = Depends(get_store)):
-    return store.list()
+@employees_router.get("", response_model=list[Employee])       # GET /employees
+async def list_employees(store: HRStore = Depends(get_store)):
+    return store.list_employees()
 
-@router.post("", response_model=Task, status_code=status.HTTP_201_CREATED)
-async def create_task(data: TaskCreate, store: TaskStore = Depends(get_store)):
-    return store.create(data)</code></pre>
+@requisitions_router.get("/{job_id}/candidates", response_model=list[MatchResult])
+async def rank_candidates(job_id: str, store: HRStore = Depends(get_store)):
+    requisition = store.get_requisition(job_id)
+    if requisition is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="requisition not found")
+    return store.rank(requisition)</code></pre>
     </div>
     <div class="code-block">
       <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
       <pre><code class="language-python">from fastapi import FastAPI
-from .routers import tasks
+from app.routers import candidates
 
-app = FastAPI(title="Task API")
+app = FastAPI(title="HR Skills API")
 
-app.include_router(tasks.router)     # plug the router in</code></pre>
+app.include_router(candidates.employees_router)      # plug the routers in
+app.include_router(candidates.requisitions_router)</code></pre>
     </div>
-    <p>The <code>prefix="/tasks"</code> is added to every route in that file, so you don't repeat it. <code>tags=["tasks"]</code> groups these endpoints under a "tasks" heading in the <code>/docs</code> page — instantly tidier. This mirrors <code>app/routers/tasks.py</code> in the code project.</p>
+    <p>The <code>prefix</code> is added to every route in that router, so you don't repeat it. <code>tags=[...]</code> groups the endpoints under a heading in <code>/docs</code> — with two routers you get two tidy sections instead of one long list. This is <code>fast-api/app/routers/candidates.py</code>.</p>
     <div class="callout callout-note">
       <div class="callout-title">🧩 Handy extras on a router</div>
       <p>Apply things to a whole group at once: <code>APIRouter(prefix="/admin", dependencies=[Depends(verify_admin)])</code> protects every admin route with one line. That pairs the <a href="#depends">dependencies</a> idea with routers.</p>
@@ -265,7 +328,7 @@ app.include_router(tasks.router)     # plug the router in</code></pre>
       <pre><code class="language-python">import time
 from fastapi import FastAPI, Request
 
-app = FastAPI(title="Task API")
+app = FastAPI(title="HR Skills API")
 
 @app.middleware("http")
 async def add_timing_header(request: Request, call_next):
@@ -300,12 +363,14 @@ app.add_middleware(
     <table>
       <thead><tr><th>You want to…</th><th>Do this</th></tr></thead>
       <tbody>
-        <tr><td>Read data</td><td><code>@app.get("/path")</code></td></tr>
-        <tr><td>Create data</td><td><code>@app.post("/path")</code> + a Pydantic body</td></tr>
-        <tr><td>Grab a URL part</td><td><code>/{id}</code> + <code>id: int</code> param</td></tr>
+        <tr><td>Read data</td><td><code>@app.get("/employees")</code></td></tr>
+        <tr><td>Create data</td><td><code>@app.post("/employees")</code> + a Pydantic body</td></tr>
+        <tr><td>Grab a URL part</td><td><code>/{employee_id}</code> + <code>employee_id: str</code> param</td></tr>
         <tr><td>Grab a <code>?key=value</code></td><td>add a param with a default</td></tr>
+        <tr><td>Bound a number</td><td><code>Query(3, ge=1, le=20)</code> / <code>Field(ge=1, le=5)</code></td></tr>
         <tr><td>Validate input</td><td>a <code>BaseModel</code> + type hints</td></tr>
         <tr><td>Return an error</td><td><code>raise HTTPException(404, ...)</code></td></tr>
+        <tr><td>Reject a business rule</td><td><code>raise HTTPException(409, ...)</code></td></tr>
         <tr><td>Split into files</td><td><code>APIRouter(prefix=...)</code> + <code>app.include_router(...)</code></td></tr>
         <tr><td>Run on every request</td><td><code>@app.middleware("http")</code></td></tr>
         <tr><td>Run it</td><td><code>uvicorn main:app --reload</code></td></tr>
@@ -318,7 +383,9 @@ app.add_middleware(
       <thead><tr><th>Trap</th><th>Remember</th></tr></thead>
       <tbody>
         <tr><td>Forgot type hints</td><td>No hint = no validation and no docs for that field.</td></tr>
-        <tr><td>Route order matters</td><td>Put <code>/tasks/new</code> <em>before</em> <code>/tasks/{id}</code>, or "new" is read as an id.</td></tr>
+        <tr><td>Route order matters</td><td>Put <code>/employees/bench</code> <em>before</em> <code>/employees/{employee_id}</code>, or "bench" is read as an id.</td></tr>
+        <tr><td>Everything is a 400</td><td>422 = malformed JSON · 404 = missing · 409 = valid but conflicts with state.</td></tr>
+        <tr><td>Validating inside routes</td><td>Put the rule on the model (<code>Field(ge=1, le=5)</code>) and every route gets it free.</td></tr>
         <tr><td><code>async</code> everywhere</td><td>Only use <code>async def</code> when you actually <code>await</code>; otherwise plain <code>def</code>.</td></tr>
         <tr><td>Blocking calls in async</td><td>A slow non-await call inside <code>async def</code> stalls the whole server.</td></tr>
       </tbody>
@@ -326,7 +393,7 @@ app.add_middleware(
 
     <div class="callout callout-note" style="margin-top:28px;">
       <div class="callout-title">Where this goes next</div>
-      <p>A FastAPI service is how you put a program — later, an AI agent — online for others to call. The full, from-zero FastAPI track (routing, validation, dependencies, testing, deployment) is coming soon. Meanwhile, solid on the language basics? See the <a href="python.html">Python Quick Start</a>.</p>
+      <p>You now have the HR domain behind HTTP. Next, expose the same scoring to an <em>AI</em> instead of a browser with <a href="fastmcp.html">FastMCP</a> — same functions, a different protocol — and then let an agent decide when to call it in the <a href="strands-course.html">Strands course</a>. Solid on the language basics? See the <a href="python.html">Python Quick Start</a>.</p>
     </div>
   </main>
 </div>

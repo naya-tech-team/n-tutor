@@ -318,6 +318,219 @@ def step_6() -> None:
     asyncio.run(step_6_async())
 
 
+# ==========================================================================
+# Step 7 — A typed object instead of prose
+# ==========================================================================
+class ShortlistReport(BaseModel):
+    """A machine-readable summary of the shortlist for one requisition."""
+
+    job_id: str = Field(description="The requisition id, e.g. J2001")
+    candidate_count: int = Field(description="How many candidates are on the shortlist")
+    top_candidate: str = Field(description="Name of the highest-scoring candidate")
+    top_score: int = Field(ge=0, le=100, description="That candidate's score, copied from the tool")
+
+
+def step_7() -> None:
+    """Hand it a Pydantic class, get a validated instance. No JSON parsing."""
+    agent = build_agent()
+
+    report = agent(
+        "Shortlist E1002. Summarise the shortlist.", structured_output_model=ShortlistReport
+    ).structured_output
+
+    print("type:", type(report).__name__)
+    print(report.model_dump_json(indent=2))
+    print("usable immediately:", f"{report.top_candidate} -> interview slot 1")
+
+
+# ==========================================================================
+# Step 8 — Survive a restart
+# ==========================================================================
+def step_8() -> None:
+    """Two agents, one session id. The second one wakes up remembering.
+
+    A requisition stays open for weeks. This is what makes "where were we on
+    J2001?" a question the assistant can answer on Thursday.
+    """
+    session_dir = str(settings.sessions_dir)
+
+    first = build_agent(
+        agent_id="resourcing",
+        session_manager=FileSessionManager(session_id="tutorial-demo", storage_dir=session_dir),
+    )
+    print("run A — messages at boot:", len(first.messages))
+    print("run A —", str(first("Shortlist E1002.")).strip())
+    print("run A — state restored  :", first.state.get("shortlist"))
+    print("run A — messages after :", len(first.messages))
+
+    input("Press Enter to simulate a restart:")
+
+    # Simulate a redeploy: brand new object, same session id.
+    second = build_agent(
+        agent_id="resourcing",
+        session_manager=FileSessionManager(session_id="tutorial-demo", storage_dir=session_dir),
+    )
+    print("run B — messages at boot:", len(second.messages), "  ← restored from disk")
+    print("run B — state restored  :", second.state.get("shortlist"))
+    print("run B —", str(second("Who is on the shortlist?")).strip())
+
+
+# ==========================================================================
+# Step 9 — A guardrail the model cannot talk its way past
+# ==========================================================================
+def step_9() -> None:
+    """Policy lives in a hook, not in the prompt. The tool never runs.
+
+    The policy: you may not approach someone who is staffed on a project without
+    their manager's sign-off. E1002 is on the bench; E1007 is allocated.
+    """
+
+    def protect_allocated_staff(event: BeforeToolCallEvent) -> None:
+        if event.tool_use["name"] != "shortlist_candidate":
+            return
+        employee = get_employee(event.tool_use["input"].get("employee_id", ""))
+        if employee and employee["availability"] == "allocated":
+            print(f"  [guardrail] blocked {employee['name']} — staffed on a project")
+            event.cancel_tool = (
+                f"{employee['name']} is allocated to a project. Approaching staffed employees "
+                "needs their manager's sign-off, so they were not shortlisted."
+            )
+
+    agent = build_agent(hooks=[protect_allocated_staff])
+    print("bench    :", str(agent("Shortlist E1002.")).strip())
+    print("allocated:", str(agent("Shortlist E1007 as well.")).strip())
+    print("state (E1007 is absent):", agent.state.get("shortlist"))
+
+
+# ==========================================================================
+# Step 10 — Everything at once: the finished assistant
+# ==========================================================================
+def step_10() -> None:
+    """Tools + state + session + guardrail + typed output, in one agent."""
+
+    def protect_allocated_staff(event: BeforeToolCallEvent) -> None:
+        if event.tool_use["name"] != "shortlist_candidate":
+            return
+        employee = get_employee(event.tool_use["input"].get("employee_id", ""))
+        if employee and employee["availability"] == "allocated":
+            event.cancel_tool = f"{employee['name']} is staffed on a project and needs manager sign-off."
+
+    agent = build_agent(
+        agent_id="resourcing-final",
+        session_manager=FileSessionManager(
+            session_id="tutorial-final", storage_dir=str(settings.sessions_dir)
+        ),
+        hooks=[protect_allocated_staff],
+    )
+
+    turns = (
+        "Who on the bench knows pyspark at level 4 or better?",
+        "Shortlist E1002.",
+        "Shortlist E1007 too.",  # allocated — the guardrail stops this
+        "Shortlist E1005.",      # bench, but blocked on mandatory SQL — the tool stops this
+    )
+    for turn in turns:
+        print(f"> {turn}\n  {str(agent(turn)).strip()}")
+
+    report = agent("Summarise the shortlist.", structured_output_model=ShortlistReport).structured_output
+    print("\nfinal report:", report.model_dump_json())
+    print("persisted at:", settings.sessions_dir / "session_tutorial-final")
+
+
+# ==========================================================================
+# Step 11 — Tools you never wrote, from a process you do not own
+# ==========================================================================
+HR_MCP_SERVER = str(Path(__file__).with_name("hr_mcp_server.py"))
+
+
+def hr_mcp_client() -> MCPClient:
+    """A client for the HR team's MCP server, launched as a subprocess.
+
+    The lambda is deliberate: MCPClient needs to be able to *re-open* the
+    transport, so it takes a factory rather than a live connection.
+    `sys.executable` is this venv's python, so the server sees our dependencies.
+
+    Nothing below names the server's framework. It happens to be built with
+    `fastmcp`; it could be the `mcp` SDK, TypeScript, or a vendor's hosted
+    endpoint. A client speaks the protocol, not the other side's library.
+    """
+    # return MCPClient(
+    #     lambda: stdio_client(StdioServerParameters(command=sys.executable, args=[HR_MCP_SERVER]))
+    # )
+    return MCPClient(lambda: streamablehttp_client("http://localhost:8000/mcp/"))
+
+
+def step_11() -> None:
+    """Steps 1-10 owned every tool. Real teams do not: HR owns employee data.
+
+    They publish one MCP server; we speak the protocol to it. Nothing in this
+    step imports their code, and the four tool names below were never typed in
+    this file — they came off the wire.
+
+    A server publishes three kinds of thing, and only the first is famous:
+      tools     — actions the model chooses, with arguments
+      resources — data *we* read by URI; no model call, no tokens
+      prompts   — the question itself, authored by the team that owns the data
+    """
+    with hr_mcp_client() as hr:  # the block is load-bearing: leaving it kills the server
+        tools = hr.list_tools_sync()
+        resources = hr.list_resources_sync().resources
+        templates = hr.list_resource_templates_sync().resourceTemplates
+        prompts = hr.list_prompts_sync().prompts
+
+        print("tools     :", [t.tool_name for t in tools])
+        print("resources :", [str(r.uri) for r in resources])
+        print("templates :", [t.uriTemplate for t in templates])
+        print("prompts   :", [p.name for p in prompts])
+
+        # --- Resources: data, fetched by URI. The model is not involved. ---
+        bench = hr.read_resource_sync("hr://bench").contents[0].text
+        print("\nhr://bench —\n" + bench)
+
+        # A template resource: one URI shape, many documents.
+        profile = json.loads(hr.read_resource_sync("hr://employees/E1002").contents[0].text)
+        print(f"\nhr://employees/E1002 — {profile['name']}, {profile['designation']}, "
+              f"{len(profile['skills'])} rated skills")
+
+        # --- A tool, called directly. Useful in tests: no model, no guessing. ---
+        result = hr.call_tool_sync(
+            tool_use_id="step11-1", name="score_match",
+            arguments={"employee_id": "E1010", "job_id": "J2003"},
+        )
+        scored = result.get("structuredContent", {})
+        print(f"\nscore_match(E1010, J2003) -> {scored.get('score')}% "
+              f"{scored.get('verdict')}, blocked on {scored.get('blockers')}")
+
+        # --- The agent: HR's four tools plus one of ours, in one toolbox. ---
+        agent = Agent(
+            model=make_model(),
+            system_prompt=(
+                "You are a resourcing assistant. Use find_by_skill, score_match, rank_for_job "
+                "and rank_jobs_for_person for every fact about people and requisitions, and "
+                "shortlist_candidate to add someone to the shortlist. Never invent an employee, "
+                "a skill level or a score. Keep replies to two sentences."
+            ),
+            tools=[*tools, shortlist_candidate],  # remote and local mix freely
+            callback_handler=None,
+        )
+        print("\nthe agent's toolbox:", agent.tool_names)
+        print("> " + str(agent("Who are the top 2 available candidates for J2001?")).strip())
+
+        # --- Prompts: HR wrote the question, with the score already in it. ---
+        screening = hr.get_prompt_sync("screen_candidate", {"employee_id": "E1010", "job_id": "J2003"})
+        brief = hr.get_prompt_sync("shortlist_brief", {"job_id": "J2001", "limit": "3"})
+        print("\nscreen_candidate renders:", [m.role for m in screening.messages])
+        print("shortlist_brief renders  :", [m.role for m in brief.messages],
+              "  ← a prompt can pre-seed the assistant's turn too")
+
+        # Send the rendered prompt as the turn. The model is being told what to
+        # write, by the team that owns the definition of a good screening note.
+        print("> " + str(agent(screening.messages[0].content.text)).strip())
+
+    # Outside the block the subprocess is gone and those tools are unusable —
+    # which is why a dead MCP server looks like an agent that quietly improvises.
+    print("\nserver stopped; MCP tools are no longer callable.")
+
 
 STEPS = {
     1: ("The smallest thing that works", step_1),
@@ -326,7 +539,11 @@ STEPS = {
     4: ("Three tools, and the model chains them", step_4),
     5: ("Watch the loop", step_5),
     6: ("Stream it", step_6),
-
+    7: ("A typed object instead of prose", step_7),
+    8: ("Survive a restart", step_8),
+    9: ("A guardrail it cannot talk past", step_9),
+    10: ("Everything at once", step_10),
+    11: ("Someone else's tools, over MCP", step_11),
 }
 
 
