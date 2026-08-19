@@ -1,0 +1,58 @@
+meta {
+  name: Score one person against one role
+  type: graphql
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Match($employeeId: ID!, $jobId: ID!) {
+    employee(employeeId: $employeeId) {
+      name
+      match(jobId: $jobId) {
+        score
+        verdict
+        meetsExperience
+        blockers
+        gaps {
+          skill
+          required
+          actual
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "employeeId": "{{blockedEmployeeId}}",
+    "jobId": "{{jobId}}"
+  }
+}
+
+tests {
+  test("Vikram is blocked on two mandatory skills", function() {
+    const match = res.getBody().data.employee.match;
+    expect(match.verdict).to.equal("blocked");
+    expect(match.blockers.sort()).to.eql(["Python", "SQL"]);
+  });
+
+  test("the gaps say how far short, not just that he is short", function() {
+    const python = res.getBody().data.employee.match.gaps.find(g => g.skill === "Python");
+    expect(python).to.deep.include({ required: 4, actual: 3 });
+  });
+}
+
+docs {
+  The same scoring engine as the previous request, entered from the other side of the
+  graph: `Employee.match(jobId:)` instead of `Requisition.candidates`. One `store.score()`
+  in Python, two ways to ask for it — and no duplicated endpoint.
+
+  Swap `employeeId` to `{{strongEmployeeId}}` to see the 100 / `strong` answer.
+}

@@ -1,0 +1,58 @@
+meta {
+  name: An unknown employee is data too
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 21,
+    "method": "tools/call",
+    "params": {
+      "name": "score_match",
+      "arguments": { "employee_id": "{{missingEmployeeId}}", "job_id": "{{jobId}}" }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("still a successful call", function() {
+    expect(res.getBody().result.isError).to.be.false;
+  });
+
+  test("the message names both arguments, and not which one was wrong", function() {
+    const err = res.getBody().result.structuredContent.error;
+    expect(err).to.contain("E9999");
+    expect(err).to.contain("J2001");
+  });
+}
+
+docs {
+  The employee does not exist; the job does. The tool checks both at once —
+
+      if employee is None or job is None:
+          return {"error": f"unknown employee {employee_id!r} or job {job_id!r}"}
+
+  — so the message says *"unknown employee 'E9999' or job 'J2001'"* when only the first is
+  actually unknown. The second test asserts that behaviour rather than pretending otherwise.
+
+  That "or" is the kind of thing worth fixing before a model reads it. Compare with the REST
+  project, where [`Errors/Shortlist someone who does not exist`](../../fast-api/bruno) checks
+  the two separately and names the one that failed. Same domain, and one version tells the
+  caller more.
+}

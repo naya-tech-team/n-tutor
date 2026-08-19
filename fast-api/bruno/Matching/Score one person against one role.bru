@@ -1,0 +1,56 @@
+meta {
+  name: Score one person against one role
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{jobId}}/candidates/{{blockedEmployeeId}}
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Vikram scores 50 and is blocked", function() {
+    const m = res.getBody();
+    expect(m.employee_id).to.equal("E1005");
+    expect(m.score).to.equal(50);
+    expect(m.verdict).to.equal("blocked");
+    expect(m.blockers).to.eql(["Python", "SQL"]);
+  });
+
+  test("experience is judged separately from skills", function() {
+    expect(res.getBody().meets_experience).to.be.true;
+  });
+
+  test("every blocker also appears as a gap, with the numbers behind it", function() {
+    const m = res.getBody();
+    const mandatoryGaps = m.gaps.filter(g => g.mandatory).map(g => g.skill);
+    expect(mandatoryGaps).to.eql(m.blockers);
+    const python = m.gaps.find(g => g.skill === "Python");
+    expect(python).to.eql({ skill: "Python", required: 4, actual: 3, mandatory: true });
+  });
+
+  test("the score is reproducible by hand", function() {
+    // weights 2/2/2/1; Spark 4>=4 -> 2, Python 3/4 -> 1.5, SQL 0/4 -> 0, Airflow 0/3 -> 0
+    expect(res.getBody().score).to.equal(Math.round(100 * 3.5 / 7));
+  });
+}
+
+docs {
+  One person, one role, and the arithmetic laid out. `gaps` is the audit trail: Python
+  `required: 4, actual: 3` is a coaching problem, SQL `actual: 0` is a hiring problem, and
+  the partial credit in `store.score()` knows the difference — Python earns 1.5 of its 2
+  points, SQL earns none.
+
+  The last test recomputes the number from the weights rather than restating it. **A match
+  score you cannot reproduce by hand is a score nobody will defend in a hiring review**, so
+  it is worth proving that this one can be.
+
+  Note `meets_experience: true`. Vikram clears the 6-year floor comfortably and is *still*
+  blocked — a mandatory skill is not something seniority buys its way past.
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Health (plain HTTP)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq ok
+}
+
+docs {
+  The one endpoint that is NOT GraphQL, on purpose: a load balancer should not have to
+  speak GraphQL to check liveness.
+}

@@ -1,0 +1,57 @@
+meta {
+  name: An unknown requisition is data, not an error
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 20,
+    "method": "tools/call",
+    "params": {
+      "name": "get_requisition",
+      "arguments": { "job_id": "{{missingJobId}}" }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("HTTP 200 and isError false — this is a successful call", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().result.isError).to.be.false;
+  });
+
+  test("the miss is reported inside the payload", function() {
+    expect(res.getBody().result.structuredContent).to.eql({ error: "no requisition J9999" });
+  });
+}
+
+docs {
+  The REST project answers this with `404`. Here it is `200`, `isError: false`, and an
+  `{"error": ...}` object in the payload — and that is the tool working exactly as written:
+
+      return job or {"error": f"no requisition {job_id}"}
+
+  **An MCP tool's return value is the next thing the model reads.** A returned `{"error": …}`
+  is something it can act on; an unhandled exception is just a failed call it will retry.
+
+  The message could still be better. *"unknown requisition J9999; call `shortlist` with an id
+  from `get_requisition`"* tells the model what to do next — without that, a weak model tries
+  J9998, then J9997, until something stops it. Compare with *Calling a tool that does not
+  exist*, where the framework raises the error rather than the tool returning it.
+}

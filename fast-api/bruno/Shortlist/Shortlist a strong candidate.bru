@@ -1,0 +1,48 @@
+meta {
+  name: Shortlist a strong candidate
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/requisitions/{{jobId}}/shortlist
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employee_id": "{{strongEmployeeId}}"
+  }
+}
+
+vars:post-response {
+  firstAddedAt: res.body.added_at
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  test("201 Created", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("the entry carries the score it was accepted on", function() {
+    const entry = res.getBody();
+    expect(entry.employee_id).to.equal("E1002");
+    expect(entry.name).to.equal("Priya Raman");
+    expect(entry.score).to.equal(100);
+    expect(entry.verdict).to.equal("strong");
+    expect(entry.added_at).to.be.a("string");
+  });
+}
+
+docs {
+  Priya passes the same gate Vikram failed, so the POST creates a `ShortlistEntry`.
+
+  Note what the entry stores: the score and verdict **at the moment of shortlisting**, not a
+  live reference. Re-rate her skills tomorrow and the ranking changes while this record
+  keeps saying what the decision was based on.
+}

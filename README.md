@@ -3,6 +3,7 @@
 - Terraform
 - Python basics
 - Fast API
+- Fast API + GraphQL
 - MCP - FastMCP
 - A2A
 - Strands Agents

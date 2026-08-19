@@ -1,0 +1,53 @@
+meta {
+  name: Tool defaults belong to the server
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 15,
+    "method": "tools/call",
+    "params": {
+      "name": "shortlist",
+      "arguments": { "job_id": "{{jobId}}" }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("limit was never sent, and three came back", function() {
+    expect(res.getBody().result.structuredContent.result).to.have.lengthOf(3);
+  });
+
+  test("the same three as the explicit limit=3 call", function() {
+    const names = res.getBody().result.structuredContent.result.map(c => c.name);
+    expect(names).to.eql(["Priya Raman", "Rahul Menon", "Vikram Iyer"]);
+  });
+}
+
+docs {
+  The same call as the previous request with `limit` left out entirely — and the same three
+  rows come back, because `def shortlist(job_id: str, limit: int = 3)` puts the default in
+  the server.
+
+  It is worth being deliberate about this. The default is advertised in `tools/list`
+  (`"default": 3`), applied by the server, and testable here — three properties a value
+  hard-coded in a client prompt has none of. Every argument a model can omit is an argument
+  it cannot get wrong.
+}

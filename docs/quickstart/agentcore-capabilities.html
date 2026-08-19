@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Amazon Bedrock AgentCore — Capabilities, Trade-offs, Build Guide &amp; Use Cases</title>
+<meta name="description" content="A presentation deck on Amazon Bedrock AgentCore: all nine capabilities including Policy and Evaluations, an honest pros-and-cons reckoning, an eleven-step build guide from laptop to deployed runtime, and the use cases it is actually shaped for." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("deck-theme"); } catch(e) {}
+    document.documentElement.setAttribute("data-theme", stored || "dark");
+  })();
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+<style>
+  :root {
+    --bg:        #f7f8fb;
+    --bg-2:      #ffffff;
+    --fg:        #14161c;
+    --fg-dim:    #4d5566;
+    --fg-faint:  #7b8496;
+    --line:      #dfe3ec;
+    --accent:    #5b5bd6;
+    --accent-2:  #0d9488;
+    --warn:      #b45309;
+    --danger:    #be123c;
+    --code-bg:   #1c1f2b;
+    --shadow:    0 10px 30px rgba(20,22,28,.08);
+  }
+  :root[data-theme="dark"] {
+    --bg:        #0e1016;
+    --bg-2:      #161a24;
+    --fg:        #eef1f7;
+    --fg-dim:    #b3bccd;
+    --fg-faint:  #7d879b;
+    --line:      #262c3a;
+    --accent:    #8b8bf5;
+    --accent-2:  #2dd4bf;
+    --warn:      #fbbf24;
+    --danger:    #fb7185;
+    --code-bg:   #11141d;
+    --shadow:    0 10px 30px rgba(0,0,0,.45);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  code, pre, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+
+  /* ---------- deck + slides ---------- */
+  .deck { position: relative; height: 100vh; width: 100vw; }
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    justify-content: safe center;   /* a tall slide must not lose its own top */
+    padding: clamp(28px, 5vh, 64px) clamp(24px, 6vw, 96px) clamp(64px, 9vh, 92px);
+    visibility: hidden;         /* keeps layout, so Mermaid can measure */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .28s ease, transform .28s ease;
+    overflow-y: auto;
+  }
+  .slide.active { visibility: visible; opacity: 1; transform: none; }
+  /* Everything except the speaker notes is wrapped in this at load, so a slide
+     that would overflow can be scaled down to fit instead of scrolling. */
+  .slide-body { width: 100%; transform-origin: top center; }
+
+  .kicker {
+    font-size: clamp(.68rem, 1.1vw, .78rem);
+    letter-spacing: .16em; text-transform: uppercase; font-weight: 700;
+    color: var(--accent); margin-bottom: 10px;
+  }
+  .slide h1 {
+    font-size: clamp(2rem, 5.2vw, 3.9rem); line-height: 1.08;
+    margin: 0 0 14px; letter-spacing: -.02em; font-weight: 800;
+  }
+  .slide h2 {
+    font-size: clamp(1.5rem, 3.2vw, 2.5rem); line-height: 1.15;
+    margin: 0 0 18px; letter-spacing: -.015em; font-weight: 750;
+  }
+  .slide h3 { font-size: clamp(1rem, 1.7vw, 1.25rem); margin: 0 0 8px; font-weight: 700; }
+  .slide p  { font-size: clamp(.95rem, 1.5vw, 1.18rem); color: var(--fg-dim); margin: 0 0 14px; max-width: 62ch; }
+  .lead     { font-size: clamp(1.05rem, 2vw, 1.45rem) !important; color: var(--fg-dim); }
+  .slide strong { color: var(--fg); font-weight: 700; }
+  .slide em { color: var(--fg); font-style: italic; }
+
+  ul.bullets { list-style: none; margin: 0; padding: 0; max-width: 68ch; }
+  ul.bullets li {
+    position: relative; padding-left: 30px; margin-bottom: 13px;
+    font-size: clamp(.95rem, 1.5vw, 1.15rem); color: var(--fg-dim);
+  }
+  ul.bullets li::before {
+    content: ""; position: absolute; left: 6px; top: .62em;
+    width: 8px; height: 8px; border-radius: 2px; background: var(--accent);
+  }
+  ul.bullets.tick li::before {
+    content: "✓"; background: none; left: 0; top: 0; width: auto; height: auto;
+    color: var(--accent-2); font-weight: 800;
+  }
+  ul.bullets.cross li::before {
+    content: "✕"; background: none; left: 0; top: 0; width: auto; height: auto;
+    color: var(--danger); font-weight: 800;
+  }
+
+  /* ---------- title + section slides ---------- */
+  .slide.title, .slide.section { align-items: flex-start; }
+  .slide.section { background:
+      radial-gradient(1200px 500px at 12% 25%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%); }
+  .slide.section h1 { font-size: clamp(2.2rem, 6vw, 4.6rem); }
+  .slide.title .brand-line {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 26px;
+    color: var(--fg-faint); font-size: .95rem; letter-spacing: .04em;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .rule { width: 78px; height: 4px; border-radius: 3px; background: var(--accent); margin: 22px 0; }
+
+  /* ---------- cards + grids ---------- */
+  .grid { display: grid; gap: 16px; margin-top: 6px; }
+  .g2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .g4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  @media (max-width: 900px) { .g3, .g4 { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+
+  .card {
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .card h3 { color: var(--fg); }
+  .card p { font-size: clamp(.85rem, 1.15vw, 1rem); margin: 0; }
+  .card .num {
+    display: inline-block; font-size: .72rem; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+  }
+  .card.accent { border-left: 4px solid var(--accent); }
+  .card.good   { border-left: 4px solid var(--accent-2); }
+  .card.bad    { border-left: 4px solid var(--danger); }
+
+  .callout {
+    border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0;
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+    padding: 14px 18px; margin: 16px 0 0;
+  }
+  .callout.warn   { border-color: var(--warn);   background: color-mix(in srgb, var(--warn) 12%, transparent); }
+  .callout.danger { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); }
+  .callout p { margin: 0; color: var(--fg); }
+  .callout .label {
+    display: block; font-size: .7rem; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--fg-faint); margin-bottom: 6px;
+  }
+
+  .big-quote {
+    font-size: clamp(1.4rem, 3.6vw, 2.6rem); line-height: 1.25; font-weight: 700;
+    letter-spacing: -.015em; color: var(--fg); max-width: 22ch; margin: 0;
+  }
+  .big-quote .hl { color: var(--accent); }
+
+  /* ---------- tables ---------- */
+  table { border-collapse: collapse; width: 100%; margin-top: 6px; font-size: clamp(.8rem, 1.15vw, 1rem); }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--fg-faint); font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+  td { color: var(--fg-dim); }
+  td strong, td code { color: var(--fg); }
+  tr:last-child td { border-bottom: none; }
+  .nowrap td:first-child { white-space: nowrap; font-weight: 600; color: var(--fg); }
+
+  /* ---------- code ---------- */
+  pre[class*="language-"], pre.plain {
+    background: var(--code-bg) !important; border: 1px solid var(--line);
+    border-radius: 10px; padding: 14px 16px; margin: 10px 0 0;
+    font-size: clamp(.72rem, 1.02vw, .92rem); line-height: 1.55; overflow: auto;
+  }
+  pre.plain { color: #e6e9f2; }
+  code:not([class*="language-"]) {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    padding: .1em .38em; border-radius: 5px; font-size: .9em; color: var(--fg);
+  }
+  .code-label {
+    font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--fg-faint); font-weight: 700; margin-top: 12px;
+  }
+
+  /* ---------- mermaid ---------- */
+  .diagram { display: flex; justify-content: center; margin: 6px 0 0; }
+  .diagram .mermaid { width: 100%; text-align: center; }
+  .diagram svg { max-width: 100%; height: auto !important; max-height: 58vh; }
+  .caption { text-align: center; color: var(--fg-faint); font-size: clamp(.78rem, 1.1vw, .92rem); margin-top: 10px; }
+
+  /* ---------- HUD ---------- */
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0; z-index: 60; transition: width .25s ease; }
+  .hud {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 55;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px clamp(16px, 4vw, 40px); background: transparent;
+    color: var(--fg-faint); font-size: .8rem;
+  }
+  .hud .deck-name { font-weight: 700; letter-spacing: .04em; color: var(--fg-faint); }
+  .hud .spacer { flex: 1; }
+  .hud button {
+    background: var(--bg-2); color: var(--fg-dim); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 11px; cursor: pointer; font: inherit; font-size: .78rem;
+  }
+  .hud button:hover { color: var(--fg); border-color: var(--accent); }
+  .counter { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--fg-dim); }
+  .hint { opacity: .65; }
+
+  /* ---------- speaker notes ---------- */
+  .notes { display: none; }
+  body.show-notes .notes {
+    display: block; position: fixed; left: 0; right: 0; bottom: 44px; z-index: 50;
+    background: var(--bg-2); border-top: 2px solid var(--accent);
+    padding: 12px clamp(16px, 4vw, 40px); font-size: .92rem; color: var(--fg-dim);
+    max-height: 26vh; overflow: auto;
+  }
+  body.show-notes .slide:not(.active) .notes { display: none; }
+  .notes b { color: var(--fg); }
+
+  /* ---------- jump menu ---------- */
+  .menu {
+    position: fixed; inset: 0; z-index: 70; display: none;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); padding: clamp(24px, 6vh, 60px) clamp(20px, 6vw, 80px); overflow: auto;
+  }
+  body.show-menu .menu { display: block; }
+  .menu h2 { margin: 0 0 18px; font-size: 1.4rem; }
+  .menu ol { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 40px; }
+  @media (max-width: 800px) { .menu ol { columns: 1; } }
+  .menu li { break-inside: avoid; }
+  .menu button {
+    display: flex; gap: 12px; width: 100%; text-align: left; background: none; border: none;
+    color: var(--fg-dim); padding: 7px 10px; border-radius: 8px; cursor: pointer;
+    font: inherit; font-size: .95rem;
+  }
+  .menu button:hover, .menu button.current { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); }
+  .menu button .n { color: var(--fg-faint); font-variant-numeric: tabular-nums; min-width: 2.2em; }
+
+  /* ---------- print / PDF export ---------- */
+  @media print {
+    body { overflow: visible; background: #fff; }
+    .hud, .progress, .menu { display: none !important; }
+    .deck { height: auto; }
+    .slide {
+      position: static; visibility: visible; opacity: 1; transform: none;
+      height: 100vh; page-break-after: always; break-after: page; box-shadow: none;
+    }
+    .notes { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 -->
+  <section class="slide title" data-title="Title">
+    <div class="brand-line"><span class="dot"></span> AI Engineering · Learn from Zero</div>
+    <div class="kicker">Amazon Bedrock</div>
+    <h1>AgentCore</h1>
+    <div class="rule"></div>
+    <p class="lead">Nine capabilities, an honest ledger of what they cost you,<br/>a build order that works, and the problems they are actually shaped for.</p>
+    <p style="color:var(--fg-faint)">← → to move · <b>O</b> for the slide menu · <b>N</b> for speaker notes · <b>T</b> for light mode</p>
+    <aside class="notes">Set expectations in one sentence: <b>this deck is not a sales pitch</b>. Half of it is what AgentCore does not do. If the audience is deciding whether to adopt, tell them the decision slide is #29 and they can jump there with <b>O</b>.</aside>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide" data-title="What this deck covers">
+    <div class="kicker">Agenda</div>
+    <h2>Four questions, in the order people actually ask them</h2>
+    <div class="grid g4">
+      <div class="card accent">
+        <span class="num">Part 1</span>
+        <h3>What can it do?</h3>
+        <p>The nine capabilities — what each is, what it replaces, and the one thing that surprises everyone.</p>
+      </div>
+      <div class="card accent">
+        <span class="num">Part 2</span>
+        <h3>What does it cost me?</h3>
+        <p>Pros and cons side by side, including lock-in, opacity and the failures that read as timeouts.</p>
+      </div>
+      <div class="card accent">
+        <span class="num">Part 3</span>
+        <h3>How do I build it?</h3>
+        <p>Eleven steps from an empty folder to a deployed, governed, evaluated runtime.</p>
+      </div>
+      <div class="card accent">
+        <span class="num">Part 4</span>
+        <h3>What is it good for?</h3>
+        <p>Use cases with the architecture attached — and the ones where it is the wrong tool.</p>
+      </div>
+    </div>
+    <div class="callout"><p><strong>One example runs through all four parts:</strong> an HR recruiting desk that screens candidates against a requisition — because a use case you can hold in your head beats four you cannot.</p></div>
+    <aside class="notes">Timing guide: Part 1 ~18 min, Part 2 ~8 min, Part 3 ~15 min, Part 4 ~10 min. If you only have 20 minutes, run slides 5, 22, 26, 29, 43.</aside>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" data-title="The problem">
+    <div class="kicker">Why any of this exists</div>
+    <h2>Everything that makes an agent work on a laptop is what breaks in production</h2>
+    <div class="grid g2">
+      <div class="card bad">
+        <h3>On your laptop</h3>
+        <ul class="bullets" style="margin-top:10px">
+          <li>State is a Python dict that dies with the process</li>
+          <li>Auth is your <code>~/.aws/credentials</code></li>
+          <li>Tools are functions you imported</li>
+          <li>Debugging is a <code>print()</code> and a scrollback buffer</li>
+          <li>Quality assurance is running it three times and it "seeming fine"</li>
+          <li>One user — you — and one conversation at a time</li>
+        </ul>
+      </div>
+      <div class="card good">
+        <h3>The moment someone else can call it</h3>
+        <ul class="bullets" style="margin-top:10px">
+          <li>State must outlive the request <em>and</em> not leak between users</li>
+          <li>Auth must distinguish a person from a service</li>
+          <li>Tools live in other teams' accounts, behind other teams' APIs</li>
+          <li>A wrong answer at 2am needs a trace, not a hunch</li>
+          <li>A prompt change that "seems harmless" can drop accuracy 20% silently</li>
+          <li>Turns run for hours; Lambda gives you fifteen minutes</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout warn"><span class="label">The honest framing</span><p>None of this is agent-specific. It is the same list you would write for any service. AgentCore's bet is that <strong>you would rather not build it a sixth time.</strong></p></div>
+    <aside class="notes">Ask the room: who has already built session isolation or a token vault by hand? Usually a third of hands. Those are the people who will get the value fastest — and the people most alert to lock-in.</aside>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide" data-title="Platform, not framework">
+    <div class="kicker">The mental model</div>
+    <h2>A framework decides how your agent <em>thinks</em>.<br/>A platform decides what happens when <em>other people can call it</em>.</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Framework — you keep choosing</h3>
+        <p>Strands, LangGraph, CrewAI, LlamaIndex, or a bare <code>while</code> loop around the Messages API. AgentCore does not care and does not replace it.</p>
+      </div>
+      <div class="card">
+        <h3>Platform — AgentCore's job</h3>
+        <p>Hosting, session isolation, tool plumbing, memory, identity, traces, authorization, evaluation. Nine services you adopt <strong>one at a time</strong>, not a bundle you swallow whole.</p>
+      </div>
+    </div>
+    <div class="callout"><p><strong>Model-agnostic too.</strong> Bedrock models are the smooth path, but Anthropic's API directly, OpenAI, Gemini, Mistral, Cohere, HuggingFace or a self-hosted model all work — a runtime is a container that happens to make outbound HTTPS calls. Choose on cost, capability, regional availability or compliance; nothing in Runtime inspects which model you picked.</p></div>
+    <aside class="notes">This is the slide that defuses the most common objection — "we already standardised on LangGraph". The answer is that the two are not competing; AgentCore is where LangGraph <b>runs</b>.</aside>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide" data-title="The nine capabilities">
+    <div class="kicker">Part 1 · Capabilities</div>
+    <h2>Nine services, adopted independently</h2>
+    <div class="grid g3">
+      <div class="card accent"><span class="num">01</span><h3>Runtime</h3><p>Serverless host for agents. Per-session microVM isolation, 8-hour turns, 100&nbsp;MB payloads, framework-indifferent.</p></div>
+      <div class="card accent"><span class="num">02</span><h3>Gateway</h3><p>Turns Lambdas, OpenAPI specs and Smithy models into MCP tools. A protocol adapter.</p></div>
+      <div class="card accent"><span class="num">03</span><h3>Memory</h3><p>Short-term events now, long-term extracted records later. Two clocks, one API.</p></div>
+      <div class="card accent"><span class="num">04</span><h3>Identity</h3><p>Who may call the agent, and what the agent may call on your behalf. 2LO and 3LO.</p></div>
+      <div class="card accent"><span class="num">05</span><h3>Observability</h3><p>OpenTelemetry spans into CloudWatch. Sessions, traces and spans across every hop.</p></div>
+      <div class="card accent"><span class="num">06</span><h3>Code Interpreter</h3><p>Sandboxed Python/JS/TS execution with file operations. Public or VPC network mode.</p></div>
+      <div class="card accent"><span class="num">07</span><h3>Browser</h3><p>Managed headless Chrome the agent drives, with live view and session replay.</p></div>
+      <div class="card accent"><span class="num">08</span><h3>Policy</h3><p>Deterministic Cedar authorization on every tool call through the Gateway. Default deny.</p></div>
+      <div class="card accent"><span class="num">09</span><h3>Evaluations</h3><p>Scored judgement of traces — tool accuracy, correctness, safety, goal success.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="callout"><span class="label">A naming note</span><p>AWS material often counts <strong>seven components</strong> by folding Code Interpreter and Browser together as "Tools" and leaving out the two newest. Same services, different arithmetic — do not let the count confuse you.</p></div>
+      <div class="callout warn"><span class="label">The rule that matters more than the count</span><p><strong>Take only what you need.</strong> Runtime alone is a perfectly good adoption. Nothing forces the other eight, and nothing charges you for them.</p></div>
+    </div>
+    <aside class="notes">Emphasise the second callout. The most successful adoptions in the room will be "Runtime + Observability" for six months before anything else is touched. Presenting all nine as a package is how you lose people.</aside>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide section" data-title="§ Capabilities in detail">
+    <div class="kicker">Part 1</div>
+    <h1>The nine,<br/>up close</h1>
+    <p class="lead">What it is · what it replaces · the thing nobody warns you about.</p>
+    <aside class="notes">Fifteen slides, roughly 70 seconds each. Resist deep-diving; the tutorial has the depth and the deck should keep moving.</aside>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" data-title="1 · Runtime">
+    <div class="kicker">Capability 01</div>
+    <h2>Runtime — a serverless container host built for agents</h2>
+    <div class="grid g3">
+      <div class="card good"><h3>What it is</h3><p>You hand it a zip or an image. It hands you an ARN and an endpoint. Each session gets its own microVM with dedicated CPU, memory and filesystem.</p></div>
+      <div class="card"><h3>What it replaces</h3><p>An ECS service, an ALB, an autoscaling policy, and the session-affinity logic you were about to write.</p></div>
+      <div class="card bad"><h3>The surprise</h3><p>Turns can run for hours — but the container has <strong>30 seconds</strong> to become healthy at cold start, and a heavy dependency tree spends it.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div>
+        <div class="code-label">The whole contract, in five lines</div>
+        <pre><code class="language-python">from bedrock_agentcore.runtime import BedrockAgentCoreApp
+
+app = BedrockAgentCoreApp()
+
+@app.entrypoint
+def handler(payload, context):          # context carries session id + headers
+    return {"result": agent(payload["prompt"]).message}
+
+if __name__ == "__main__":
+    app.run(port=8080)                  # HTTP protocol -> 8080</code></pre>
+        <p style="font-size:.95rem;margin-top:10px">Same signature for every framework. <code>payload</code> is your own JSON schema; the return dict is serialised to JSON.</p>
+      </div>
+      <div>
+        <div class="code-label">Against the thing you would otherwise use</div>
+        <table class="nowrap">
+          <thead><tr><th></th><th>Lambda</th><th>AgentCore Runtime</th></tr></thead>
+          <tbody>
+            <tr><td>Max duration</td><td>15 minutes</td><td><strong>8 hours</strong></td></tr>
+            <tr><td>Max payload</td><td>6 MB</td><td><strong>100 MB</strong></td></tr>
+            <tr><td>Isolation</td><td>Shared execution env</td><td><strong>microVM per session</strong></td></tr>
+            <tr><td>Idle behaviour</td><td>Cold start</td><td>15-min idle timeout</td></tr>
+            <tr><td>Billing</td><td>Per ms of invocation</td><td>Per second, while processing</td></tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top:12px"><p><strong>The container itself is unremarkable:</strong> Linux, <code>ARM64</code> (Graviton), a <code>POST /invocations</code> endpoint and a <code>GET /ping</code> health check. <code>BedrockAgentCoreApp</code> wires all of that for you.</p></div>
+      </div>
+    </div>
+    <aside class="notes">The 30-second health check is the single most common launch failure. <code>strands-agents[a2a]</code> pulls in a PostgreSQL driver and gRPC; the OTel distro walks ~45 instrumentations before your server binds. Prune the first, disable the auto-instrumentor if you must. The symptom is HTTP 424, which reads like a client error. Note the tension with AWS's "sub-second cold start" claim — that is the microVM starting, not your dependency tree importing.</aside>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" data-title="1 · Runtime — protocol contract">
+    <div class="kicker">Capability 01 · the gotcha worth a whole slide</div>
+    <h2>The protocol decides the port. Get it wrong and nothing tells you.</h2>
+    <table class="nowrap">
+      <thead><tr><th>Protocol</th><th>Port</th><th>Mount path</th><th>Discovery</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td>HTTP</td><td><code>8080</code></td><td><code>/invocations</code> + <code>/ping</code></td><td>none</td><td>your own front door</td></tr>
+        <tr><td>MCP</td><td><code>8000</code></td><td><code>/mcp</code></td><td><code>tools/list</code></td><td>a tool server</td></tr>
+        <tr><td>A2A</td><td><code>9000</code></td><td><code>/</code></td><td>agent card at <code>/.well-known/agent-card.json</code></td><td>an agent other agents delegate to</td></tr>
+        <tr><td>AGUI</td><td><code>8080</code></td><td><code>/invocations</code> (SSE)</td><td>none</td><td>a UI-facing event stream</td></tr>
+      </tbody>
+    </table>
+    <div class="callout danger"><span class="label">The failure that wastes an afternoon</span><p>Bind <code>8080</code> in an A2A container and <strong>the deploy succeeds.</strong> The container starts, fails its health check, and the error you eventually see is a timeout. Nothing anywhere says "wrong port." This table is the first thing to check when a deploy works but never answers.</p></div>
+    <aside class="notes">If you only leave one table on screen during questions, make it this one. Every team hits it exactly once.</aside>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide" data-title="1 · Runtime — long turns, streaming, multi-modal">
+    <div class="kicker">Capability 01 · the parts people discover late</div>
+    <h2>Three Runtime behaviours worth designing for on purpose</h2>
+    <div class="grid g3">
+      <div class="card">
+        <h3>Streaming vs blocking</h3>
+        <p>A plain <code>def</code> entrypoint blocks until the whole answer exists, then returns it in one piece. Make it an <code>async def</code> that <code>yield</code>s and the caller gets tokens as they are generated.</p>
+        <p style="margin-top:10px"><strong>Rule of thumb:</strong> anything a human waits on should stream. Anything a service consumes should not.</p>
+      </div>
+      <div class="card">
+        <h3>Long-running work</h3>
+        <p>Past ~15 minutes of silence a session is considered idle. For genuinely long jobs the agent reports status <code>HEALTHY_BUSY</code> from its ping handler, which keeps the session alive to the 8-hour ceiling.</p>
+        <p style="margin-top:10px"><strong>Design consequence:</strong> "still working" is a state you must actively assert, not a default.</p>
+      </div>
+      <div class="card">
+        <h3>Multi-modal payloads</h3>
+        <p>100 MB covers text and documents, images (PNG/JPEG/WebP), audio, video and large datasets — which is what makes document-extraction and transcription agents practical here rather than in Lambda.</p>
+        <p style="margin-top:10px"><strong>Watch:</strong> big payloads are billed compute time too.</p>
+      </div>
+    </div>
+    <div class="callout"><span class="label">The context object</span><p>Alongside the payload you get session id, user id and — if you allow-list them — <strong>custom headers</strong>. That is the supported channel for OAuth tokens, tenant identifiers, tracking ids and feature flags. Use it instead of smuggling metadata into the prompt.</p></div>
+    <aside class="notes">The HEALTHY_BUSY detail is the one that saves a project. Teams building long research or migration agents assume the 8 hours is automatic; it is available, but only if the ping handler claims it.</aside>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" data-title="2 · Gateway">
+    <div class="kicker">Capability 02</div>
+    <h2>Gateway — a protocol adapter, not a router</h2>
+    <div class="grid g3">
+      <div class="card good"><h3>What it is</h3><p>A managed MCP server fronting things that are <em>not</em> MCP servers. One endpoint, many targets, one <code>tools/list</code>.</p></div>
+      <div class="card"><h3>What it replaces</h3><p>The MCP wrapper server you were going to write for each internal API, plus its deployment, plus its auth, plus its token refresh.</p></div>
+      <div class="card bad"><h3>The surprise</h3><p>Tools arrive <strong>namespaced</strong>: <code>hrdata___find_by_skill</code>. Split on the wrong delimiter and your Lambda dispatch silently mismatches.</p></div>
+    </div>
+    <div class="diagram" style="margin-top:14px"><pre class="mermaid">
+flowchart LR
+    A["Agent<br/>speaks MCP"] --> G["AgentCore Gateway<br/>one MCP endpoint"]
+    G --> L["Lambda target<br/>your own logic"]
+    G --> O["OpenAPI target<br/>any REST API"]
+    G --> S["Smithy target<br/>AWS services"]
+    G --> P["1-click SaaS<br/>Slack · Jira · Salesforce"]
+    M["Your own MCP server<br/>already speaks MCP"] -.->|"do NOT put this behind Gateway"| A
+    </pre></div>
+    <div class="callout"><span class="label">The design rule, in one sentence</span><p><strong>Put a thing behind the Gateway only when it cannot speak MCP on its own.</strong> A server that already speaks MCP should be a Runtime with the MCP protocol, called directly — routing it through Gateway adds a hop and buys nothing.</p></div>
+    <aside class="notes">The 1-click SaaS integrations (Slack, Salesforce, Jira, Asana, Zendesk) are the fastest demo you can give a business audience: provide OAuth credentials, get working tools, no integration code.</aside>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" data-title="2 · Gateway — targets, naming, discovery">
+    <div class="kicker">Capability 02 · the operational detail</div>
+    <h2>Three target types, one URL, and a naming rule that bites</h2>
+    <div class="grid g3">
+      <div class="card"><h3>Lambda targets</h3><p>Your own logic: database queries, business process automation, proprietary rules. You define each tool's JSON schema — <strong>and the description is what the model reads to choose it.</strong></p></div>
+      <div class="card"><h3>OpenAPI targets</h3><p>Hand it a Swagger/OpenAPI spec and every endpoint becomes a tool. Auth via API key, OAuth 2.0 or IAM, with credentials held in a credential provider rather than your code.</p></div>
+      <div class="card"><h3>Smithy targets</h3><p>Built-in models for hundreds of AWS services — DynamoDB, S3, Lambda, EC2, RDS, SQS, SNS. Gateway translates MCP calls into SDK calls and handles IAM via the execution role.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div>
+        <div class="code-label">One gateway, one URL, every framework</div>
+        <pre class="plain">https://{gatewayId}.gateway.{region}.amazonaws.com/mcp</pre>
+        <div class="callout warn" style="margin-top:12px"><span class="label">Semantic tool search</span><p>Agents start mis-picking somewhere around <strong>100 tools</strong>; turn semantic search on past ~50 so the agent searches rather than being handed the whole list. It is set <strong>at gateway creation and cannot be changed later</strong> — like the gateway id and region.</p></div>
+      </div>
+      <div>
+        <div class="code-label">Reading the namespaced tool name in a Lambda</div>
+        <pre><code class="language-python">def lambda_handler(event, context):
+    raw = context.client_context.custom["bedrockAgentCoreToolName"]
+    tool = raw.split("___", 1)[-1]        # hrdata___find_by_skill
+    return DISPATCH[tool](**event)       # event is flat — no API GW envelope</code></pre>
+        <div class="callout danger" style="margin-top:12px"><span class="label">Check this against your own gateway</span><p>Working code in <code>agent-core/</code> uses a <strong>three-underscore</strong> delimiter, and its tests assert it. Some AWS course material writes the pattern as <code>target__tool</code> with two. Print the raw name once on your own gateway and split on what you actually receive.</p></div>
+      </div>
+    </div>
+    <aside class="notes">The "description is what the LLM reads" point deserves ten seconds. Teams write tool descriptions like internal API docs — tech stack, owning team — when the only reader that matters is choosing between them.</aside>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" data-title="3 · Memory">
+    <div class="kicker">Capability 03</div>
+    <h2>Memory — events are written now, records appear later</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Short-term — the conversation</h3>
+        <p>Raw user messages, agent responses, tool invocations and system events, written synchronously and read back in order. Retention is configurable from <strong>7 to 365 days</strong>.</p>
+        <p style="margin-top:10px"><code>CreateEvent</code> · <code>ListEvents</code> · <code>GetEvent</code> · <code>ListSessions</code></p>
+      </div>
+      <div class="card">
+        <h3>Long-term — the extracted records</h3>
+        <p>Strategies run <strong>asynchronously</strong> over those events and write durable records you query by relevance within a namespace.</p>
+        <p style="margin-top:10px"><code>RetrieveMemoryRecords(namespace=…)</code></p>
+      </div>
+    </div>
+    <div class="callout warn"><span class="label">The surprise that generates the most bug reports</span><p>Long-term extraction is <strong>eventually consistent</strong>. You write an event, immediately query long-term memory, get nothing, and conclude Memory is broken. It is not — the strategy has not run yet. Test long-term retrieval on the <em>next</em> session, not the current turn.</p></div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card accent"><h3>The key decision: what are your two ids?</h3><p><code>actorId</code> is the memory owner and the <strong>security boundary</strong> — a person, or an agent. <code>sessionId</code> is the unit of conversation. Get this pair wrong and memory either leaks between users or forgets between turns.</p></div>
+      <div class="card accent"><h3>Namespaces are how you scope a query</h3><p><code>/strategy/{strategyId}/actor/{actorId}/session/{sessionId}</code> — read left to right, that is global → per strategy → per actor → per session. Retrieve at the granularity you actually mean.</p></div>
+    </div>
+    <aside class="notes">If someone asks "why not just DynamoDB?" — the honest answer is that short-term memory <b>is</b> a table you could write in an afternoon. The part you cannot write in an afternoon is the extraction pipeline behind long-term strategies. Also worth noting: one memory can be shared across several agents.</aside>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide" data-title="3 · Memory — the four strategies">
+    <div class="kicker">Capability 03 · what actually gets extracted</div>
+    <h2>Four built-in strategies, and a custom one when none of them is your domain</h2>
+    <div class="grid g4">
+      <div class="card"><span class="num">Strategy 1</span><h3>Semantic</h3><p>Facts and knowledge from a session, retrievable by meaning.</p><p style="margin-top:8px"><em>Support agent recalls that order #ABC-123 belongs to a specific ticket, so the user need not repeat it.</em></p></div>
+      <div class="card"><span class="num">Strategy 2</span><h3>Summary</h3><p>A condensed account of roughly one conversation.</p><p style="margin-top:8px"><em>After a 30-minute troubleshooting call: "reported issue with v2.1, tried a restart, sent the KB article."</em></p></div>
+      <div class="card"><span class="num">Strategy 3</span><h3>User preference</h3><p>Stable preferences accumulated across many sessions.</p><p style="margin-top:8px"><em>An e-commerce agent remembers favourite brands and size, and tailors recommendations later.</em></p></div>
+      <div class="card"><span class="num">Strategy 4</span><h3>Episodic</h3><p>Structured records of completed interactions — situation → intent → action → <strong>outcome</strong> — plus reflections across many episodes.</p><p style="margin-top:8px"><em>A deployment agent learns that memory-error Docker builds were fixed five times by multi-stage builds, and applies it.</em></p></div>
+    </div>
+    <div class="callout"><span class="label">Why episodic is the interesting one</span><p>The first three remember <em>facts</em>. Episodic remembers <strong>which strategies worked</strong> — outcome is part of the record, so the agent can prefer the approach that succeeded rather than re-deriving it. That is the difference between an agent with a history and an agent that improves.</p></div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card accent"><h3>Custom strategies</h3><p>An <strong>extraction prompt</strong> (what to pull out, your domain rules) plus a <strong>consolidation prompt</strong> (merge, deduplicate, update vs add vs skip) plus the model of your choice.</p></div>
+      <div class="card bad"><h3>When to reach for one</h3><p>When the generic summary is prose and you needed structure: ranked preferences, confidence scores, fields a downstream API can consume. Prose is a bad interface for the next system.</p></div>
+    </div>
+    <aside class="notes">Good demo if you have time: the travel-booking transcript. A generic summary produces a readable paragraph; a custom strategy produces ranked loyalty programmes with confidence scores. Same conversation, one is queryable.</aside>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" data-title="4 · Identity">
+    <div class="kicker">Capability 04</div>
+    <h2>Identity — two directions, and they work differently</h2>
+    <div class="grid g2">
+      <div class="card good">
+        <h3>Inbound — who may call this agent</h3>
+        <p><strong>Humans</strong> arrive with a JWT from Cognito, Entra ID, Okta or any OIDC provider — configured as a JWT authorizer on the runtime or gateway.</p>
+        <p style="margin-top:10px"><strong>Machines</strong> arrive with SigV4 signed by an IAM role: credentials valid <em>and</em> permission in scope, or the call is blocked.</p>
+      </div>
+      <div class="card good">
+        <h3>Outbound — what the agent may do as you</h3>
+        <p>A <strong>token vault</strong> holds OAuth 2.0 credentials and API keys, KMS-encrypted, scoped per agent-and-user, refreshed automatically and logged on every access.</p>
+        <p style="margin-top:10px">Built-in providers: Google (Drive, Calendar, Gmail), GitHub, Slack, Salesforce, Auth0, Microsoft, Cognito — plus any OAuth 2.0 service you configure yourself.</p>
+      </div>
+    </div>
+    <div class="callout danger"><span class="label">The thing that catches everyone</span><p><strong>An inbound human token is not a credential you can forward inward.</strong> A supervisor authenticated by Cognito calling a specialist runtime makes that inner hop machine-to-machine, signed with its own execution role. Any user context the inner agent needs must travel in the <em>payload</em> or an allow-listed header — never as a re-used bearer token.</p></div>
+    <aside class="notes">This is an architecture constraint, not a bug: it forces you to decide explicitly what the inner agent is allowed to know about the user. Teams that assume token pass-through design themselves into a corner around week three.</aside>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide" data-title="4 · Identity — 2LO vs 3LO">
+    <div class="kicker">Capability 04 · the distinction that decides your design</div>
+    <h2>Ask one question: does a human have to consent?</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>2LO — two-legged, machine to machine</h3>
+        <p>The agent authenticates as itself with client credentials. No user, no consent screen, no interaction.</p>
+        <ul class="bullets" style="margin-top:10px">
+          <li>Pull logs from internal APIs</li>
+          <li>Process company analytics</li>
+          <li>Generate scheduled reports</li>
+          <li>Write to a shared data warehouse</li>
+        </ul>
+        <p style="margin-top:10px"><strong>Choose when</strong> the data is the company's, or the job runs at 3am with nobody to ask.</p>
+      </div>
+      <div class="card">
+        <h3>3LO — three-legged, on behalf of a user</h3>
+        <p>The agent hands the user an authorization URL; the user logs in and consents; the returned code is exchanged for tokens the vault then keeps and refreshes.</p>
+        <ul class="bullets" style="margin-top:10px">
+          <li>Read this user's Gmail</li>
+          <li>Access this user's calendar</li>
+          <li>Save a file to this user's Drive</li>
+        </ul>
+        <p style="margin-top:10px"><strong>Choose when</strong> the resource is personal and the user is present to approve it.</p>
+      </div>
+    </div>
+    <div class="callout"><span class="label">The workload access token</span><p>AWS-signed, issued to the runtime, carrying <strong>agent identity plus user identity</strong> — "an agent visa and a user passport." It is what the vault checks before releasing a credential, which is how the same agent gets <em>your</em> Google token and not someone else's.</p></div>
+    <aside class="notes">The 2LO/3LO split is the cleanest vocabulary in the whole platform. If a team cannot say which one a given integration is, they have not finished designing it.</aside>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide" data-title="5 · Observability">
+    <div class="kicker">Capability 05</div>
+    <h2>Observability — the only reason you will ever find out what happened</h2>
+    <div class="grid g3">
+      <div class="card good"><h3>What it is</h3><p>Built-in metrics — session counts, latency, duration, token usage, error rates — across Runtime, Memory, Gateway, Tools and Identity, in CloudWatch's GenAI observability dashboard.</p></div>
+      <div class="card"><h3>What it replaces</h3><p>Logging every prompt to stdout and grepping five log groups at 2am trying to reconstruct one request.</p></div>
+      <div class="card bad"><h3>The surprise</h3><p>Transport spans come free. <strong>Model and tool spans do not</strong> — they need <code>aws-opentelemetry-distro</code> and the process started under <code>opentelemetry-instrument</code>.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div>
+        <div class="code-label">The hierarchy every dashboard is built on</div>
+        <pre class="plain">SESSION  (a one-hour conversation)
+├── TRACE 1  "What's the weather?"
+│   ├── Span: LLM reasoning        200ms
+│   ├── Span: Weather tool call    500ms
+│   └── Span: Format response       50ms
+├── TRACE 2  "Any tips?"
+│   ├── Span: LLM reasoning        180ms
+│   ├── Span: Memory retrieval     100ms
+│   └── Span: Generate response    150ms</pre>
+        <p class="caption">Session = the conversation · Trace = one user prompt · Span = one step inside it</p>
+      </div>
+      <div>
+        <div class="card accent"><h3>What to watch in production</h3>
+          <ul class="bullets" style="margin-top:10px">
+            <li><strong>Performance</strong> — latency p50/p90/p99, duration, tokens per request</li>
+            <li><strong>Reliability</strong> — 4xx vs 5xx, throttles, success rate</li>
+            <li><strong>Cost</strong> — invocations, token consumption, memory resource usage</li>
+            <li><strong>Usage</strong> — active sessions, requests per minute, peak times</li>
+          </ul>
+        </div>
+        <div class="callout" style="margin-top:12px"><p>It is OpenTelemetry underneath, so third-party platforms work too — <strong>enable Transaction Search</strong> in CloudWatch, and know that OpenLLMetry/Traceloop-style tooling plugs into the same stream.</p></div>
+      </div>
+    </div>
+    <div class="callout danger"><p><strong>One requisition, one trace — but only if you propagate the session id on every hop.</strong> Drop it once and you get five unrelated traces that share nothing, which is worse than no tracing because it looks like it is working.</p></div>
+    <aside class="notes">Three quiet failures worth naming: a trace that splits into five (dropped header), spans with no model detail (missing distro), and a session that looks healthy while every tool call inside it failed and the agent apologised its way to an answer.</aside>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide" data-title="6 &amp; 7 · Code Interpreter and Browser">
+    <div class="kicker">Capabilities 06 &amp; 07 · together, AWS calls these "Tools"</div>
+    <h2>The two you will either love or never touch</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Code Interpreter</h3>
+        <p>A sandboxed session where model-written code actually runs — Python, JavaScript, TypeScript, with pandas and numpy available.</p>
+        <p style="margin-top:10px"><code>executeCode</code> · <code>executeCommand</code> · <code>writeFiles</code> · <code>readFiles</code> · <code>removeFiles</code> · <code>listFiles</code></p>
+        <p style="margin-top:10px"><strong>Reach for it when</strong> the answer requires arithmetic over data the model should not eyeball — a 40,000-row CSV, a statistical test, a format conversion, a chart.</p>
+      </div>
+      <div class="card">
+        <h3>Browser</h3>
+        <p>A managed, serverless headless Chrome the agent drives: clicking, typing, submitting, executing page JavaScript, reading the page as a human sees it.</p>
+        <p style="margin-top:10px"><strong>Live view</strong> lets a human watch and take control. <strong>Session replay</strong> records every interaction — a real audit trail, not a log line.</p>
+        <p style="margin-top:10px"><strong>Reach for it when</strong> the system of record has no API and never will.</p>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="callout"><span class="label">Both have two network modes</span><p><strong>Public</strong> for the open internet — public APIs, web scraping. <strong>VPC</strong> for anything internal — databases, private APIs, internal web apps. Pick deliberately; the default is the weaker guarantee.</p></div>
+      <div class="callout warn"><span class="label">The CAPTCHA rule</span><p>Do <em>not</em> use Browser for general web search, and do not try to solve CAPTCHAs programmatically. Use a search tool for search, use Browser for specific page actions, and route the CAPTCHA to a human through live view.</p></div>
+    </div>
+    <div class="callout danger" style="margin-top:14px"><p><strong>Say this part out loud:</strong> the HR example uses neither. Scoring is deterministic Python behind an MCP server, and every data source has an API. <strong>Both of these are answers to a question you should be able to state first.</strong></p></div>
+    <aside class="notes">Browser is genuinely the escape hatch for legacy integration — worth flagging to anyone in insurance, logistics or public sector, where "there is no API" is a fact of life rather than a temporary state.</aside>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide" data-title="8 · Policy">
+    <div class="kicker">Capability 08</div>
+    <h2>Policy — because "the agent decided to" is not a control</h2>
+    <div class="grid g2">
+      <div class="card bad">
+        <h3>The problem it exists for</h3>
+        <ul class="bullets cross" style="margin-top:10px">
+          <li>Agents choose which tools to call, and with what arguments</li>
+          <li>LLMs can be talked out of your system prompt by prompt injection</li>
+          <li>A single breach is not one bad answer — it is one bad <em>action</em></li>
+        </ul>
+        <p style="margin-top:12px"><strong>Concretely:</strong> the agent pays a $50,000 claim it was told to cap at $10,000. It approves an ineligible customer. It reads a PII table because a user asked nicely in three paragraphs.</p>
+      </div>
+      <div class="card good">
+        <h3>What Policy is</h3>
+        <p>A <strong>deterministic, fine-grained authorization layer</strong> that intercepts every tool call flowing through the Gateway and evaluates it against <strong>Cedar</strong> rules — outside the agent, outside the LLM.</p>
+        <p style="margin-top:12px"><strong>What it is not:</strong> a prompt guardrail (those live inside the model and can be argued with), rate limiting, or API traffic management. And it does not care which model or framework you used.</p>
+      </div>
+    </div>
+    <div class="diagram" style="margin-top:12px"><pre class="mermaid">
+flowchart LR
+    R["AgentCore Runtime"] --> G["AgentCore Gateway"]
+    G -->|"check permissions"| P["AgentCore Policy<br/>Cedar engine"]
+    P -->|"PERMIT"| T["Payment · Approval · Data tools"]
+    P -->|"FORBID"| X["blocked, error returned to agent"]
+    </pre></div>
+    <div class="callout warn"><span class="label">The sentence that sells it to a risk officer</span><p>The system prompt is a <em>request</em>. Cedar is a <strong>rule</strong>. No amount of clever prompting changes what a forbid policy does.</p></div>
+    <aside class="notes">This is the newest capability and the one most likely to be unfamiliar. For regulated audiences it is often the single feature that makes the platform viable at all.</aside>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide" data-title="8 · Policy — Cedar and enforcement">
+    <div class="kicker">Capability 08 · how it actually decides</div>
+    <h2>Default deny, forbid wins, and one mode you must run first</h2>
+    <div class="grid g3">
+      <div class="card accent"><h3>The evaluation rules</h3>
+        <ul class="bullets" style="margin-top:10px">
+          <li><strong>Default deny</strong> — no matching policy means blocked. Tools are closed out of the box.</li>
+          <li><strong>At least one permit</strong> must match for access.</li>
+          <li><strong>Forbid wins</strong> — a matching forbid denies even if a permit also matched.</li>
+        </ul>
+        <p style="margin-top:10px;font-weight:700">FORBID &gt; PERMIT</p>
+      </div>
+      <div class="card accent"><h3>A Cedar policy has three parts</h3>
+        <p><strong>Effect</strong> — <code>permit</code> or <code>forbid</code>.<br/>
+           <strong>Scope</strong> — the principal, action and resource it applies to.<br/>
+           <strong>Condition</strong> — a <code>when</code> or <code>unless</code> clause that must hold.</p>
+        <p style="margin-top:10px">Cedar is not a programming language: no loops, no state. That is why the decision is deterministic.</p>
+      </div>
+      <div class="card accent"><h3>Where the principal comes from</h3>
+        <p>The caller's <strong>JWT claims</strong>, mapped into the policy entity store. Your identity provider controls the claims; <strong>Cedar controls what they mean at the tool level.</strong></p>
+        <p style="margin-top:10px">That is how role-based access, OAuth scope checks and department rules all become one mechanism.</p>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card good"><h3>Two enforcement modes — run them in this order</h3>
+        <p><strong>LOG_ONLY</strong> evaluates every policy and writes ALLOW/DENY traces, but blocks nothing. This is dev mode, and where you discover your false denials.</p>
+        <p style="margin-top:10px"><strong>ENFORCE</strong> actually blocks, returning an error to the agent.</p>
+        <p style="margin-top:10px"><strong>Best practice: stay in LOG_ONLY for at least one full business cycle</strong> — month-end and quarter-end do things your test data does not.</p>
+      </div>
+      <div class="card">
+        <h3>The patterns you will actually write</h3>
+        <p>Block all · disable one tool · block one user · numeric ceilings (refunds ≤ $500) · string match · set membership · required fields · <code>unless</code> guards · RBAC · OAuth scope · multi-condition.</p>
+        <p style="margin-top:10px"><strong>Real examples:</strong> no scheduling outside 08:00–17:00; only doctors may cancel appointments; a senior analyst may approve up to $1M.</p>
+        <p style="margin-top:10px"><strong>NL2Cedar</strong> drafts policies from plain English — treat the output as a draft to review, not as the policy.</p>
+      </div>
+    </div>
+    <div class="callout"><span class="label">Three operational rules</span><p><strong>1.</strong> Keep Cedar policies in git, with PR review and CI validation — they are code. <strong>2.</strong> Separate the gateway execution role (minimum permissions, runtime evaluation) from the policy management role (CRUD) and never merge them. <strong>3.</strong> Use <code>permit</code> for business logic and reserve <code>forbid</code> for hard safety boundaries.</p></div>
+    <aside class="notes">The LOG_ONLY-for-a-full-business-cycle advice is the one to repeat. Policies that look complete in testing fail on the day the finance team does something they only do once a quarter.</aside>
+  </section>
+
+  <!-- 20 -->
+  <section class="slide" data-title="9 · Evaluations">
+    <div class="kicker">Capability 09</div>
+    <h2>Evaluations — because "we ran it a few times and it seemed fine" is not a test</h2>
+    <div class="grid g2">
+      <div class="card bad">
+        <h3>The trap</h3>
+        <ul class="bullets cross" style="margin-top:10px">
+          <li>Run the agent a few times in dev; if it seems good, ship it</li>
+          <li>Trust a gut feeling over any number</li>
+          <li>Never re-evaluate after a prompt change</li>
+        </ul>
+        <p style="margin-top:12px"><strong>What it costs:</strong> a model that "seems fine" carries 15% toxicity on edge cases. A harmless-looking prompt tweak drops accuracy 20%. You find out when a customer complains.</p>
+      </div>
+      <div class="card good">
+        <h3>What Evaluations does</h3>
+        <p>It reads the <strong>traces you are already emitting</strong> via OpenTelemetry, scores them, and writes results back to CloudWatch.</p>
+        <p style="margin-top:12px">It measures <strong>goal attainment</strong> (did the task complete end to end), <strong>response correctness</strong>, <strong>tool accuracy</strong> (right tool, right parameters), <strong>safety</strong>, and whatever custom metric you define.</p>
+        <p style="margin-top:12px"><strong>Note the dependency:</strong> no Observability, no Evaluations. Traces are the input.</p>
+      </div>
+    </div>
+    <div class="diagram" style="margin-top:10px"><pre class="mermaid">
+flowchart LR
+    RT["AgentCore Runtime"] -->|"1 · OTel traces"| CW["CloudWatch"]
+    CW -->|"2 · evaluate traces"| EV["AgentCore Evaluations"]
+    EV -->|"3 · store scores"| CW2["CloudWatch dashboards<br/>quality trend over time"]
+    </pre></div>
+    <aside class="notes">The framing that lands with engineering leadership: this is the regression test suite for a non-deterministic system. You cannot assert equality on the output, so you score it — and then you can compare model A to model B with a number.</aside>
+  </section>
+
+  <!-- 21 -->
+  <section class="slide" data-title="9 · Evaluations — evaluators and modes">
+    <div class="kicker">Capability 09 · picking the right measurement</div>
+    <h2>Thirteen built-in evaluators, at three levels, in two modes</h2>
+    <div class="grid g4">
+      <div class="card"><span class="num">Span level</span><h3>Tool use</h3><p><code>ToolSelectionAccuracy</code><br/><code>ToolParameterAccuracy</code></p><p style="margin-top:8px">Did it pick the right tool, with the right arguments?</p></div>
+      <div class="card"><span class="num">Trace level</span><h3>Response quality</h3><p><code>Correctness</code> · <code>Completeness</code><br/><code>Faithfulness</code> · <code>Helpfulness</code><br/><code>InstructionFollowing</code></p></div>
+      <div class="card"><span class="num">Trace level</span><h3>Safety</h3><p><code>Harmfulness</code> · <code>Stereotyping</code><br/><code>Refusal</code> · <code>PrivacyProtection</code><br/><code>TopicAdherence</code></p></div>
+      <div class="card"><span class="num">Session level</span><h3>Task completion</h3><p><code>GoalSuccessRate</code></p><p style="margin-top:8px">Across the whole multi-turn conversation — the metric the business actually cares about.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card accent">
+        <h3>On-demand — you choose what to score</h3>
+        <p>Name specific span, trace or session ids. A point-in-time assessment returning a label, a value, an explanation and token usage.</p>
+        <p style="margin-top:10px"><strong>Best for:</strong> dev and testing, debugging a specific failure, validating a fix, analysing historical data.</p>
+      </div>
+      <div class="card accent">
+        <h3>Online — it scores production as it flows</h3>
+        <p>Configure a sample rate (say 10%) and optional filters; evaluators run continuously and simultaneously, aggregating into CloudWatch dashboards.</p>
+        <p style="margin-top:10px"><strong>Best for:</strong> catching quality regressions, trend analysis, knowing before the customer does.</p>
+      </div>
+    </div>
+    <div class="callout"><span class="label">Custom evaluators, two flavours</span><p><strong>LLM-as-a-judge</strong> — your model, your instructions, your scoring schema, applied at span, trace or session level. Best for subjective or domain-specific quality. <strong>Code-based (Lambda)</strong> — regex, external lookups, business rules; deterministic, with no model uncertainty. Best for format validation and exact matching. <em>Start with built-ins; add custom only when a built-in cannot express what you mean.</em></p></div>
+    <aside class="notes">Cost note if asked: built-in evaluators are token-priced, custom evaluators are per request, and an LLM-as-a-judge adds its own inference cost on top. Sampling at 10% rather than 100% is the main lever.</aside>
+  </section>
+
+  <!-- 22 -->
+  <section class="slide" data-title="Capability picker">
+    <div class="kicker">Part 1 · summary</div>
+    <h2>Adopt each one only when this sentence is true of you</h2>
+    <table>
+      <thead><tr><th>Capability</th><th>Adopt it when…</th><th>Skip it when…</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Runtime</strong></td><td>Someone other than you calls the agent, and turns run past 15 minutes or need session isolation.</td><td>It is a batch job on a schedule — that is a Lambda or a container.</td></tr>
+        <tr><td><strong>Gateway</strong></td><td>Tools live behind Lambdas, REST APIs or AWS services you do not want to wrap by hand.</td><td>Your tools already speak MCP, or there are three of them and they are local functions.</td></tr>
+        <tr><td><strong>Memory</strong></td><td>Multi-turn conversations, personalisation, or knowledge that must accumulate across sessions.</td><td>Single-turn stateless queries — or very high volume where the per-event cost dominates.</td></tr>
+        <tr><td><strong>Identity</strong></td><td>Real end users call it, or the agent must act against third-party SaaS on their behalf.</td><td>The only caller is another service in your own account.</td></tr>
+        <tr><td><strong>Observability</strong></td><td>Always. This is the one to adopt on day one, not day ninety.</td><td>Never.</td></tr>
+        <tr><td><strong>Code Interpreter</strong></td><td>The agent must compute over data, not describe it.</td><td>Your "analysis" is a SQL query you could expose as a tool.</td></tr>
+        <tr><td><strong>Browser</strong></td><td>The system of record genuinely has no API.</td><td>There is an API, or what you really wanted was a search tool.</td></tr>
+        <tr><td><strong>Policy</strong></td><td>A tool call can move money, change a record, or read something regulated.</td><td>Every tool is read-only over data the caller could already see.</td></tr>
+        <tr><td><strong>Evaluations</strong></td><td>You will change prompts or models more than once and need to know whether it got worse.</td><td>Genuinely never — but start on-demand in dev before paying for online sampling.</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">Pause on the Observability row, and on Policy. Observability is the cheapest to adopt and the one whose absence you discover at the worst moment; Policy is the one whose absence you discover in a post-incident review.</aside>
+  </section>
+
+  <!-- 23 -->
+  <section class="slide section" data-title="§ Pros and cons">
+    <div class="kicker">Part 2</div>
+    <h1>What it buys you,<br/>and what it costs you</h1>
+    <p class="lead">Both columns are real. A deck with only one of them is marketing.</p>
+    <aside class="notes">Signal the shift in tone here. If there are architects in the room, this is the section they came for.</aside>
+  </section>
+
+  <!-- 24 -->
+  <section class="slide" data-title="Pros — what you stop building">
+    <div class="kicker">Part 2 · the case for</div>
+    <h2>The pros are mostly things you stop writing</h2>
+    <div class="grid g2">
+      <div class="card good">
+        <h3>Infrastructure you no longer own</h3>
+        <ul class="bullets tick" style="margin-top:10px">
+          <li><strong>Session isolation</strong> — a microVM per session with its own CPU, memory and filesystem</li>
+          <li><strong>Long turns</strong> — 8 hours, where Lambda caps at 15 minutes</li>
+          <li><strong>Large payloads</strong> — 100 MB against Lambda's 6 MB, which is what makes multi-modal practical</li>
+          <li><strong>Per-second billing</strong> — you pay while processing, not while idle</li>
+          <li><strong>No cluster</strong> — no ECS service, ALB, target group or scaling policy</li>
+        </ul>
+      </div>
+      <div class="card good">
+        <h3>Plumbing you no longer maintain</h3>
+        <ul class="bullets tick" style="margin-top:10px">
+          <li><strong>Tool adapters</strong> — Lambda, OpenAPI and Smithy targets become MCP tools</li>
+          <li><strong>SaaS integrations</strong> — Slack, Salesforce, Jira, Asana, Zendesk in one click</li>
+          <li><strong>Memory extraction</strong> — the async summarise-and-store pipeline is managed</li>
+          <li><strong>OAuth token vault</strong> — third-party refresh tokens are not your problem</li>
+          <li><strong>Trace wiring</strong> — OTel to CloudWatch without building a collector</li>
+          <li><strong>An eval harness</strong> — thirteen evaluators you did not have to design</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout"><span class="label">The one that is easy to undersell</span><p><strong>Framework and model indifference.</strong> Runtime hosts a container that listens on a port. Strands today, LangGraph next quarter, a bare loop after that — the deployment story does not change. That is unusual for a managed agent product, and it is the main reason the lock-in is smaller than it looks.</p></div>
+    <aside class="notes">The composability point matters commercially: you can adopt Runtime and keep every other piece of your stack, which makes the first proof-of-value cheap to attempt and cheap to abandon.</aside>
+  </section>
+
+  <!-- 25 -->
+  <section class="slide" data-title="Pros — organisational">
+    <div class="kicker">Part 2 · the case for</div>
+    <h2>And a few that only show up at team scale</h2>
+    <div class="grid g3">
+      <div class="card good"><h3>One security review, not five</h3><p>IAM, VPC, CloudTrail, KMS and CloudWatch are already approved in most AWS shops. An AgentCore service inherits that review instead of starting a new one.</p></div>
+      <div class="card good"><h3>An answer for the risk officer</h3><p>Cedar policies are deterministic, reviewable, version-controlled and outside the model. "The LLM was instructed not to" becomes "the call is structurally impossible."</p></div>
+      <div class="card good"><h3>Quality you can put a number on</h3><p>Goal success rate and tool accuracy as trends, not anecdotes — which is what turns "the agent feels better" into a release decision.</p></div>
+      <div class="card good"><h3>Interop by protocol</h3><p>MCP for tools, A2A for agent-to-agent. Both open specs, so another team on another stack can call your agent without importing your library.</p></div>
+      <div class="card good"><h3>Independent deploys</h3><p>Each agent is its own runtime with its own ARN. The screening team ships without asking the scheduling team — the actual promise of "multi-agent".</p></div>
+      <div class="card good"><h3>A real IaC path</h3><p>Terraform and CloudFormation resources exist, so runtimes, gateways, memories and policies are reviewable code rather than console clicks.</p></div>
+    </div>
+    <aside class="notes">"One security review, not five" is usually the argument that actually moves an enterprise. Engineers pick on capability; platform teams pick on approval friction; risk teams pick on Policy.</aside>
+  </section>
+
+  <!-- 26 -->
+  <section class="slide" data-title="Cons — the friction">
+    <div class="kicker">Part 2 · the case against</div>
+    <h2>The cons are mostly opacity — and one of them is expensive</h2>
+    <div class="grid g2">
+      <div class="card bad">
+        <h3>Failures arrive as silence</h3>
+        <ul class="bullets cross" style="margin-top:10px">
+          <li><strong>Wrong protocol port</strong> → deploy succeeds, requests time out, nothing says why</li>
+          <li><strong>Slow cold start</strong> → HTTP 424, which reads like your fault, not the container's</li>
+          <li><strong>Dropped session id</strong> → five traces instead of one, and nothing looks broken</li>
+          <li><strong>Async memory extraction</strong> → an empty long-term query that looks like data loss</li>
+          <li><strong>Default-deny Policy</strong> → a correct agent that can do nothing, and a trace that just says DENY</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>Constraints you must design around</h3>
+        <ul class="bullets cross" style="margin-top:10px">
+          <li><code>runtimeSessionId</code> has a <strong>33-character minimum</strong> — your natural business key probably fails validation</li>
+          <li><strong>No inbound token pass-through</strong> — user context must travel in the payload</li>
+          <li><strong>30-second health check</strong> at cold start, spent by your dependency tree</li>
+          <li><strong>ARM64 only</strong> — wheels built for your laptop will not do</li>
+          <li><strong>Immutable at creation</strong> — gateway id, region and semantic search cannot be changed later</li>
+          <li><strong>Regional availability</strong> is narrower than core AWS services — check before you promise a region</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout danger"><span class="label">The honest summary</span><p>The platform is solid; the <strong>feedback loop</strong> is the weak part. Most of a team's first two weeks goes into failures whose error messages do not name the cause. Budget for that explicitly rather than discovering it in a sprint review.</p></div>
+    <aside class="notes">Do not soften this slide. Teams that hear it up front treat the first week as expected cost; teams that do not, escalate it as a platform defect.</aside>
+  </section>
+
+  <!-- 27 -->
+  <section class="slide" data-title="Cons — cost, maturity, lock-in">
+    <div class="kicker">Part 2 · the case against</div>
+    <h2>Three more, in decreasing order of how often they kill a project</h2>
+    <div class="grid g3">
+      <div class="card bad">
+        <h3>Cost is hard to forecast</h3>
+        <p>Consumption-based across many dimensions at once — runtime seconds, memory events stored and retrieved, gateway invocations, browser and interpreter session time, evaluator tokens — <em>on top of</em> model tokens.</p>
+        <p style="margin-top:10px"><strong>Mitigation:</strong> bound the agent loop before anything else, sample evaluations rather than scoring everything, destroy sessions instead of letting them idle out, and put cost-per-session on a dashboard in week one. A runaway loop is a billing incident, not just a bug.</p>
+      </div>
+      <div class="card bad">
+        <h3>The surface is young and still moving</h3>
+        <p>Policy and Evaluations are the newest members and were not in the original launch set. APIs, SDK names and IaC coverage have all moved recently; expect resources to lag the console and an occasional SDK upgrade to be a real migration.</p>
+        <p style="margin-top:10px"><strong>Mitigation:</strong> pin versions, read release notes before upgrading, and keep the local-run path working so you can bisect against something that does not involve AWS.</p>
+      </div>
+      <div class="card bad">
+        <h3>Lock-in is real but bounded</h3>
+        <p>Your <em>agent logic</em> is portable — a container listening on a port. What is not: Gateway target definitions, Memory strategies and stored records, Identity configuration, Cedar policies, and the IAM around all of it.</p>
+        <p style="margin-top:10px"><strong>Mitigation:</strong> keep tool implementations behind your own interface, and treat Memory as a cache of facts you could re-derive, not as your only copy.</p>
+      </div>
+    </div>
+    <aside class="notes">If asked for hard pricing numbers, do not quote from memory — point at the AgentCore pricing page. The defensible statement is the <i>shape</i> of the bill, which is what this slide gives. One order-of-magnitude anchor from AWS course material (Oct 2025): a Gateway serving ~10,000 requests a day was on the order of a couple of dollars a month, before the model and runtime costs that dominate.</aside>
+  </section>
+
+  <!-- 28 -->
+  <section class="slide" data-title="Compared to the alternatives">
+    <div class="kicker">Part 2 · context</div>
+    <h2>Against what you would otherwise do</h2>
+    <table>
+      <thead><tr><th></th><th>Roll your own on ECS/EKS</th><th>Lambda + Step Functions</th><th>AgentCore</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Turn length</strong></td><td>Unlimited</td><td>15 min hard cap</td><td>8 hours</td></tr>
+        <tr><td><strong>Payload</strong></td><td>Yours to decide</td><td>6 MB</td><td>100 MB</td></tr>
+        <tr><td><strong>Session isolation</strong></td><td>You build it</td><td>You build it</td><td>microVM per session</td></tr>
+        <tr><td><strong>Idle cost</strong></td><td>Pays while idle</td><td>Zero</td><td>Effectively zero</td></tr>
+        <tr><td><strong>Tool plumbing</strong></td><td>You write MCP wrappers</td><td>You write MCP wrappers</td><td>Gateway adapts Lambda/OpenAPI/Smithy</td></tr>
+        <tr><td><strong>Memory</strong></td><td>DynamoDB + your own extraction</td><td>Same</td><td>Managed, four strategies</td></tr>
+        <tr><td><strong>Traces</strong></td><td>Your own OTel collector</td><td>X-Ray, agent-blind</td><td>GenAI-aware in CloudWatch</td></tr>
+        <tr><td><strong>Tool authorization</strong></td><td>Yours to invent</td><td>Yours to invent</td><td>Cedar, default deny</td></tr>
+        <tr><td><strong>Time to first deploy</strong></td><td>Days</td><td>Hours</td><td>Under an hour</td></tr>
+        <tr><td><strong>Control &amp; portability</strong></td><td>Total</td><td>High</td><td>Container-portable, config is not</td></tr>
+        <tr><td><strong>Failure diagnosis</strong></td><td>Yours, and legible</td><td>Yours, and legible</td><td>Managed, and sometimes silent</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><p><strong>Read the bottom two rows together.</strong> You are trading legibility for velocity. That is a good trade when the agent is a product and a bad one when the agent <em>is</em> the infrastructure your company sells.</p></div>
+    <aside class="notes">Keep this comparison fair — the ECS column is not a strawman. Plenty of teams should stay there, particularly ones with an existing platform team and strong Kubernetes practice.</aside>
+  </section>
+
+  <!-- 29 -->
+  <section class="slide" data-title="The decision">
+    <div class="kicker">Part 2 · the verdict slide</div>
+    <h2>Use it when three of these are true. Do not when two of the right ones are.</h2>
+    <div class="grid g2">
+      <div class="card good">
+        <h3>Adopt</h3>
+        <ul class="bullets tick" style="margin-top:10px">
+          <li>You are already on AWS and Bedrock is an approved service</li>
+          <li>Turns are conversational and long, not batch and short</li>
+          <li>More than one team will call the agent</li>
+          <li>Tools live behind existing Lambdas or internal REST APIs</li>
+          <li>Tool calls have consequences, and someone will ask who authorised them</li>
+          <li>You need per-user isolation and cannot justify building it</li>
+          <li>You want the agent in production this month, not this quarter</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>Do not adopt</h3>
+        <ul class="bullets cross" style="margin-top:10px">
+          <li>Multi-cloud portability is a hard requirement, not a preference</li>
+          <li>The workload is a scheduled batch job with no session at all</li>
+          <li>Latency budget is tens of milliseconds — this is not that platform</li>
+          <li>Your required region does not have it yet</li>
+          <li>You have a platform team already running agents well on Kubernetes</li>
+          <li>The whole thing is one prompt and one API call — just call the model</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout warn"><p><strong>The cheapest possible evaluation:</strong> deploy one existing agent as a Runtime with Observability on. Nothing else. If that week feels good, the other eight capabilities are additive decisions you can make later — and if it does not, you have lost a week and no architecture.</p></div>
+    <aside class="notes">This is the slide to leave on screen during Q&amp;A if the meeting is a go/no-go. The last callout is the recommendation: a one-week, one-capability trial with a defined exit.</aside>
+  </section>
+
+  <!-- 30 -->
+  <section class="slide section" data-title="§ Step-by-step guide">
+    <div class="kicker">Part 3</div>
+    <h1>Empty folder<br/>to deployed agent</h1>
+    <p class="lead">Eleven steps. The first four need no AWS account beyond credentials, and the first two need no AgentCore at all.</p>
+    <aside class="notes">Tell people not to type along — the code is in the tutorial. This section is about the <b>order</b>, which is the part that is hard to recover if you get it wrong.</aside>
+  </section>
+
+  <!-- 31 -->
+  <section class="slide" data-title="Step 0 — prerequisites">
+    <div class="kicker">Step 0</div>
+    <h2>Prerequisites — fifteen minutes, once</h2>
+    <div class="grid g2">
+      <div>
+        <ul class="bullets">
+          <li>An AWS account with <strong>Bedrock model access enabled</strong> for the model you intend to use — a separate opt-in, and the most common first-hour blocker</li>
+          <li>A region where AgentCore is available — confirm before you design around it</li>
+          <li>Python 3.11+ and <code>uv</code> or <code>pip</code></li>
+          <li>Docker only if you plan to ship a container image rather than a zip</li>
+          <li>An IAM execution role with permissions for Bedrock, CloudWatch Logs and whatever your tools touch</li>
+        </ul>
+      </div>
+      <div>
+        <div class="code-label">Install</div>
+        <pre><code class="language-bash">pip install bedrock-agentcore \
+            bedrock-agentcore-starter-toolkit
+
+# whichever agent framework you already use
+pip install strands-agents
+
+aws sts get-caller-identity        # prove credentials work
+aws bedrock list-foundation-models \
+    --region us-east-1 | head       # prove model access works</code></pre>
+        <div class="callout warn" style="margin-top:14px"><p><strong>Do not skip the second command.</strong> "Access denied" on a model you never enabled is the failure that looks like a code bug for an hour.</p></div>
+      </div>
+    </div>
+    <aside class="notes">If you are running this as a workshop, have people do step 0 <b>before</b> the session. Model access approval is occasionally not instant.</aside>
+  </section>
+
+  <!-- 32 -->
+  <section class="slide" data-title="Steps 1–2 — write it, run it locally">
+    <div class="kicker">Steps 1 &amp; 2</div>
+    <h2>Write the agent, then run it on your laptop — no AWS involved yet</h2>
+    <div class="grid g2">
+      <div>
+        <div class="code-label">Step 1 · main.py — the entire runtime contract</div>
+        <pre><code class="language-python">from bedrock_agentcore.runtime import BedrockAgentCoreApp
+from strands import Agent
+
+app = BedrockAgentCoreApp()
+agent = Agent(system_prompt="You screen candidates against a requisition.")
+
+@app.entrypoint
+def invoke(payload, context):
+    """payload is your JSON body; context.session_id is the conversation."""
+    result = agent(payload["prompt"])
+    return {"result": result.message}
+
+if __name__ == "__main__":
+    app.run(port=8080)          # HTTP protocol -> port 8080</code></pre>
+        <p style="font-size:.95rem;margin-top:8px">Swap <code>Agent</code> for a LangGraph graph, a CrewAI crew or your own loop — the four lines around it do not change.</p>
+      </div>
+      <div>
+        <div class="code-label">Step 2 · prove it before you deploy it</div>
+        <pre><code class="language-bash">python main.py &
+
+curl -s localhost:8080/invocations \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"Screen E1002 against J2001"}'</code></pre>
+        <div class="callout" style="margin-top:14px"><span class="label">Why this step is not optional</span><p>Everything above <code>if __name__ == "__main__":</code> is <strong>identical</strong> locally and deployed. Nothing in your agent knows which world it is in. So every bug you can reproduce locally is a bug you should <em>never</em> debug through a deployed runtime — where the same failure costs a two-minute deploy cycle and arrives as a timeout.</p></div>
+      </div>
+    </div>
+    <aside class="notes">The local-first discipline is the single biggest productivity difference between teams. Keep the local path working forever, not just during week one.</aside>
+  </section>
+
+  <!-- 33 -->
+  <section class="slide" data-title="Steps 3–4 — configure, launch, invoke">
+    <div class="kicker">Steps 3 &amp; 4</div>
+    <h2>Configure, launch, invoke — the three commands</h2>
+    <div class="grid g2">
+      <div>
+        <div class="code-label">Step 3 · deploy</div>
+        <pre><code class="language-bash"># writes .bedrock_agentcore.yaml — read it, it is short
+agentcore configure --entrypoint main.py
+
+# builds the ARM64 image, pushes to ECR, creates the runtime
+agentcore launch
+
+agentcore status        # ARN, endpoint, readiness</code></pre>
+        <div class="callout warn" style="margin-top:12px"><p>If <code>launch</code> succeeds but invoke times out, go straight to the protocol/port table. It is that, roughly nine times in ten.</p></div>
+      </div>
+      <div>
+        <div class="code-label">Step 4 · call it, with a session id that validates</div>
+        <pre><code class="language-python">import re
+
+SESSION_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_-]{32,255}$")
+
+def safe_session_id(candidate: str) -> str:
+    """A session id AgentCore accepts, derived from the one you meant."""
+    candidate = (candidate or "").strip()
+    if SESSION_RE.match(candidate):
+        return candidate
+    base = re.sub(r"[^a-zA-Z0-9_-]", "-", candidate) or "session"
+    if not base[0].isalnum():
+        base = f"s{base}"
+    return f"{base}-{'0' * 33}"[:64]     # J2001 -> J2001-00…0</code></pre>
+        <div class="callout danger" style="margin-top:12px"><p><strong>Do not reach for <code>uuid4()</code>.</strong> The session id is what stitches multiple runtimes into one trace. A random value per hop gives you N traces that share nothing. Derive it from a business key — a requisition, a ticket, a chat thread — and pad it deterministically.</p></div>
+      </div>
+    </div>
+    <aside class="notes">The 33-character minimum applies to <code>InvokeAgentRuntime</code> and to <code>GetAgentCard</code>. People discover it twice.</aside>
+  </section>
+
+  <!-- 34 -->
+  <section class="slide" data-title="Steps 5–6 — memory and tools">
+    <div class="kicker">Steps 5 &amp; 6</div>
+    <h2>Now add the two capabilities that change the product, not the plumbing</h2>
+    <div class="grid g2">
+      <div>
+        <div class="card accent"><span class="num">Step 5</span><h3>Memory — make it remember</h3><p>Create a memory resource, choose your long-term strategies and retention, then swap your framework's session manager for AgentCore's. The agent code does not change.</p></div>
+        <pre style="margin-top:12px"><code class="language-python">from bedrock_agentcore.memory.integrations.strands.session_manager \
+    import AgentCoreMemorySessionManager
+
+with AgentCoreMemorySessionManager(config) as sessions:
+    agent = Agent(session_manager=sessions, ...)
+    result = agent(payload["prompt"])</code></pre>
+        <p style="margin-top:10px;font-size:.95rem">Decide three things first: <code>actorId</code> (the recruiter), <code>sessionId</code> (the requisition), and which of the four strategies you actually want running.</p>
+      </div>
+      <div>
+        <div class="card accent"><span class="num">Step 6</span><h3>Gateway — give it tools it does not own</h3><p>Create a gateway, add one target per backing system, and point the agent at the gateway's single MCP URL. Your Lambda now answers <code>tools/call</code>.</p></div>
+        <pre style="margin-top:12px"><code class="language-python">def lambda_handler(event, context):
+    # tools arrive namespaced: target___toolname
+    raw = context.client_context.custom["bedrockAgentCoreToolName"]
+    return DISPATCH[raw.split("___", 1)[-1]](**event)</code></pre>
+        <p style="margin-top:10px;font-size:.95rem">Write the tool <strong>descriptions</strong> for the model, not for a code reviewer — they are the selection criteria. Turn on semantic search before you pass ~50 tools.</p>
+      </div>
+    </div>
+    <aside class="notes">Steps 5 and 6 are where the demo stops being a demo. Everything before this is a hosted chatbot; memory and real tools are what make it a system.</aside>
+  </section>
+
+  <!-- 35 -->
+  <section class="slide" data-title="Steps 7–8 — identity and observability">
+    <div class="kicker">Steps 7 &amp; 8</div>
+    <h2>Then close the two things you cannot retrofit cheaply</h2>
+    <div class="grid g2">
+      <div class="card">
+        <span class="num">Step 7</span>
+        <h3>Identity — decide who may call, and as whom it acts</h3>
+        <ul class="bullets" style="margin-top:10px">
+          <li><strong>Humans in</strong> → a JWT authorizer pointing at your OIDC discovery URL (Cognito, Entra, Okta)</li>
+          <li><strong>Machines in</strong> → SigV4 with the calling role; no authorizer needed</li>
+          <li><strong>Out, as the company</strong> → 2LO client credentials for system data</li>
+          <li><strong>Out, as the user</strong> → 3LO consent flow; the vault stores and refreshes the tokens</li>
+          <li>User context crosses inward in the <strong>payload or an allow-listed header</strong>, never as a forwarded token</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="num">Step 8</span>
+        <h3>Observability — day one, not day ninety</h3>
+        <ul class="bullets" style="margin-top:10px">
+          <li>Add <code>aws-opentelemetry-distro&gt;=0.18.0</code></li>
+          <li>Start the process under <code>opentelemetry-instrument</code> for model and tool spans, not just transport</li>
+          <li>Enable <strong>Transaction Search</strong> in CloudWatch</li>
+          <li>Propagate the session id on <em>every</em> outbound hop</li>
+          <li>Dashboard latency p50/p90/p99, error rate, token spend and active sessions before your first real user</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout"><p><strong>Why these two are grouped:</strong> both are invisible while you are the only user, and both are painful to add once you are not. They are the "before the pilot, not after" pair — and step 10 cannot happen without step 8.</p></div>
+    <aside class="notes">The OTel distro is heavy and contributes to the 30-second cold-start problem. That tension is real: instrument first, then prune instrumentations you do not need, rather than skipping instrumentation to make the deploy fast.</aside>
+  </section>
+
+  <!-- 36 -->
+  <section class="slide" data-title="Step 9 — Policy">
+    <div class="kicker">Step 9</div>
+    <h2>Put a rule in front of every consequential tool call</h2>
+    <div class="grid g2">
+      <div>
+        <ul class="bullets">
+          <li><strong>Inventory the damage first.</strong> List every tool that moves money, changes a record, or reads regulated data. Those are the ones that need policies; the rest can wait.</li>
+          <li><strong>Write permits for business logic, forbids for safety.</strong> A forbid is a hard boundary no model output can argue with — spend them on the things that must never happen.</li>
+          <li><strong>Start in <code>LOG_ONLY</code>.</strong> Evaluate everything, block nothing, and read the ALLOW/DENY traces for at least one full business cycle.</li>
+          <li><strong>Then switch to <code>ENFORCE</code></strong> — and expect the first week to surface a legitimate workflow you forgot.</li>
+          <li><strong>Commit the policies to git.</strong> PR review and CI validation, same as code.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="code-label">The shape of a Cedar rule</div>
+        <pre class="plain">permit (
+    principal,
+    action == Action::"invoke_tool",
+    resource == Tool::"refund"
+)
+when { context.amount &lt;= 500 };
+
+forbid (
+    principal,
+    action == Action::"invoke_tool",
+    resource == Tool::"cancel_appointment"
+)
+unless { principal.role == "doctor" };</pre>
+        <div class="callout danger" style="margin-top:12px"><span class="label">Two roles, never merged</span><p>The <strong>gateway execution role</strong> gets minimum permissions to evaluate policies at runtime. A separate <strong>management role</strong> gets policy CRUD. If one principal can both write the rules and be judged by them, you do not have a control.</p></div>
+      </div>
+    </div>
+    <aside class="notes">NL2Cedar can draft these from plain English — useful for a first pass, but review the generated policy the way you would review generated SQL. The Cedar syntax above is illustrative shape, not copy-paste; check the current schema for your entity names.</aside>
+  </section>
+
+  <!-- 37 -->
+  <section class="slide" data-title="Step 10 — Evaluations">
+    <div class="kicker">Step 10</div>
+    <h2>Replace "it seemed fine" with a number you can trend</h2>
+    <div class="grid g3">
+      <div class="card accent"><span class="num">10a</span><h3>Start on-demand, in dev</h3><p>Pick sessions you already understand — one clean success, one known failure — and score them. If the evaluator disagrees with you about the failure, fix the evaluator before you trust it on anything else.</p></div>
+      <div class="card accent"><span class="num">10b</span><h3>Match the metric to the level</h3><p>Tool accuracy at the <strong>span</strong>. Correctness, faithfulness and safety at the <strong>trace</strong>. Goal success rate at the <strong>session</strong> — that last one is what you report to the business.</p></div>
+      <div class="card accent"><span class="num">10c</span><h3>Then sample production online</h3><p>10% with conditional filters is a sane start. Aggregate into a dashboard and watch the trend across prompt changes and model swaps — that is the whole point.</p></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="callout"><span class="label">The workflow this unlocks</span><p>Change a prompt → run the same evaluators over the same sessions → compare. That is a regression test for a system you cannot assert equality on, and it is the only honest way to answer "is the new model better for us?"</p></div>
+      <div class="callout warn"><span class="label">Built-ins first</span><p>Thirteen evaluators cover most of what teams write by hand. Add an LLM-as-a-judge only for genuinely domain-specific quality, and a Lambda evaluator when the check is deterministic — format, exact match, a business rule.</p></div>
+    </div>
+    <aside class="notes">10a is the step teams skip and regret. An evaluator you have not sanity-checked against a known-bad session is a number that makes you confident rather than correct.</aside>
+  </section>
+
+  <!-- 38 -->
+  <section class="slide" data-title="Step 11 — infrastructure as code">
+    <div class="kicker">Step 11</div>
+    <h2>Then delete the CLI from your deployment path</h2>
+    <p>The <code>agentcore</code> CLI is the right tool for the first week and the wrong tool for the first production incident. Once the shape is settled, the runtime, the gateway, the memory, the policies and every IAM role become reviewable code.</p>
+    <pre><code class="language-hcl">resource "aws_bedrockagentcore_agent_runtime" "screening" {
+  agent_runtime_name = "talent_screening"
+  role_arn           = aws_iam_role.screening.arn
+
+  protocol_configuration { server_protocol = "HTTP" }   # HTTP | MCP | A2A
+
+  agent_runtime_artifact {
+    code_configuration {                                # no Docker involved
+      entry_point = ["main.py"]
+      runtime     = "PYTHON_3_13"
+      code { s3 { bucket = var.artifacts, prefix = "talent_screening-${local.hash}.zip" } }
+    }
+    # or, when you need system packages or a non-Python runtime:
+    # container_configuration { container_uri = "${var.account}.dkr.ecr...:v1" }
+  }
+}</code></pre>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="callout"><span class="label">Start with the zip</span><p>Move to ECR only when you genuinely need system packages. But build wheels for the container's CPU — it is ARM64 Graviton, not your laptop: <code>--python-platform aarch64-manylinux2014 --only-binary=:all:</code>. Without the second flag a package with no arm64 wheel compiles from source for the wrong architecture, quietly.</p></div>
+      <div class="callout warn"><span class="label">Keep the hash in the artifact name</span><p>Content-addressed zip names are what make "did my code actually deploy?" answerable. Without them you will spend an afternoon debugging a runtime that is still serving last Tuesday.</p></div>
+    </div>
+    <aside class="notes">If the audience is a platform team, this is their slide. Note that IaC coverage has lagged the console at times — check the provider version supports the resource you need before promising a delivery date.</aside>
+  </section>
+
+  <!-- 39 -->
+  <section class="slide" data-title="Prove it in this order">
+    <div class="kicker">Part 3 · the verification ladder</div>
+    <h2>Prove it in this order — the first four steps need no agent at all</h2>
+    <table class="nowrap">
+      <thead><tr><th>#</th><th>Prove</th><th>How</th><th>If it fails</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Credentials and model access</td><td><code>sts get-caller-identity</code>, <code>bedrock list-foundation-models</code></td><td>It is IAM or model opt-in. Not your code.</td></tr>
+        <tr><td>2</td><td>Tools work standalone</td><td>Call the Lambda / API directly with test input</td><td>Fix it here — never inside an agent loop.</td></tr>
+        <tr><td>3</td><td>Agent works locally</td><td><code>python main.py</code> + <code>curl localhost:8080</code></td><td>A framework or prompt bug. Nothing to do with AgentCore.</td></tr>
+        <tr><td>4</td><td>Container starts clean</td><td>Run the ARM64 image locally, time the startup</td><td>Over ~20s and your cold start will fail in AWS.</td></tr>
+        <tr><td>5</td><td>Runtime is reachable</td><td><code>agentcore status</code>, then invoke with a valid session id</td><td>Check the protocol/port table first.</td></tr>
+        <tr><td>6</td><td>Traces are joined</td><td>One request, then look for <strong>one</strong> trace in CloudWatch</td><td>You dropped the session id on a hop.</td></tr>
+        <tr><td>7</td><td>Memory persists</td><td>New session, next day, ask about the last one</td><td>Long-term extraction is async — re-check later before filing a bug.</td></tr>
+        <tr><td>8</td><td>Auth actually denies</td><td>Call with no token, and with a wrong-audience token</td><td>An authorizer that accepts everything looks exactly like one that works.</td></tr>
+        <tr><td>9</td><td>Policy denies the right things</td><td>In <code>LOG_ONLY</code>, replay a business cycle and read the DENY traces</td><td>False denials found here are cheap; found in <code>ENFORCE</code> they are an outage.</td></tr>
+        <tr><td>10</td><td>Evaluators agree with you</td><td>Score one known-good and one known-bad session</td><td>If the evaluator likes the bad one, fix the evaluator, not the agent.</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">Steps 8 and 10 are the ones teams skip. "Auth works" and "the eval passed" are usually only ever tested in the positive direction, which proves nothing.</aside>
+  </section>
+
+  <!-- 40 -->
+  <section class="slide" data-title="Gotchas worth a day each">
+    <div class="kicker">Part 3 · field notes</div>
+    <h2>The ones that cost a day each</h2>
+    <div class="grid g3">
+      <div class="card bad"><h3>Deploy succeeds, nothing answers</h3><p>Wrong port for the protocol. A2A is 9000, MCP is 8000, HTTP and AGUI are 8080. The symptom is a timeout, never a message.</p></div>
+      <div class="card bad"><h3>HTTP 424 at launch</h3><p>The container missed its 30-second health check. Usually a heavy dependency tree or the OTel auto-instrumentor walking ~45 instrumentations before your server binds.</p></div>
+      <div class="card bad"><h3>ValidationException on a good id</h3><p><code>runtimeSessionId</code> needs 33+ characters. <code>J2001</code> is rejected — pad it deterministically rather than randomising it.</p></div>
+      <div class="card bad"><h3>Tool dispatch silently misses</h3><p>Gateway namespaces tool names with a multi-underscore prefix. Print the raw value once and split on what you actually receive.</p></div>
+      <div class="card bad"><h3>Five traces instead of one</h3><p>The session id was not propagated on an outbound hop. Everything looks healthy; only the trace view shows the damage.</p></div>
+      <div class="card bad"><h3>Long-term memory "loses" data</h3><p>Extraction is asynchronous. Querying immediately after writing an event returns nothing, and that is the design, not a fault.</p></div>
+      <div class="card bad"><h3>Wheels built for your Mac</h3><p>The runtime is ARM64 Graviton. Zips need <code>--python-platform aarch64-manylinux2014 --only-binary=:all:</code>, or a package compiles for the wrong architecture without complaining.</p></div>
+      <div class="card bad"><h3>Policy blocks everything</h3><p>Default deny is the design. A new gateway with no matching permit refuses every tool — which looks exactly like a broken agent until you read the trace.</p></div>
+      <div class="card bad"><h3>A served agent with no bound loop</h3><p>A script has a call site where you can cap turns. A served agent does not — bound it with a before-tool-call hook or a runaway loop becomes a bill.</p></div>
+    </div>
+    <aside class="notes">Offer this slide as the screenshot people should keep. It is the highest-value single page in the deck for anyone about to start building.</aside>
+  </section>
+
+  <!-- 41 -->
+  <section class="slide section" data-title="§ Use cases">
+    <div class="kicker">Part 4</div>
+    <h1>What it is<br/>actually good for</h1>
+    <p class="lead">Patterns first, then three worked examples — and the shapes where it is the wrong answer.</p>
+    <aside class="notes">Shift from technical to applied. If executives joined late, this is the section they need.</aside>
+  </section>
+
+  <!-- 42 -->
+  <section class="slide" data-title="The four shapes">
+    <div class="kicker">Part 4 · patterns</div>
+    <h2>Almost everything that fits is one of four shapes</h2>
+    <div class="grid g4">
+      <div class="card accent"><span class="num">Shape 1</span><h3>Long-running assistant</h3><p>A conversation with a person that spans hours or days and must remember. Support, advisory, onboarding, case management.</p><p style="margin-top:8px"><strong>Needs:</strong> Runtime, Memory, Identity</p></div>
+      <div class="card accent"><span class="num">Shape 2</span><h3>Supervisor + specialists</h3><p>One front door delegating to focused agents owned by different teams, each deployed independently.</p><p style="margin-top:8px"><strong>Needs:</strong> Runtime (A2A), Observability</p></div>
+      <div class="card accent"><span class="num">Shape 3</span><h3>Tool-heavy operator</h3><p>The intelligence is small; the integration surface is large. Dozens of internal APIs the agent must reach safely.</p><p style="margin-top:8px"><strong>Needs:</strong> Gateway, Identity, Policy</p></div>
+      <div class="card accent"><span class="num">Shape 4</span><h3>Legacy bridge</h3><p>The system of record has no API and never will. The agent drives the UI a human would drive.</p><p style="margin-top:8px"><strong>Needs:</strong> Browser, Observability</p></div>
+    </div>
+    <div class="callout"><p><strong>Diagnostic question:</strong> if you cannot say which of these four your project is, the project is not scoped yet — and adopting a platform will not fix that.</p></div>
+    <aside class="notes">Ask the room to classify their own project out loud. It takes two minutes and it usually surfaces one project that is really shape 3 wearing shape 1's clothes.</aside>
+  </section>
+
+  <!-- 43 -->
+  <section class="slide" data-title="Use cases by industry">
+    <div class="kicker">Part 4 · the catalogue</div>
+    <h2>Where these shapes show up</h2>
+    <div class="grid g3">
+      <div class="card"><h3>Customer support triage</h3><p>Reads the ticket, pulls order and account history, drafts a resolution, escalates with a written rationale. <strong>Shape 1 + 3.</strong></p></div>
+      <div class="card"><h3>HR candidate screening</h3><p>Scores candidates against a requisition, explains every rejection, schedules the survivors. <strong>Shape 2.</strong></p></div>
+      <div class="card"><h3>Financial ops reconciliation</h3><p>Matches statements to ledgers, computes variances in a sandbox, writes an exception report a human signs. <strong>Shape 3 + Code Interpreter.</strong></p></div>
+      <div class="card"><h3>Insurance claim handling</h3><p>Reads documents, checks policy terms, requests missing evidence — with a Cedar ceiling on what it may approve unaided. <strong>Shape 1 + Policy.</strong></p></div>
+      <div class="card"><h3>Healthcare scheduling</h3><p>Books and reschedules within business hours only, and only clinicians may cancel — enforced outside the model. <strong>Shape 3 + Policy.</strong></p></div>
+      <div class="card"><h3>Developer productivity</h3><p>Triages failing builds, reads the diff and the logs, proposes a fix and opens the PR. Episodic memory learns which fixes actually worked. <strong>Shape 3.</strong></p></div>
+      <div class="card"><h3>Supply-chain exceptions</h3><p>Watches shipments, calls carrier APIs, and drives the supplier portal that has no API. <strong>Shape 4.</strong></p></div>
+      <div class="card"><h3>Sales revenue desk</h3><p>Assembles account context from CRM, ERP and email, then acts on the rep's behalf via 3LO into SaaS. <strong>Shape 3 + Identity.</strong></p></div>
+      <div class="card"><h3>IT service desk</h3><p>Resets access, provisions accounts, files the change record — every action attributable to the requesting human. <strong>Shape 3 + Identity + Policy.</strong></p></div>
+    </div>
+    <aside class="notes">Pick the two closest to the audience's business and skip the rest. Reading all nine aloud is how you lose the room in the final third.</aside>
+  </section>
+
+  <!-- 44 -->
+  <section class="slide" data-title="Worked example — the HR desk">
+    <div class="kicker">Part 4 · worked example</div>
+    <h2>One requisition, four agents, five runtimes, one trace</h2>
+    <div class="diagram"><pre class="mermaid">
+flowchart TB
+    U["Recruiter · Cognito JWT"] --> S["Supervisor runtime<br/>HTTP · 8080"]
+    S -->|A2A| A1["Sourcing agent<br/>9000"]
+    S -->|A2A| A2["Screening agent<br/>9000"]
+    S -->|A2A| A3["Scheduling agent<br/>9000"]
+    A2 -->|MCP| T["Scoring server<br/>MCP · 8000"]
+    A1 -->|MCP| G["Gateway<br/>hrdata___*"]
+    A3 -->|MCP| G
+    G --> L["Lambda · ATS + calendar"]
+    S --- M["Memory<br/>actor=recruiter<br/>session=requisition"]
+    </pre></div>
+    <div class="grid g3" style="margin-top:12px">
+      <div class="card good"><h3>Why A2A, not one big agent</h3><p>Three teams own three agents and ship independently. One ARN each, one card each, no shared deploy.</p></div>
+      <div class="card good"><h3>Why the scorer is MCP, not Gateway</h3><p>It already speaks MCP. Gateway is for things that cannot — putting it there would add a hop and buy nothing.</p></div>
+      <div class="card good"><h3>Why the requisition is the session id</h3><p>It is the business key that makes memory, traces and conversation all agree on what "this" means.</p></div>
+    </div>
+    <aside class="notes">Walk the arrows once, slowly. The point is not the HR domain — it is that the topology falls out of the protocol rules from Part 1, not from taste.</aside>
+  </section>
+
+  <!-- 45 -->
+  <section class="slide" data-title="Worked example — support triage">
+    <div class="kicker">Part 4 · worked example</div>
+    <h2>Support triage — the one most companies should build first</h2>
+    <div class="grid g2">
+      <div>
+        <h3>What happens in one session</h3>
+        <ul class="bullets">
+          <li>A ticket arrives; the session id is the <strong>ticket id</strong>, so every later message joins the same conversation</li>
+          <li>Gateway exposes order lookup, entitlement check and refund initiation — three existing Lambdas, zero new services</li>
+          <li>Memory recalls that this customer has contacted you twice this month, without re-reading both transcripts</li>
+          <li><strong>Policy caps the refund tool at $500</strong>, so the worst case is bounded by a rule rather than a prompt</li>
+          <li>The agent drafts a resolution and either sends it or escalates <em>with its reasoning attached</em></li>
+          <li>Online evaluation samples 10% of sessions for goal success rate and safety, so a regression shows up as a trend</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card accent"><h3>Why it is a good first project</h3><p>The tools already exist as APIs, the value is measurable in handle time, and a wrong answer is recoverable — a human is in the loop by design.</p></div>
+        <div class="card bad" style="margin-top:14px"><h3>Where teams get it wrong</h3><p>Letting the agent take irreversible actions — issuing the refund rather than proposing it — in the first release. Earn that with a month of traces showing what it <em>would</em> have done.</p></div>
+        <div class="callout" style="margin-top:14px"><p><strong>Capabilities used:</strong> Runtime, Gateway, Memory, Identity, Observability, Policy, Evaluations. Seven of nine, and no Browser or Code Interpreter anywhere.</p></div>
+      </div>
+    </div>
+    <aside class="notes">"Propose, do not perform" is the single best piece of rollout advice for any agent that touches money or customer records. Traces from the shadow period become the business case for the next release — and Policy is what makes "perform" survivable when you get there.</aside>
+  </section>
+
+  <!-- 46 -->
+  <section class="slide" data-title="Worked example — legacy bridge">
+    <div class="kicker">Part 4 · worked example</div>
+    <h2>The legacy bridge — when the answer really is a browser</h2>
+    <div class="grid g2">
+      <div>
+        <h3>The situation</h3>
+        <p>A supplier portal holds delivery commitments. There is no API, there will not be one this year, and the integration currently runs on a person with a spreadsheet and a login.</p>
+        <h3 style="margin-top:16px">The build</h3>
+        <ul class="bullets">
+          <li><strong>Browser</strong> drives the portal, in <strong>VPC mode</strong> if the portal is internal, with live view for when it stalls</li>
+          <li><strong>Identity</strong> holds the portal credentials, so no secret lives in the agent</li>
+          <li><strong>Code Interpreter</strong> reconciles the scraped table against the ERP extract</li>
+          <li><strong>Session replay</strong> keeps the recording — which is what makes it auditable rather than merely automated</li>
+        </ul>
+      </div>
+      <div>
+        <div class="callout warn"><span class="label">The trade you are making</span><p>Browser automation is the <strong>most brittle</strong> integration you can build. The portal will redesign its login page and your agent will fail on a Tuesday. Accept that cost knowingly — and re-open the API conversation every six months.</p></div>
+        <div class="card" style="margin-top:14px"><h3>The test that decides it</h3><p>Ask: <em>"If this vendor shipped an API tomorrow, would we throw this away?"</em> If yes, build it anyway — and write it so throwing it away is one module, not the whole system.</p></div>
+        <div class="card good" style="margin-top:14px"><h3>Why AgentCore rather than your own Playwright fleet</h3><p>You get the session lifecycle, the isolation, the live view and the replay without running headless Chrome on infrastructure someone has to patch.</p></div>
+      </div>
+    </div>
+    <aside class="notes">This is the use case that most often makes a skeptical operations audience lean forward, because they have a person doing it today and they know exactly what it costs. Mention the CAPTCHA rule here: use a search tool for search, Browser for specific actions, and a human for the CAPTCHA.</aside>
+  </section>
+
+  <!-- 47 -->
+  <section class="slide" data-title="Anti-patterns">
+    <div class="kicker">Part 4 · the other list</div>
+    <h2>Four projects that should not be AgentCore</h2>
+    <div class="grid g4">
+      <div class="card bad"><h3>The nightly batch</h3><p>No session, no user, no conversation. That is a container on a schedule, and it will cost less and fail more legibly.</p></div>
+      <div class="card bad"><h3>The single prompt</h3><p>One model call with no tools and no memory does not need a platform. Call the model from whatever already serves your traffic.</p></div>
+      <div class="card bad"><h3>The latency-critical path</h3><p>If the budget is tens of milliseconds and the caller is a page render, this is the wrong layer entirely.</p></div>
+      <div class="card bad"><h3>The portability mandate</h3><p>If a contract requires the same system to run on another cloud, adopt Runtime at most and keep every other capability behind your own interface.</p></div>
+    </div>
+    <div class="callout"><p><strong>The pattern in all four:</strong> AgentCore earns its keep when there is a <em>session</em> — something with an identity, a lifetime and a memory. Take the session away and most of the value goes with it.</p></div>
+    <aside class="notes">Saying "do not use it for X" from an AWS-adjacent deck buys credibility for everything else you claimed. Do not cut this slide for time.</aside>
+  </section>
+
+  <!-- 48 -->
+  <section class="slide" data-title="Adoption roadmap">
+    <div class="kicker">Part 4 · getting started for real</div>
+    <h2>A ninety-day adoption that does not bet the quarter</h2>
+    <table class="nowrap">
+      <thead><tr><th>Phase</th><th>Do</th><th>Capabilities</th><th>Exit criterion</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Week 1</strong></td><td>Deploy one existing agent as a Runtime. Change nothing else.</td><td>Runtime</td><td>A colleague invokes it and gets a correct answer.</td></tr>
+        <tr><td><strong>Week 2</strong></td><td>Turn on tracing and build one dashboard.</td><td>+ Observability</td><td>You can answer "what did it do at 14:05?" in under a minute.</td></tr>
+        <tr><td><strong>Weeks 3–4</strong></td><td>Move two real tools behind a Gateway.</td><td>+ Gateway</td><td>No hand-written MCP wrapper remains in the repo.</td></tr>
+        <tr><td><strong>Weeks 5–6</strong></td><td>Add memory with the two ids and the strategies chosen deliberately.</td><td>+ Memory</td><td>A returning user is recognised on a new session the next day.</td></tr>
+        <tr><td><strong>Weeks 7–8</strong></td><td>Put real auth in front, and test that it <em>denies</em>.</td><td>+ Identity</td><td>An unauthenticated and a wrong-audience call both fail.</td></tr>
+        <tr><td><strong>Weeks 9–10</strong></td><td>Write Cedar policies for every consequential tool; run them in <code>LOG_ONLY</code>.</td><td>+ Policy</td><td>A full business cycle of traces with zero false denials.</td></tr>
+        <tr><td><strong>Weeks 11–12</strong></td><td>Score sessions on demand, then sample production online. Move deployment to Terraform.</td><td>+ Evaluations, as code</td><td>A goal-success-rate trend line, and <code>ENFORCE</code> switched on without incident.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><p><strong>Every phase has an exit criterion you could fail.</strong> That is the point — a roadmap where nothing can fail is a schedule, not a plan.</p></div>
+    <aside class="notes">If the meeting needs an ask, the ask is week 1 and week 2 only. Everything past week 4 should be re-decided with real data.</aside>
+  </section>
+
+  <!-- 49 -->
+  <section class="slide" data-title="Remember">
+    <div class="kicker">Close</div>
+    <h2 style="margin-bottom:22px">Seven sentences worth keeping</h2>
+    <p class="big-quote" style="max-width:44ch">
+      <span class="hl">Runtime</span> is where it runs.<br/>
+      <span class="hl">Gateway</span> is what it can reach.<br/>
+      <span class="hl">Memory</span> is what it carries between Tuesdays.<br/>
+      <span class="hl">Identity</span> is who may ask.<br/>
+      <span class="hl">Policy</span> is what it may never do.<br/>
+      <span class="hl">Observability</span> is how you find out what happened.<br/>
+      <span class="hl">Evaluations</span> is how you find out whether it was any good.
+    </p>
+    <div class="grid g2" style="margin-top:22px">
+      <div class="callout"><p><strong>The protocol picks the port</strong>, and getting it wrong is a timeout, not an error.</p></div>
+      <div class="callout"><p><strong>The session id is a business key</strong>, and it is the thread through all of them.</p></div>
+    </div>
+    <p style="margin-top:20px;color:var(--fg-faint)">Deep dive: <a href="agentcore.html" style="color:var(--accent)">AgentCore Tutorial &amp; Capability Guide</a> · narrative deck: <a href="agentcore-slides.html" style="color:var(--accent)">AgentCore — Capabilities</a> · runnable code: <code>agent-core/</code></p>
+    <p style="margin-top:8px;color:var(--fg-faint);font-size:.9rem">Capability detail cross-checked against the nine-module <em>Mastering Amazon Bedrock AgentCore</em> course decks in <code>docs/quickstart/agent_core/</code>. Verify limits and pricing against the AWS docs before quoting them.</p>
+    <aside class="notes">Close here. During questions, <b>O</b> opens the slide menu — capabilities are 7–21, trade-offs 24–29, the decision slide is 29, and the build guide starts at 30.</aside>
+  </section>
+
+</div>
+
+<div class="hud">
+  <span class="deck-name">AgentCore · 9 Capabilities, Trade-offs, Build Guide, Use Cases</span>
+  <span class="spacer"></span>
+  <span class="hint">← → move · <b>O</b> menu · <b>N</b> notes · <b>F</b> full screen · <b>T</b> theme</span>
+  <button type="button" id="btn-menu" title="Slide menu (O)">Menu</button>
+  <button type="button" id="btn-notes" title="Speaker notes (N)">Notes</button>
+  <button type="button" id="btn-theme" title="Theme (T)">Theme</button>
+  <button type="button" id="btn-prev" title="Previous (←)">‹</button>
+  <button type="button" id="btn-next" title="Next (→)">›</button>
+  <span class="counter" id="counter">1 / 1</span>
+</div>
+
+<div class="menu" id="menu">
+  <h2>Jump to a slide</h2>
+  <ol id="menu-list"></ol>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var slides   = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var progress = document.getElementById("progress");
+  var counter  = document.getElementById("counter");
+  var menu     = document.getElementById("menu");
+  var menuList = document.getElementById("menu-list");
+  var current  = 0;
+
+  /* ---------- fit each slide to the viewport ----------
+     A slide taller than the window used to overflow a centred flex column,
+     which puts its first lines above the scroll origin where nothing — not the
+     wheel, not the keyboard — can reach them. Wrap each slide's content once,
+     then scale that wrapper down by exactly as much as it overflows. Below
+     MIN_SCALE the text would be unreadable from the back row, so we stop
+     shrinking and let it scroll; `justify-content: safe center` keeps the top
+     reachable when that happens. */
+  var MIN_SCALE = 0.62;
+
+  slides.forEach(function (s) {
+    var body = document.createElement("div");
+    body.className = "slide-body";
+    Array.prototype.slice.call(s.childNodes).forEach(function (n) {
+      if (n.nodeType === 1 && n.classList.contains("notes")) return;  // notes stay put
+      body.appendChild(n);
+    });
+    s.insertBefore(body, s.firstChild);
+  });
+
+  function fit(s) {
+    var body = s.firstElementChild;
+    if (!body || !body.classList.contains("slide-body")) return;
+    body.style.transform = "";
+    body.style.height    = "";
+    var pad   = getComputedStyle(s);
+    var avail = s.clientHeight - parseFloat(pad.paddingTop) - parseFloat(pad.paddingBottom);
+    var need  = body.scrollHeight;
+    if (!need || avail <= 0 || need <= avail) return;
+    var k = Math.max(MIN_SCALE, avail / need);
+    body.style.transform = "scale(" + k + ")";
+    body.style.height    = (need * k) + "px";   // so the slide stops scrolling too
+  }
+  function fitAll() { slides.forEach(fit); }
+
+  var fitTimer = null;
+  function fitSoon(ms) { clearTimeout(fitTimer); fitTimer = setTimeout(fitAll, ms || 60); }
+  window.addEventListener("resize", function () { fitSoon(120); });
+
+  /* ---------- Mermaid: keep each block's source so we can re-render on theme change ---------- */
+  var mermaidBlocks = Array.prototype.slice.call(document.querySelectorAll("pre.mermaid"));
+  mermaidBlocks.forEach(function (el) { el.dataset.src = el.innerHTML; });
+
+  function renderMermaid() {
+    if (!window.mermaid) return;
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    window.mermaid.initialize({
+      startOnLoad: false,
+      theme: dark ? "dark" : "default",
+      securityLevel: "loose",
+      fontFamily: "inherit",
+      themeVariables: { fontSize: "17px" },
+      flowchart: { htmlLabels: true, useMaxWidth: true },
+      sequence: { useMaxWidth: true }
+    });
+    mermaidBlocks.forEach(function (el) {
+      el.removeAttribute("data-processed");
+      el.innerHTML = el.dataset.src;
+    });
+    try { window.mermaid.init(undefined, mermaidBlocks); } catch (e) { /* a bad diagram must not kill the deck */ }
+    fitSoon(80);        // diagrams change slide heights, so re-measure after they draw
+  }
+
+  /* ---------- navigation ---------- */
+  function show(i, push) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, n) { s.classList.toggle("active", n === current); });
+    counter.textContent = (current + 1) + " / " + slides.length;
+    progress.style.width = ((current + 1) / slides.length * 100) + "%";
+    slides[current].scrollTop = 0;
+    Array.prototype.forEach.call(menuList.querySelectorAll("button"), function (b, n) {
+      b.classList.toggle("current", n === current);
+    });
+    if (push !== false) {
+      try { history.replaceState(null, "", "#" + (current + 1)); } catch (e) {}
+    }
+  }
+  function next() { show(current + 1); }
+  function prev() { show(current - 1); }
+
+  /* ---------- jump menu ---------- */
+  slides.forEach(function (s, n) {
+    var li = document.createElement("li");
+    var b  = document.createElement("button");
+    b.innerHTML = '<span class="n">' + (n + 1) + '</span><span>' + (s.dataset.title || "Slide " + (n + 1)) + '</span>';
+    b.addEventListener("click", function () { document.body.classList.remove("show-menu"); show(n); });
+    li.appendChild(b); menuList.appendChild(li);
+  });
+
+  function toggle(cls) { document.body.classList.toggle(cls); }
+
+  function toggleTheme() {
+    var dark = document.documentElement.getAttribute("data-theme") === "dark";
+    var theme = dark ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem("deck-theme", theme); } catch (e) {}
+    renderMermaid();
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+
+  document.getElementById("btn-next").addEventListener("click", next);
+  document.getElementById("btn-prev").addEventListener("click", prev);
+  document.getElementById("btn-menu").addEventListener("click", function () { toggle("show-menu"); });
+  document.getElementById("btn-notes").addEventListener("click", function () { toggle("show-notes"); });
+  document.getElementById("btn-theme").addEventListener("click", toggleTheme);
+  menu.addEventListener("click", function (e) { if (e.target === menu) document.body.classList.remove("show-menu"); });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === "Escape") { document.body.classList.remove("show-menu"); return; }
+    if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); next(); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); prev(); }
+    else if (k === "Home") { e.preventDefault(); show(0); }
+    else if (k === "End") { e.preventDefault(); show(slides.length - 1); }
+    else if (k === "o" || k === "O") { toggle("show-menu"); }
+    else if (k === "n" || k === "N") { toggle("show-notes"); }
+    else if (k === "t" || k === "T") { toggleTheme(); }
+    else if (k === "f" || k === "F") { toggleFullscreen(); }
+  });
+
+  /* swipe, for a tablet or a phone in the back row */
+  var x0 = null;
+  document.addEventListener("touchstart", function (e) { x0 = e.changedTouches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 60) { dx < 0 ? next() : prev(); }
+    x0 = null;
+  }, { passive: true });
+
+  /* ---------- start ---------- */
+  renderMermaid();
+  if (window.Prism) window.Prism.highlightAll();
+  var start = parseInt((location.hash || "").replace("#", ""), 10);
+  show(isNaN(start) ? 0 : start - 1, false);
+
+  /* Measure once now, then again after the late arrivals — web fonts and
+     Prism's autoloaded grammars both reflow code blocks after first paint. */
+  fitAll();
+  window.addEventListener("load", function () { fitSoon(50); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitSoon(50); });
+  setTimeout(fitAll, 600);
+})();
+</script>
+</body>
+</html>

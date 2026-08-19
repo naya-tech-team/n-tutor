@@ -1,0 +1,33 @@
+meta {
+  name: Unknown employee is null, not an error
+  type: graphql
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query MissingPerson {
+    employee(employeeId: "E9999") {
+      name
+    }
+    health
+  }
+}
+
+assert {
+  res.body.data.employee: isNull
+  res.body.data.health: eq ok
+  res.body.errors: isUndefined
+}
+
+docs {
+  REST answered this with a 404. Here the missing person is `null` **and the sibling field
+  still resolved** — which matters, because one GraphQL request routinely carries several
+  independent questions. Failing the whole request because one lookup missed would be a
+  bug, not strictness.
+}

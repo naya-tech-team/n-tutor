@@ -1,0 +1,55 @@
+meta {
+  name: Calling without a session
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 25,
+    "method": "tools/list"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("400 Bad Request — no session id was sent", function() {
+    expect(res.getStatus()).to.equal(400);
+    expect(res.getBody().error.message).to.contain("Missing session ID");
+  });
+
+  test("the server offers a fresh session id it will not honour retroactively", function() {
+    expect(res.getHeader("mcp-session-id")).to.be.a("string");
+  });
+}
+
+docs {
+  The only request in this collection with **no `mcp-session-id` header** — open its
+  **Headers** tab and compare with any of its neighbours.
+
+  MCP over HTTP is **stateful**. `initialize` mints a session; every later request has to
+  echo it, and the server rejects anything that does not:
+
+  | Sent | Answer |
+  |---|---|
+  | nothing | `400 Bad Request: Missing session ID` |
+  | an id the server never issued | `404 Not Found` |
+  | the id from `initialize` | the actual result |
+
+  This is what makes the collection order load-bearing, and what makes MCP unlike the REST
+  project next door — where every request stands alone and any of them can be run first.
+
+  A closing note on the `404` row: it is also what a client sees after the **server
+  restarts**. Sessions live in memory, so an id that worked a second ago becomes unknown,
+  and the fix is to re-run *Handshake › Initialize* rather than to retry the call.
+}

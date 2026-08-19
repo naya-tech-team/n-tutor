@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AWS AgentCore: Tutorial — AI Engineering</title>
+<meta name="description" content="Amazon Bedrock AgentCore, capability by capability — Runtime, Gateway, Memory, Identity, Observability, Code Interpreter and Browser — taught by moving one working HR recruiting system from a laptop to five deployed runtimes, with diagrams, Terraform and the gotchas that cost a day each." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+<style>
+  .cap-card {
+    border-left: 3px solid var(--accent, #6366f1);
+    padding: 12px 0 12px 18px;
+    margin: 18px 0 20px;
+    background: color-mix(in srgb, var(--accent, #6366f1) 6%, transparent);
+    border-radius: 0 8px 8px 0;
+  }
+  .cap-card .cap-label {
+    display: block;
+    font-size: .72rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    font-weight: 700;
+    opacity: .75;
+    margin-bottom: 6px;
+  }
+  .cap-card p { margin: 0; }
+  .cap-card p + p { margin-top: 10px; }
+  .tight td:first-child { white-space: nowrap; font-weight: 600; }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="graphql.html"><span class="badge-dot"></span> GraphQL: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands-course.html"><span class="badge-dot"></span> Strands: Full Course Guide</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+      <a class="sidebar-link" href="agentcore.html"><span class="badge-dot"></span> AWS AgentCore: Tutorial</a>
+      <a class="sidebar-link" href="agentcore-qa.html"><span class="badge-dot"></span> AgentCore: Q&amp;A</a>
+      <a class="sidebar-link" href="agentcore-deploy.html"><span class="badge-dot"></span> AgentCore: Deploy Prerequisites</a>
+      <a class="sidebar-link" href="agentcore-complete-reference.html"><span class="badge-dot"></span> AgentCore: Complete Reference</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Slide Decks <span class="qs-count">3</span></div>
+      <a class="sidebar-link" href="agentcore-capabilities.html"><span class="badge-dot"></span> AgentCore: Capabilities &amp; Trade-offs</a>
+      <a class="sidebar-link" href="agentcore-slides.html"><span class="badge-dot"></span> AgentCore: Capabilities (slides)</a>
+      <a class="sidebar-link" href="agentcore-dev-deck.html"><span class="badge-dot"></span> AgentCore: Developer Deep Dive</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>AWS AgentCore</span>
+    </nav>
+
+    <h1>AWS AgentCore — Tutorial &amp; Capability Guide</h1>
+    <div class="meta-row">
+      <span class="badge badge-advanced">Full Guide</span>
+      <span class="badge badge-info">7 capabilities</span>
+      <span class="badge badge-info">runnable code</span>
+      <span class="badge badge-info">Terraform included</span>
+      <span class="badge badge-info">~60 min</span>
+    </div>
+
+    <p><strong>Amazon Bedrock AgentCore is not a framework for building agents.</strong> It is the platform an agent you have <em>already built</em> needs in order to become a service: somewhere to run with per-session isolation, a way to reach tools it does not own, memory that survives a restart, an answer to "who is allowed to ask", and a trace when it misbehaves at 2am. Your agent code barely changes. Everything around it does.</p>
+
+    <p>This guide teaches it the only way that sticks: by taking <strong>one working system</strong> — the HR recruiting pipeline used across this whole course — and moving it, capability by capability, from three terminals on a laptop to five deployed runtimes behind one front door.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Get the runnable code</div>
+      <p>Everything on this page ships with the course in <code>agent-core/</code>: five runtimes, a Gateway over a Lambda over S3, Memory, Cognito, OpenTelemetry, a React chat UI, eight Terraform modules and 85 tests. It still runs <strong>end to end on your laptop with no AWS account</strong> — <code>AGENTCORE</code>, <code>MODEL_PROVIDER</code> and <code>DATA_SOURCE</code> decide which world each file is in. Read <code>agent-core/architecture.md</code> for the design document and <code>agent-core/README.md</code> for how to run it.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">🖥️ Presenting this?</div>
+      <p><a href="agentcore-slides.html">Open the slide deck</a> — the same seven capabilities as 31 slides, with speaker notes (<code>N</code>), a jump menu (<code>O</code>) and print-to-PDF export. Arrow keys to move.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">One domain across the whole course</div>
+      <p>Every track here uses the same small world: <strong>employees have skills rated 1–5, requisitions require skills at a minimum level, and some of those are mandatory.</strong> A candidate below a mandatory bar is <em>blocked</em> — no score saves them. You have already met it in <a href="python.html">Python</a>, over HTTP in <a href="fastapi.html">FastAPI</a>, as tools in <a href="fastmcp.html">FastMCP</a>, across processes in <a href="a2a.html">A2A</a>, and agent-side in the <a href="strands-course.html">Strands course</a>. Here it gets deployed.</p>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">The one line to carry through the whole page</div>
+      <p><strong>Locally, a port told you which agent you were talking to. On AgentCore an ARN does</strong> — and a <strong>session id</strong>, which here is the requisition id, is the only thread tying memory, three A2A hops and one distributed trace together. Almost every confusing failure below is a session id or an address that stopped being the thing you thought it was.</p>
+    </div>
+
+    <h2 id="what">1. What AgentCore actually is</h2>
+
+    <p>Seven services under one name. They are <em>composable</em> — you can put a LangGraph agent in Runtime and use nothing else, or use Gateway from an agent running on your own EKS cluster. Nothing forces you to adopt all of it, and nothing here is a new agent framework:</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TB
+    A["<b>Your agent</b> — any framework<br/>Strands · LangGraph · CrewAI · plain Python"]
+
+    subgraph plat ["Amazon Bedrock AgentCore"]
+      direction LR
+      RT["<b>Runtime</b><br/>where it runs"]
+      GW["<b>Gateway</b><br/>what it can reach"]
+      MEM["<b>Memory</b><br/>what it carries<br/>between Tuesdays"]
+      ID["<b>Identity</b><br/>who may ask"]
+      OBS["<b>Observability</b><br/>what actually happened"]
+      CI["<b>Code Interpreter</b><br/>sandboxed execution"]
+      BR["<b>Browser</b><br/>a real web session"]
+    end
+
+    A --> RT
+    RT --> GW
+    RT --> MEM
+    RT --> CI
+    RT --> BR
+    ID -.->|"guards"| RT
+    ID -.->|"guards"| GW
+    OBS -.->|"instruments"| plat
+      </pre>
+      <div class="caption">Seven services, adopted independently. Runtime is the usual entry point, but Gateway and Memory are callable from anywhere with credentials.</div>
+    </div>
+
+    <table class="tight">
+      <thead><tr><th>Capability</th><th>The problem it solves</th><th>In this project</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime</td><td>An agent process needs a host with per-session isolation and long-running turns</td><td>5 runtimes: 1 supervisor, 3 A2A specialists, 1 MCP server</td></tr>
+        <tr><td>Gateway</td><td>Things that are not MCP servers — a Lambda, an OpenAPI service — must become tools</td><td><code>hr-gateway</code> over <code>hr-data-fn</code> over S3</td></tr>
+        <tr><td>Memory</td><td>The conversation dies with the process; nothing recalls last Tuesday</td><td><code>hr_hiring_desk</code>, three strategies, session = requisition</td></tr>
+        <tr><td>Identity</td><td>"Who may start a hiring conversation?" has no answer on a laptop</td><td>Cognito JWT at the front door, IAM everywhere inside</td></tr>
+        <tr><td>Observability</td><td>When the screener loops, the evidence is in someone else's terminal</td><td>ADOT → CloudWatch, one trace across five runtimes</td></tr>
+        <tr><td>Code Interpreter</td><td>An agent that writes code needs somewhere safe to run it</td><td>not used — <a href="#builtins">§9</a> shows where it would go</td></tr>
+        <tr><td>Browser</td><td>Some systems only have a web UI, never an API</td><td>not used — <a href="#builtins">§9</a> shows where it would go</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note">
+      <div class="callout-title">🧠 The distinction worth holding on to</div>
+      <p><strong>A framework decides how your agent thinks. A platform decides what happens when other people can call it.</strong> Strands, LangGraph and CrewAI are the first. AgentCore is the second — which is why this page has almost no prompt engineering in it and a great deal about ports, roles and session ids.</p>
+    </div>
+
+    <h2 id="domain">2. The example: one HR recruiting desk</h2>
+
+    <p>Twelve employees with skills rated 1–5. Six open requisitions, each naming required skills with a minimum level, a weight, and a <code>mandatory</code> flag. One function decides who fits:</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    E["<b>EMPLOYEES</b><br/>12 people, skills rated 1-5,<br/>bench or allocated"] --> M["<b>match()</b><br/>weighted arithmetic<br/>never a model call"]
+    J["<b>REQUISITIONS</b><br/>6 open roles: min_level,<br/>mandatory, weight"] --> M
+    S["<b>SKILLS</b><br/>24 canonical names<br/>+ the alias table"] -.-> M
+    M --> R["score % · verdict<br/>matched · gaps · <b>blockers</b>"]
+      </pre>
+      <div class="caption">The same <code>_shared/hr_data.py</code> the rest of the course uses. AgentCore changes where <code>match()</code> runs. It does not change who has to defend the number.</div>
+    </div>
+
+    <p>Three people show up on every screen below, and they are the reason the design is shaped the way it is. Scored against <strong>J2001 — Senior Data Engineer, Bengaluru</strong>:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>shortlist("J2001")</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">E1002 Priya Raman     100% strong    blockers=[]
+E1003 Rahul Menon      61% blocked   blockers=['Apache Spark']
+E1005 Vikram Iyer      50% blocked   blockers=['Python', 'SQL']</code></pre>
+    </div>
+
+    <p>Rahul is second by score and <em>cannot be hired</em>. <strong>The ranking is by score; the decision is the verdict.</strong> Hold on to that, because distribution introduces a failure mode a laptop does not have: every hop between agents is a chance to paraphrase, and paraphrase drops the blocker. "Blocked on Apache Spark" becomes "some gaps", and a warm note goes to someone who cannot do the job.</p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">Why this example and not a chatbot</div>
+      <p>A weather bot cannot teach you AgentCore, because nothing about it is <em>wrong</em> in a way that matters. This system has a fact — <code>blocked</code> — that must survive five processes, three model calls, a summarisation memory strategy and a JSON round-trip without being softened. Every capability below is judged on whether it protects that fact.</p>
+    </div>
+
+    <h2 id="system">3. The system we are building</h2>
+
+    <p>Four agents and a tool server, deployed. Only one of them is reachable from outside:</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    U(["Recruiter"])
+
+    subgraph rt ["AgentCore Runtime"]
+        SUP["<b>hiring_supervisor</b><br/>HTTP · 8080 /invocations<br/>the only front door"]
+        SCR["<b>talent_screening</b><br/>A2A · 9000 /<br/>scores and ranks"]
+        OUT["<b>recruiting_outreach</b><br/>A2A · 9000 /<br/>no tools at all"]
+        CMP["<b>people_compliance</b><br/>A2A · 9000 /<br/>reviews the draft"]
+        MCP["<b>hr_skills_mcp</b><br/>MCP · 8000 /mcp<br/>match lives here"]
+    end
+
+    subgraph gw ["AgentCore Gateway · hr-gateway"]
+        G["<b>hrdata___*</b><br/>the AWS estate,<br/>as MCP tools"]
+    end
+
+    L["<b>hr-data-fn</b><br/>Lambda · the only writer"]
+    S3[("<b>S3</b><br/>employees · requisitions<br/>skills · shortlists")]
+    MEM[("<b>AgentCore Memory</b><br/>actor = recruiter<br/>session = requisition")]
+    OBS["<b>Observability</b><br/>ADOT → CloudWatch<br/>one trace per requisition"]
+    ID["<b>Identity</b><br/>Cognito JWT inbound<br/>IAM roles outbound"]
+
+    U -->|"1 · InvokeAgentRuntime"| SUP
+    SUP -->|"2 · A2A"| SCR
+    SCR -->|"3 · MCP · direct, one hop"| MCP
+    SCR -->|"4 · MCP · via gateway"| G
+    G -->|"5 · Lambda target"| L
+    L --> S3
+    MCP --> S3
+    SUP -->|"6 · A2A"| OUT
+    SUP -->|"7 · A2A"| CMP
+    SUP <-->|"events and records"| MEM
+
+    ID -.-> SUP
+    ID -.-> G
+    OBS -.-> rt
+    OBS -.-> gw
+      </pre>
+      <div class="caption">Edges 3 and 4 are the load-bearing decision: the screening agent holds <em>two</em> MCP connections. One goes straight to a runtime it owns; the other goes through a Gateway to reach something that cannot speak MCP. <a href="#gateway">§6</a> explains why.</div>
+    </div>
+
+    <table>
+      <thead><tr><th>Runtime</th><th><code>server_protocol</code></th><th>Port · path</th><th>What it replaces locally</th></tr></thead>
+      <tbody>
+        <tr><td><code>hiring_supervisor</code></td><td><code>HTTP</code></td><td>8080 · <code>/invocations</code></td><td>a script in terminal 3 — now a service</td></tr>
+        <tr><td><code>talent_screening</code></td><td><code>A2A</code></td><td>9000 · <code>/</code></td><td>an A2A server on <code>:9001</code></td></tr>
+        <tr><td><code>recruiting_outreach</code></td><td><code>A2A</code></td><td>9000 · <code>/</code></td><td>an A2A server on <code>:9002</code></td></tr>
+        <tr><td><code>people_compliance</code></td><td><code>A2A</code></td><td>9000 · <code>/</code></td><td>an A2A server on <code>:9007</code></td></tr>
+        <tr><td><code>hr_skills_mcp</code></td><td><code>MCP</code></td><td>8000 · <code>/mcp</code></td><td>the FastMCP server on <code>:8000</code></td></tr>
+      </tbody>
+    </table>
+
+    <p>Read the port column. <strong>All three A2A agents listen on 9000 at <code>/</code>.</strong> Locally the port <em>was</em> the address — 9001 meant "the screener". Here the port is a container detail nobody outside the container ever sees, and the ARN is the address. That single change is what most of §5 is about.</p>
+
+    <h2 id="runtime">4. Capability 1 — Runtime</h2>
+
+    <div class="cap-card">
+      <span class="cap-label">What it is</span>
+      <p>A serverless container host built for agents: <strong>per-session isolation</strong> (each session gets its own microVM, so one conversation's memory and file system cannot leak into another), <strong>long turns</strong> — hours, not the 15 minutes a Lambda gives you — and <strong>framework indifference</strong>. You hand it a zip or an image; it hands you an ARN and an endpoint.</p>
+    </div>
+
+    <h3>The protocol contract — get this wrong and nothing tells you</h3>
+
+    <p>Runtime does not care what framework you used. It cares that your process listens on the right port at the right path:</p>
+
+    <table class="tight">
+      <thead><tr><th>Protocol</th><th>Port</th><th>Mount path</th><th>Discovery</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td><code>HTTP</code></td><td>8080</td><td><code>/invocations</code></td><td>none</td><td>your own front door</td></tr>
+        <tr><td><code>MCP</code></td><td>8000</td><td><code>/mcp</code></td><td><code>tools/list</code></td><td>a tool server</td></tr>
+        <tr><td><code>A2A</code></td><td>9000</td><td><code>/</code></td><td>agent card at <code>/.well-known/agent-card.json</code></td><td>an agent other agents delegate to</td></tr>
+        <tr><td><code>AGUI</code></td><td>8080</td><td><code>/invocations</code> (SSE)</td><td>none</td><td>a UI-facing event stream</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">The failure that wastes an afternoon</div>
+      <p>Bind 8080 in an A2A container and the deploy <em>succeeds</em>. The container starts, fails its health check, and the error you eventually see is a timeout. Nothing anywhere says "wrong port". This table is the first thing to check when a deploy works but never answers.</p>
+    </div>
+
+    <h3>An HTTP runtime: the supervisor</h3>
+
+    <p>The orchestrator changing from a script into a service is the structural move of the whole migration. A supervisor that <em>anything</em> can call needs a bounded turn count, an identity to check and a trace id — none of which a script in terminal 3 ever needed.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/runtimes/hiring_supervisor/main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from bedrock_agentcore.runtime import BedrockAgentCoreApp
+
+app = BedrockAgentCoreApp()
+
+@app.entrypoint
+async def invoke(payload, context):          # async def + yield => SSE
+    """One question per call, answered as a stream."""
+    payload = payload or {}
+    job_id = payload.get("job_id") or DEFAULT_JOB
+    # AgentCore hands us the session id it was invoked with.
+    session_id = getattr(context, "session_id", None) or job_id
+
+    async for event in stream_pipeline(
+        job_id, session_id=session_id, prompt=payload.get("prompt") or ""
+    ):
+        yield event
+
+app.run(port=8080)</code></pre>
+    </div>
+
+    <p><code>bedrock_agentcore</code> inspects the entrypoint. See an <strong>async generator</strong> and it returns <code>StreamingResponse(media_type="text/event-stream")</code>; see a plain <code>def</code> returning a dict and it returns JSON. Both work — but a full run here is three remote delegations and a minute or two, so the JSON version is a browser showing nothing at all until the very end.</p>
+
+    <h3>An A2A runtime: the three specialists</h3>
+
+    <p><code>serve_a2a</code> is the SDK helper that wraps an agent as a Bedrock-compatible A2A server: it handles the health endpoint, serves the agent card, reads <code>AGENTCORE_RUNTIME_URL</code>, propagates the Bedrock headers and binds 9000. Compare the two halves of the one file that knows which world it is in:</p>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <button class="tab-btn active">On AgentCore</button>
+        <button class="tab-btn">Locally</button>
+      </div>
+      <div class="tab-panel active">
+        <div class="code-block">
+          <div class="code-block-header"><span>app/_shared/a2a_serve.py</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">from bedrock_agentcore.runtime import serve_a2a
+from strands.multiagent.a2a.executor import StrandsA2AExecutor
+
+# Runtime injects the public URL. Putting it on the card matters: a client
+# resolves the card, then sends to the `url` it finds there — so a card
+# advertising 0.0.0.0 sends the second request into a black hole.
+url = os.environ.get("AGENTCORE_RUNTIME_URL", "http://0.0.0.0:9000/")
+
+executor = StrandsA2AExecutor(
+    agent_factory=agent_factory,
+    enable_a2a_compliant_streaming=True,
+)
+serve_a2a(executor, build_card(name=name, description=description,
+                               skills=skills, url=url))</code></pre>
+        </div>
+      </div>
+      <div class="tab-panel">
+        <div class="code-block">
+          <div class="code-block-header"><span>app/_shared/a2a_serve.py</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">from strands.multiagent.a2a import A2AServer
+
+server = A2AServer(
+    agent_factory=agent_factory,
+    host="127.0.0.1",
+    port=local_port,              # 9001 / 9002 / 9007 — the port IS the address
+    version=VERSION,
+    skills=skills,
+    enable_a2a_compliant_streaming=True,
+)
+server.serve()</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <p>Two things carry over from the local version, and one does not:</p>
+
+    <ul class="checklist">
+      <li><strong>The declared <code>AgentSkill</code> is unchanged.</strong> <code>candidate_screening</code>, <code>candidate_outreach_note</code>, <code>outreach_compliance_review</code> — it is what a calling agent reads off the card to decide you are the right service to ask.</li>
+      <li><strong>The tool budget carries over, and matters more.</strong> See below.</li>
+      <li><strong><code>agent_factory</code> becomes belt-and-braces.</strong> Locally it exists so two callers never share message history. Runtime already isolates by session id, so keep it if you want one file to run both ways — which is exactly why this project keeps it.</li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">A served agent has no call site — so cap it with a hook</div>
+      <p>On a direct call you bound the loop with <code>agent(prompt, limits={"turns": 8})</code>. Inside <code>A2AServer</code> or <code>serve_a2a</code> the <em>server</em> invokes the agent for you, so there is nowhere to pass <code>limits</code>. The Strands agent loop <em>recurses</em> once per cycle, so an agent that keeps calling tools walks off the stack. A hook attaches to the agent object itself and travels with it:</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/_shared/tool_budget.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">class ToolBudget(HookProvider):
+    def register_hooks(self, registry, **_):
+        registry.add_callback(BeforeInvocationEvent, self._reset)
+        registry.add_callback(BeforeToolCallEvent, self._enforce)
+
+    def _enforce(self, event: BeforeToolCallEvent) -> None:
+        # Reserve BEFORE the tool runs. Tools in one turn execute concurrently,
+        # so a counter incremented afterwards reads zero at every check.
+        self._used += 1
+        if self._used &gt; self.max_calls:
+            # cancel_tool hands this string to the model as the tool result,
+            # so it is a prompt: say what to do now, not just that it failed.
+            event.cancel_tool = (
+                f"Tool budget of {self.max_calls} calls is used up. Do not call "
+                "any more tools. Answer now, using only what you already have."
+            )</code></pre>
+    </div>
+
+    <p><strong>A remote agent needs this more than a local one, not less.</strong> When a service loops, the caller sees a request that never returns — and now the evidence is in CloudWatch instead of a terminal you can see.</p>
+
+    <h3>An MCP runtime: the scoring engine</h3>
+
+    <p>The FastMCP server from the <a href="fastmcp.html">FastMCP Quick Start</a> becomes a runtime by changing three arguments, none of them cosmetic:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/runtimes/hr_skills_mcp/main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">mcp.run(
+    transport="streamable-http",
+    host="0.0.0.0",        # a container that binds loopback is unreachable
+    port=8000,
+    path="/mcp",
+    stateless_http=True,   # Runtime load-balances across instances
+    show_banner=False,
+)</code></pre>
+    </div>
+
+    <p><code>stateless_http=True</code> is the one that bites. Runtime injects an <code>Mcp-Session-Id</code> header on any request that lacks one and load-balances across instances — so a <em>stateful</em> server gets handed a second request by an instance that never heard of that session. Set it <code>False</code> only if you genuinely need elicitation, sampling or progress notifications.</p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">Watch where those arguments go</div>
+      <p>Every AWS example writes them on the constructor — <code>FastMCP(host="0.0.0.0", stateless_http=True)</code> — because it uses the FastMCP bundled inside the <code>mcp</code> SDK. This project uses the standalone <code>fastmcp</code> package, which moved both to <code>run()</code> at 3.0. On <code>fastmcp</code> 3.x the constructor form raises <code>TypeError: FastMCP() no longer accepts 'host'</code> before the server ever binds.</p>
+    </div>
+
+    <h3>Sessions, and what isolation costs</h3>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    C1["Recruiter A<br/>session J2001-..."] --> R1["<b>microVM</b><br/>own memory, own /tmp<br/>own conversation"]
+    C2["Recruiter B<br/>session J2004-..."] --> R2["<b>microVM</b><br/>nothing shared with A"]
+    R1 --> ARN["<b>one runtime ARN</b><br/>talent_screening"]
+    R2 --> ARN
+      </pre>
+      <div class="caption">One ARN, many isolated sessions. The session id is the only thing that decides which conversation a request joins.</div>
+    </div>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🔥 <code>runtimeSessionId</code> has a minimum length of 33 characters</div>
+      <p>The obvious value to send is the requisition id — and <code>J2001</code> comes back as a <code>ValidationException</code>, on <code>GetAgentCard</code> as well as <code>InvokeAgentRuntime</code>. Do not reach for <code>uuid4()</code>: the session id is what stitches five runtimes into one trace, so a random suffix per hop gives you five traces that share nothing. Pad it <em>deterministically</em>:</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/clients/a2a_call.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">SESSION_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_-]{32,255}$")
+
+def safe_session_id(candidate: str) -> str:
+    """A session id AgentCore will accept, derived from the one you meant."""
+    candidate = (candidate or "").strip()
+    if SESSION_RE.match(candidate):
+        return candidate
+    base = re.sub(r"[^a-zA-Z0-9_-]", "-", candidate) or "session"
+    if not base[0].isalnum():
+        base = f"s{base}"
+    return f"{base}-{'0' * 33}"[:64]      # J2001 -> J2001-00...0, still legible</code></pre>
+    </div>
+
+    <p>Sessions are isolated but not free: a new session id per request means a new microVM and a cold conversation, while reusing one forever means it never expires. Key it to a business object — a requisition, a chat thread — and you get the right lifetime without thinking about it.</p>
+
+    <h3>Zip or container</h3>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terraform</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">agent_runtime_artifact {
+  code_configuration {                       # no Docker involved
+    entry_point = ["main.py"]
+    runtime     = "PYTHON_3_13"
+    code { s3 { bucket = "...", prefix = "artifacts/talent_screening-&lt;hash&gt;.zip" } }
+  }
+}
+
+# or, when you need system packages or a non-Python runtime:
+# container_configuration { container_uri = "&lt;account&gt;.dkr.ecr...:v1" }</code></pre>
+    </div>
+
+    <p>Start with the zip; move to ECR when you cannot. Two things about zips that only fail in AWS:</p>
+
+    <ul class="checklist">
+      <li><strong>Wheels are built for the container's CPU, not yours.</strong> Build with <code>--python-platform aarch64-manylinux2014 --only-binary=:all:</code>. Without the second flag, a package with no arm64 wheel silently compiles from source for the wrong architecture.</li>
+      <li><strong>A runtime has 30 seconds to become healthy</strong>, and dependencies spend it. <code>strands-agents[a2a]</code> drags in a PostgreSQL driver and gRPC; <code>aws-opentelemetry-distro</code> installs ~45 instrumentations that the auto-instrumentor walks before your server binds. Prune the first, disable the second. The failure is HTTP <strong>424</strong>, which reads like a client error.</li>
+    </ul>
+
+    <h2 id="gateway">5. Capability 2 — Gateway</h2>
+
+    <div class="cap-card">
+      <span class="cap-label">What it is</span>
+      <p>A <strong>managed MCP server that fronts things which are not MCP servers</strong>. Point it at a Lambda function, an OpenAPI spec, a Smithy model or an API Gateway stage, and each one starts answering <code>tools/list</code> and <code>tools/call</code>. It is a protocol adapter, not a router — and that sentence is the entire design rule.</p>
+    </div>
+
+    <p><code>hr-gateway</code> has exactly one target, and it exports four tools:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>tools/list</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">hrdata___find_by_skill        hrdata___list_bench
+hrdata___get_requisition      hrdata___record_shortlist</code></pre>
+    </div>
+
+    <h3>Why the MCP server does <em>not</em> go behind it</h3>
+
+    <p>This is the decision people get wrong, because "put everything behind the gateway" sounds tidy. <code>hr_skills_mcp</code> is <em>already</em> an MCP server on a URL. Routing it through the Gateway anyway buys one merged <code>tools/list</code> — at the price of a permanent extra hop on the hottest path in the system, since scoring runs once per candidate per requisition.</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    AG["<b>talent_screening</b><br/>one flat tool list<br/>from the model's point of view"]
+    MCPD["<b>hr_skills_mcp</b><br/>already speaks MCP<br/>bare names: score_match"]
+    GWY["<b>hr-gateway</b><br/>translates MCP → Lambda<br/>prefixed: hrdata___*"]
+    LAM["<b>hr-data-fn</b><br/>cannot speak MCP<br/>the only writer to S3"]
+
+    AG -->|"direct · 1 hop · SigV4"| MCPD
+    AG -->|"gateway · 2 hops · SigV4"| GWY
+    GWY --> LAM
+      </pre>
+      <div class="caption">The agent gets one flat tool list either way. The only difference is where the merge happens — in your process, for free, or in a managed service, for a hop.</div>
+    </div>
+
+    <table>
+      <thead><tr><th></th><th><code>hr_skills_mcp</code></th><th><code>hr-data-fn</code></th></tr></thead>
+      <tbody>
+        <tr><td>Already speaks MCP</td><td>yes</td><td>no — it is a Lambda</td></tr>
+        <tr><td>How the agent reaches it</td><td>direct, one hop</td><td>the Gateway translates</td></tr>
+        <tr><td>Tool names</td><td>bare: <code>score_match</code></td><td>prefixed: <code>hrdata___find_by_skill</code></td></tr>
+        <tr><td>Adding a tool</td><td>redeploy, visible immediately</td><td>redeploy <strong>and</strong> update the target schema</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">The rule</div>
+      <p><strong>Put a thing behind the Gateway when it cannot speak MCP on its own.</strong> Everything else is a hop you are paying for and a schema you now maintain twice. Reverse the decision the moment a caller needs those tools <em>without</em> an execution role that can invoke the runtime — a partner team, a desktop client. That is a one-resource change with no code in it, which is exactly why it is safe to defer.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/clients/tools.py — two clients, one tool list</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">skills  = _mcp_client(runtime_url(settings.skills_mcp_arn))   # direct
+gateway = _mcp_client(settings.gateway_url)                   # translated
+
+# Both blocks are load-bearing. Leaving either one is silent.
+with skills, gateway:
+    yield skills.list_tools_sync() + gateway.list_tools_sync()</code></pre>
+    </div>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🔥 A dead MCP connection does not raise — it hallucinates</div>
+      <p>An <code>MCPClient</code> used outside its <code>with</code> block is a dead connection, and nothing errors. The agent still has the tool <em>names</em> in its history, so it quietly starts making plausible answers up. <strong>A dead scoring connection looks exactly like a model that has decided to guess.</strong> Making the tools unobtainable outside the block — a context manager that yields them — is the only version of this that cannot be got wrong.</p>
+    </div>
+
+    <h3>The three-underscore prefix</h3>
+
+    <p>Gateway namespaces every tool as <code>{target}___{tool}</code> — <strong>three</strong> underscores — so two targets can both export a <code>get_requisition</code> without colliding. The prefix arrives at your Lambda, and you strip it yourself:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/lambda_fn/handler.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">DELIMITER = "___"      # three, not two: splitting on "__" gets you "_find_by_skill"
+
+def lambda_handler(event, context):
+    original = context.client_context.custom["bedrockAgentCoreToolName"]
+    tool = original[original.index(DELIMITER) + len(DELIMITER):]
+
+    if tool == "find_by_skill":
+        return find_by_skill(event.get("skill", ""), event.get("min_level", 3))
+    if tool == "record_shortlist":
+        return record_shortlist(event.get("job_id", ""), event.get("employee_id", ""))
+    return {"error": f"unknown tool {tool!r}"}</code></pre>
+    </div>
+
+    <p><code>event</code> is a <strong>flat map of your input schema's properties</strong> — <code>{"skill": "pyspark", "min_level": 4}</code> — not an API Gateway envelope. The client context also carries <code>bedrockAgentCoreGatewayId</code>, <code>bedrockAgentCoreTargetId</code> and <code>bedrockAgentCoreMcpMessageId</code>, all worth logging.</p>
+
+    <p>And keep the rule that made the tools usable in the first place: <strong>a returned <code>{"error": ...}</code> beats a raised exception</strong>, because the return value is the next thing the model reads. Say what to do next, not just that it failed:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/runtimes/hr_skills_mcp/main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">return {
+    "error": (
+        f"unknown employee {employee_id!r} or job {job_id!r}. Call "
+        "hrdata___find_by_skill or hrdata___list_bench and use an id it returned."
+    )
+}</code></pre>
+    </div>
+
+    <h3>Semantic tool search — decide once, at creation</h3>
+
+    <p><code>search_type = "SEMANTIC"</code> adds a search tool, letting an agent ask for <em>"something that looks up an open role"</em> instead of reading every tool description. Four tools do not need it. <strong>Set it anyway</strong>, because it can only be enabled <em>when the gateway is created</em> — there is no update path, and turning it on later means recreating the gateway and every target under it.</p>
+
+    <h2 id="identity">6. Capability 3 — Identity</h2>
+
+    <div class="cap-card">
+      <span class="cap-label">What it is</span>
+      <p>Two directions, and they are genuinely different problems. <strong>Inbound:</strong> who is allowed to invoke this runtime or gateway — an OAuth/OIDC JWT (Cognito, Okta, Entra) or plain IAM. <strong>Outbound:</strong> what the agent may reach once it is running — its execution role, plus workload identity for acting on behalf of a specific user.</p>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TB
+    H(["<b>a human</b><br/>recruiter in a browser"]) -->|"Cognito ID token<br/>CUSTOM_JWT"| SUP["<b>hiring_supervisor</b>"]
+    SUP -->|"SigV4 · execution role"| SPEC["the three A2A specialists"]
+    SPEC -->|"SigV4 · execution role"| MCPR["hr_skills_mcp"]
+    SPEC -->|"SigV4 · AWS_IAM"| GWY["hr-gateway"]
+    GWY -->|"gateway_iam_role"| LAM["hr-data-fn"]
+    LAM -->|"read + write"| S3B[("S3")]
+    MCPR -->|"<b>read only</b>"| S3B
+      </pre>
+      <div class="caption">Humans authenticate with Cognito; machines authenticate with IAM. The last two edges are the interesting ones — two computes read the same bucket for two different reasons, and exactly one of them can write.</div>
+    </div>
+
+    <p><strong>A scoring engine that can edit the employee record is a scoring engine nobody will trust.</strong> Splitting Lambda-writes from runtime-reads makes that enforceable rather than merely intended — the IAM policy is the guarantee, not the code review.</p>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">🔥 You cannot forward the caller's bearer token to the next runtime</div>
+      <p>AgentCore consumes the <code>Authorization</code> header at its edge and never passes it to your container, so <code>context.request_headers</code> has no token to reuse. A workload access token is documented as usable only against first-party AgentCore identity services — not for invoking another runtime — and nothing in a container can obtain a Cognito token without shipping a password.</p>
+      <p>That is why only the supervisor keeps <code>CUSTOM_JWT</code> and the four inner runtimes take SigV4. It is a rule, not a preference: <strong>humans authenticate with Cognito, machines with IAM.</strong></p>
+    </div>
+
+    <p>SigV4 has a second, quieter advantage: the screener opens its two MCP connections at <em>container start-up</em>, before any request exists — so a bearer token could never have been there to use. Signing each request with the execution role means a connection opened once at boot keeps working, and botocore refreshes credentials without anyone asking.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/clients/a2a_call.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">class SigV4(httpx.Auth):
+    """Sign every request with this container's execution role."""
+
+    # SigV4 signs a hash of the body. Without this, httpx hands the hook a
+    # request whose content has not been read yet — the signature would cover
+    # an empty body and every call would be a 403.
+    requires_request_body = True</code></pre>
+    </div>
+
+    <table class="tight">
+      <thead><tr><th>Trap</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>Invoking a <code>CUSTOM_JWT</code> runtime with the AWS SDK</td><td>The SDK only signs SigV4. You get <em>"Authorization method mismatch"</em> — call it over plain HTTPS with a bearer token instead.</td></tr>
+        <tr><td>Setting both <code>allowed_audience</code> and <code>allowed_clients</code></td><td>They check different claims: <code>aud</code> on an ID token, <code>client_id</code> on an access token. Set one. An ID token has no <code>client_id</code> to match.</td></tr>
+        <tr><td>Changing <code>authorizer_type</code> on a gateway</td><td>It is immutable — the change replaces the gateway <em>and every target under it</em>.</td></tr>
+        <tr><td>Fetching an agent card unauthenticated</td><td>Discovery crosses the auth boundary too — the card fetch must be signed exactly like the message that follows it. A delegation that fails at discovery looks like the remote agent is down.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="memory">7. Capability 4 — Memory</h2>
+
+    <div class="cap-card">
+      <span class="cap-label">What it is</span>
+      <p>Two things wear the name, and they behave differently. <strong>Short-term</strong> is the event log: every turn becomes a <code>CreateEvent</code>, and <code>ListEvents</code> replays a session — this is what makes a conversation survive a restart. <strong>Long-term</strong> is asynchronous extraction: after events land, AgentCore consolidates them in the background into <em>memory records</em>, retrieved by semantic search with <code>RetrieveMemoryRecords</code>.</p>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    T["<b>a turn</b><br/>recruiter asks,<br/>supervisor answers"] -->|"CreateEvent"| EV[("<b>short-term</b><br/>the event log<br/>replayed by ListEvents")]
+    EV -.->|"asynchronous<br/>extraction"| ST["<b>strategies</b>"]
+    ST --> P[("/recruiters/{actorId}/preferences<br/><b>USER_PREFERENCE</b>")]
+    ST --> F[("/requisitions/{sessionId}/facts<br/><b>SEMANTIC</b>")]
+    ST --> S[("/summaries/{actorId}/{sessionId}<br/><b>SUMMARIZATION</b>")]
+    P -->|"RetrieveMemoryRecords"| N["<b>next Tuesday's</b><br/>conversation"]
+    F --> N
+    S --> N
+      </pre>
+      <div class="caption">Events are written synchronously; records appear afterwards. A memory you wrote thirty seconds ago is not necessarily a memory you can retrieve yet.</div>
+    </div>
+
+    <table class="tight">
+      <thead><tr><th>Strategy</th><th>Namespace template</th><th>Holds, in this system</th></tr></thead>
+      <tbody>
+        <tr><td><code>USER_PREFERENCE</code></td><td><code>/recruiters/{actorId}/preferences</code></td><td>"this recruiter never shortlists below 70%"</td></tr>
+        <tr><td><code>SEMANTIC</code></td><td><code>/requisitions/{sessionId}/facts</code></td><td>"E1005 is blocked on Python and SQL for J2001"</td></tr>
+        <tr><td><code>SUMMARIZATION</code></td><td><code>/summaries/{actorId}/{sessionId}</code></td><td>a week of work on one requisition, in a paragraph</td></tr>
+      </tbody>
+    </table>
+
+    <h3>actorId is the recruiter; sessionId is the requisition</h3>
+
+    <p>This is the decision the whole design hangs on. <strong><code>session_id</code> is a business key, not plumbing.</strong> One conversation per open requisition. Pick these badly and everything downstream is wrong in a way that looks like a model problem:</p>
+
+    <ul class="checklist">
+      <li><code>sessionId = uuid4()</code> gives you a system that forgets J2001 between Tuesday and Thursday.</li>
+      <li><code>actorId = "agent"</code> gives you one shared preference profile for the entire recruiting team.</li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>app/runtimes/hiring_supervisor/main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from bedrock_agentcore.memory.integrations.strands.config import (
+    AgentCoreMemoryConfig, RetrievalConfig,
+)
+from bedrock_agentcore.memory.integrations.strands.session_manager import (
+    AgentCoreMemorySessionManager,
+)
+
+config = AgentCoreMemoryConfig(
+    memory_id=settings.memory_id,
+    actor_id="recruiter-nk",       # who is working
+    session_id=session_id,         # what they are working on — the requisition
+    batch_size=10,
+    retrieval_config={
+        f"/requisitions/{session_id}/facts": RetrievalConfig(
+            top_k=5, relevance_score=0.4
+        ),
+    },
+)
+
+with AgentCoreMemorySessionManager(config, region_name=REGION) as sessions:
+    agent = Agent(system_prompt=SUPERVISOR_PROMPT, session_manager=sessions)</code></pre>
+    </div>
+
+    <p>Install with <code>pip install 'bedrock-agentcore[strands-agents]'</code>. The <code>with</code> block is load-bearing whenever <code>batch_size &gt; 1</code> — buffered messages that are never flushed are simply lost, and the buffer is not flushed on garbage collection. <strong>Same failure shape as leaving an <code>MCPClient</code> context early: everything looks fine until the history has a hole in it.</strong></p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🔥 A summarisation strategy will paraphrase a blocker into a gap</div>
+      <p>"Blocked on Apache Spark" becomes "some gaps", and next Tuesday that sentence is what the supervisor reads. <strong>Read memory for context; read the current <code>match()</code> for verdicts.</strong> Never the other way round. This is the fifth failure mode distribution adds that the laptop version simply did not have.</p>
+    </div>
+
+    <h3>What actually moves when you adopt Memory</h3>
+
+    <p>If you did <a href="strands-course.html">lesson 17</a> of the Strands course, you built seven persistence layers over one storage interface. Six of them are <em>unchanged</em> by AgentCore — they run inside your container:</p>
+
+    <table class="tight">
+      <thead><tr><th>Layer</th><th>Local</th><th>On AgentCore</th></tr></thead>
+      <tbody>
+        <tr><td><code>invocation_state</code></td><td>dict passed to <code>agent(...)</code></td><td>unchanged</td></tr>
+        <tr><td><code>agent.state</code></td><td>in-process dict</td><td>unchanged, rehydrated by the session manager</td></tr>
+        <tr><td>Conversation management</td><td><code>SlidingWindow</code> / <code>Summarizing</code></td><td>unchanged — runs in your container</td></tr>
+        <tr><td>Context management</td><td><code>ContextOffloader</code> → local dir</td><td>same offloader, S3 backend</td></tr>
+        <tr><td>Session</td><td><code>FileSessionManager</code></td><td><strong><code>AgentCoreMemorySessionManager</code></strong> → <code>CreateEvent</code></td></tr>
+        <tr><td>Snapshots</td><td><code>SnapshotSessionManager</code></td><td>still yours; the blob goes to S3</td></tr>
+        <tr><td>Memory</td><td>one JSON file, keyword overlap</td><td><strong>strategies</strong> — <code>RetrieveMemoryRecords</code>, semantic</td></tr>
+        <tr><td>Storage</td><td>local files</td><td>S3</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Only the bottom four rows move.</strong> Everything above the line is a decision about what the model reads, and AgentCore has no opinion about it.</p>
+
+    <h2 id="observability">8. Capability 5 — Observability</h2>
+
+    <div class="cap-card">
+      <span class="cap-label">What it is</span>
+      <p>Runtime, Gateway, Memory and Identity emit CloudWatch metrics with no work from you. <strong>Traces and spans take three steps</strong>, and each one fails quietly in its own way if you skip it.</p>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    R["<b>one requisition</b><br/>session J2001-..."] --> S1["supervisor<br/>span"]
+    S1 --> S2["screening<br/>span"]
+    S2 --> S3["hr_skills_mcp<br/>span"]
+    S2 --> S4["gateway → lambda<br/>span"]
+    S1 --> S5["outreach<br/>span"]
+    S1 --> S6["compliance<br/>span"]
+    S1 --> TR["<b>one trace</b><br/>across five runtimes<br/>in CloudWatch"]
+    S2 --> TR
+    S3 --> TR
+    S4 --> TR
+    S5 --> TR
+    S6 --> TR
+      </pre>
+      <div class="caption">What makes this one trace rather than six: the session id header rides every hop. Lose it on one delegation and you get orphan traces that share nothing.</div>
+    </div>
+
+    <p><strong>1 · Turn on CloudWatch Transaction Search — once per account and region.</strong> Nothing else works until this is done, including the console's GenAI Observability dashboard.</p>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🔥 The console's one checkbox is actually two operations</div>
+      <p>Clicking "enable" in the console also writes a CloudWatch Logs <strong>resource policy</strong> that the API call does not. Do it by API alone and you get:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>error</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-text">AccessDeniedException: XRay does not have permission to call PutLogEvents
+on the aws/spans Log Group</code></pre>
+      </div>
+      <p>Note what that is <em>not</em>: there is no role to fix. The grant is attached to the log group, not to an identity — so searching IAM for the missing permission finds nothing.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terraform/06_observability/main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl"># Half one — let X-Ray write spans. aws/spans is not created here; the service
+# makes it on first write, and a policy may name a log group that does not exist.
+resource "aws_cloudwatch_log_resource_policy" "xray_spans" {
+  policy_name     = "TransactionSearchXRayAccess"
+  policy_document = data.aws_iam_policy_document.xray_spans[0].json
+}
+
+# Half two — the switch, which 403s unless half one has landed and propagated.
+resource "aws_xray_trace_segment_destination" "cwl" {
+  depends_on  = [time_sleep.policy_propagation]
+  destination = "CloudWatchLogs"
+}</code></pre>
+    </div>
+
+    <p>This is the only resource in the stack whose blast radius is <strong>the account</strong> rather than the stack. It bills — spans are ingested as CloudWatch Logs — and a <code>terraform destroy</code> sets the account back to X-Ray-only, silently stopping traces for anything else relying on it. Hence the opt-out flag.</p>
+
+    <p><strong>2 · Instrument each container.</strong> Add <code>aws-opentelemetry-distro&gt;=0.18.0</code> and start the process through the auto-instrumentor:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>Dockerfile / entry_point</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-dockerfile">CMD ["opentelemetry-instrument", "python", "main.py"]</code></pre>
+    </div>
+
+    <p>Strands already emits OpenTelemetry GenAI semantic-convention spans, so tool calls, model calls and token counts appear with no further code. <code>0.18.0</code> is a floor, not a suggestion: earlier versions silently ignore the span destination and write to the shared <code>aws/spans</code> group, leaving your per-agent log group looking empty.</p>
+
+    <p><strong>3 · Keep the session id on every hop.</strong> Set <code>X-Amzn-Bedrock-AgentCore-Runtime-Session-Id</code> on the inbound call and the distro propagates it downstream. Because the supervisor's A2A calls carry the same header, one requisition produces one trace across five runtimes.</p>
+
+    <table class="tight">
+      <thead><tr><th>Quiet failure</th><th>What is actually wrong</th></tr></thead>
+      <tbody>
+        <tr><td>Gateway and Memory logs are empty</td><td><strong>Runtime creates its log group for you. Gateway and Memory do not.</strong> They need an explicit vended-log delivery — and until then, the busiest component in the diagram is the only silent one.</td></tr>
+        <tr><td>The agent answers fine, the dashboard stays empty</td><td>Spans go to X-Ray, so the role needs <code>xray:PutTraceSegments</code> and friends <em>on top of</em> <code>logs:*</code>. Every export is a 403 the agent survives.</td></tr>
+        <tr><td>Nothing at all in the container's log group</td><td>The role needs <code>logs:CreateLogGroup</code>, not just <code>CreateLogStream</code> and <code>PutLogEvents</code> — with only the latter two it can write into a group that exists and never create one.</td></tr>
+      </tbody>
+    </table>
+
+    <p>What this buys you concretely: the screening-agent loop that shows up locally as an unresponsive terminal now appears as <strong>six identical <code>rank_for_requisition</code> spans on one trace</strong>, next to the token count they cost.</p>
+
+    <h2 id="builtins">9. Capabilities 6 &amp; 7 — Code Interpreter and Browser</h2>
+
+    <p>Two managed, sandboxed tools your agent can call. This project uses neither, and it is worth being explicit about <em>why</em> — the reasoning is the lesson:</p>
+
+    <div class="cap-card">
+      <span class="cap-label">Code Interpreter</span>
+      <p>A sandboxed session where an agent can run code it wrote — pandas over a CSV, a chart, a calculation too fiddly to trust to token prediction. In this domain the obvious candidate is "plot the skill gap across all six requisitions": genuinely open-ended, no fixed function to call.</p>
+      <p><strong>What it must never be given is <code>match()</code>.</strong> That is 40 lines of weighted arithmetic with partial credit below the bar, and a score you cannot reproduce by hand is a score nobody will defend in a hiring review. Deterministic domain logic goes in a tool. Code Interpreter is for the questions you did not anticipate.</p>
+    </div>
+
+    <div class="cap-card">
+      <span class="cap-label">Browser</span>
+      <p>A managed, isolated browser session for systems that only ever had a web UI. Half of HR tooling is like this — a benefits portal or an applicant tracking system with no API you are allowed to use.</p>
+      <p><strong>Reach for it last.</strong> A browser session is the slowest, most brittle and most expensive way to read a fact, and it is the one integration that breaks because someone else shipped a redesign. If an API exists, put it behind the <a href="#gateway">Gateway</a> as an OpenAPI target and you get typed tools instead.</p>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">The decision, in one table</div>
+      <table>
+        <thead><tr><th>The thing you need</th><th>Where it belongs</th></tr></thead>
+        <tbody>
+          <tr><td>Arithmetic your business must defend</td><td>a plain function in a tool server (<code>hr_skills_mcp</code>)</td></tr>
+          <tr><td>An existing Lambda, API or OpenAPI service</td><td>a <a href="#gateway">Gateway</a> target</td></tr>
+          <tr><td>Open-ended analysis over data you just fetched</td><td>Code Interpreter</td></tr>
+          <tr><td>A system with a UI and no API</td><td>Browser — and a note in the risk register</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="pipeline">10. End to end: filling J2001</h2>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+sequenceDiagram
+    participant R as Recruiter
+    participant S as hiring_supervisor
+    participant M as AgentCore Memory
+    participant T as talent_screening
+    participant G as hr-gateway
+    participant L as hr-data-fn
+    participant K as hr_skills_mcp
+    participant O as recruiting_outreach
+
+    R->>S: InvokeAgentRuntime · session J2001-...
+    S->>M: ListEvents + RetrieveMemoryRecords
+    M-->>S: last week's summary, recruiter preferences
+    S->>T: A2A message/send — who fits J2001?
+    T->>G: tools/call hrdata___get_requisition
+    G->>L: invoke
+    L-->>G: 6 required skills, 3 mandatory
+    T->>K: tools/call shortlist — direct, no gateway
+    K-->>T: scores, verdicts, blockers
+    T-->>S: the ranked list, verdict words intact
+    S->>O: A2A — draft a note from these facts
+    O-->>S: a note to Priya
+    S->>G: tools/call hrdata___record_shortlist
+    G->>L: invoke
+    L-->>G: written to shortlists/J2001.json
+    S->>M: CreateEvent
+    S-->>R: the note
+      </pre>
+      <div class="caption">Count the hops on the two tool calls: <code>hrdata___get_requisition</code> goes agent → gateway → Lambda; <code>shortlist</code> goes agent → runtime. Same flat tool list from the model's point of view, one fewer network segment on the call that runs per candidate.</div>
+    </div>
+
+    <p>For the final note to be correct, four things must hold across five runtimes — and they are the same four as on the laptop:</p>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4><code>match()</code> computes the blocker</h4><p>Arithmetic, in <code>hr_skills_mcp</code>. Never a model call.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>The screener uses the verdict word exactly</h4><p><code>blocked</code> is never softened into "consider with caution".</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>The supervisor passes the text through verbatim</h4><p>Not summarised. The delegation tool's docstring says so in capitals.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>The outreach agent refuses blocked candidates</h4><p>And it has no HR access at all, so it cannot look up a substitute fact.</p></div></div>
+    </div>
+
+    <p>Break any one and you send a warm note to someone who cannot do the job. Note that the <em>last</em> line of defence is not an agent at all — <code>record_shortlist</code> in the Lambda refuses to persist a <code>blocked</code> verdict. <strong>The blocker survives to the last possible moment, because everything upstream can paraphrase and the write cannot.</strong></p>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">The reviewer gotcha worth reading twice</div>
+      <p>The compliance reviewer's first version asked the model to call <code>verify_match_claim</code> before judging. It did not — and then <strong>rejected</strong> a note for claims "not verified by <code>verify_match_claim</code>", asserting a check it had never run, against facts that were all true.</p>
+      <p><strong>A reviewer that rubber-stamps rejections is as broken as one that rubber-stamps approvals.</strong> The fix was to stop asking: a hook extracts the ids, runs <code>match()</code>, and appends the record to the request before the model sees it. Same rule as everywhere else here — arithmetic should not be optional.</p>
+    </div>
+
+    <h2 id="ui">11. Putting a chat box on it</h2>
+
+    <p>Everything above is reachable from a terminal. Getting it in front of a browser is shaped by two constraints that between them rule out every simpler design:</p>
+
+    <ul class="checklist">
+      <li><strong>A browser cannot call <code>InvokeAgentRuntime</code>.</strong> It is a SigV4-signed AWS API call, and AWS service endpoints send no CORS headers — so the tempting design, where a Cognito identity pool hands the page real credentials and the JS SDK calls the runtime directly, dies at the preflight rather than at the permission check. Something server-side must make the call.</li>
+      <li><strong>That something cannot be Python.</strong> Lambda response streaming works on Node.js managed runtimes and custom runtimes only. A full run is three delegations and a minute or two, so buffering it into one JSON reply means a browser showing nothing until the end.</li>
+    </ul>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    B["browser<br/>React"] -->|"/*"| CF[CloudFront]
+    B -->|"/api/*"| CF
+    CF -->|"OAC sigv4"| S3["S3 · private<br/>the vite build"]
+    CF -->|"origin_path /v1"| GW["API Gateway REST<br/>ResponseTransferMode STREAM"]
+    GW -->|"/api/chat"| AUTH{{"Cognito authorizer<br/>ID token"}}
+    AUTH --> P["chat proxy · node<br/>verify again, then invoke"]
+    GW -->|"/api/login — open"| P
+    P -->|"InvokeAgentRuntime<br/>accept: text/event-stream"| SUP[hiring_supervisor]
+    SUP --> A2A["screening · outreach · compliance"]
+      </pre>
+      <div class="caption">One CloudFront distribution, two origins — which is what removes CORS <em>entirely</em>: there is no second origin for the browser to be told about, so there is no preflight to fail.</div>
+    </div>
+
+    <p>Three settings on that <code>/api/*</code> behaviour are load-bearing, and two of them look like performance tuning:</p>
+
+    <table class="tight">
+      <thead><tr><th>Setting</th><th>Must be</th><th>Because</th></tr></thead>
+      <tbody>
+        <tr><td><code>response_transfer_mode</code></td><td><code>STREAM</code></td><td><code>BUFFERED</code> collects the whole SSE stream and delivers it at the end. The deploy looks fine and the progress feed never appears.</td></tr>
+        <tr><td><code>compress</code></td><td><code>false</code></td><td>CloudFront buffers <em>in order to</em> compress. Same symptom, arriving via a checkbox that reads like a speed-up.</td></tr>
+        <tr><td>origin request policy</td><td><code>AllViewerExceptHostHeader</code></td><td>API Gateway routes on <code>Host</code>. Forward the viewer's and every request is a 403 that reads like a permissions bug.</td></tr>
+      </tbody>
+    </table>
+
+    <p>Once it is up, the API is callable by things that are not the browser:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">API=$(terraform output -raw api_url)
+
+TOKEN=$(curl -s $API/api/login -H 'content-type: application/json' \
+          -d '{"username":"hr-agent","password":"..."}' | jq -r .token)
+
+# A Cognito ID token, and BARE — no "Bearer " prefix. Either one wrong is a
+# 401 with nothing in it to say why.
+curl -N $API/api/chat -H "Authorization: $TOKEN" -H 'content-type: application/json' \
+     -d '{"prompt":"Find the best candidate for J2001"}'</code></pre>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">Chunk boundaries are not frame boundaries</div>
+      <p><code>EventSource</code> cannot send an <code>Authorization</code> header, so the client is <code>fetch</code> plus a manual reader — which puts SSE framing in your hands. A single <code>read()</code> can deliver half a frame or three and a half. Parsing each chunk as one message passes every manual test against localhost and drops events in production. Test the parser with splits mid-JSON, between the two terminating newlines, and one byte at a time.</p>
+    </div>
+
+    <h2 id="terraform">12. The Terraform, layer by layer</h2>
+
+    <p>Eight numbered directories, each applied on its own or composed by a root module. The numbering answers "what does the next resource need?", and the dependency edges do the wiring — nothing is copied by hand:</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TD
+    T1["<b>01_s3_data</b><br/>bucket + seed JSON"] --> T2["<b>02_lambda</b><br/>hr-data-fn"]
+    T2 --> T3["<b>03_gateway</b><br/>hr-gateway + hrdata target<br/>+ Cognito"]
+    T4["<b>04_memory</b><br/>hr_hiring_desk<br/>+ 3 strategies"] --> T5
+    T3 --> T5["<b>05_runtimes</b><br/>the five runtimes,<br/>in 3 dependency tiers"]
+    T1 --> T5
+    T5 --> T6["<b>06_observability</b><br/>Transaction Search<br/>+ vended log delivery"]
+    T5 --> T7["<b>07_api</b><br/>proxy Lambda + API Gateway<br/><i>no browser in it</i>"]
+    T7 --> T8["<b>08_ui</b><br/>S3 + CloudFront + OAC"]
+      </pre>
+      <div class="caption">Memory is 04 — before the runtimes — because the supervisor takes <code>MEMORY_ID</code> as an environment variable and memory itself depends on nothing.</div>
+    </div>
+
+    <p>One runtime, in full. The other four differ by exactly one line:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terraform/05_runtimes/main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_bedrockagentcore_agent_runtime" "talent_screening" {
+  agent_runtime_name = "talent_screening"
+  role_arn           = aws_iam_role.runtime_screening.arn
+
+  agent_runtime_artifact {
+    code_configuration {
+      entry_point = ["main.py"]
+      runtime     = "PYTHON_3_13"
+      code { s3 { bucket = var.bucket, prefix = local.screening_key } }
+    }
+  }
+
+  protocol_configuration { server_protocol = "A2A" }   # HTTP / MCP / A2A / AGUI
+  network_configuration  { network_mode    = "PUBLIC" }
+
+  environment_variables = {
+    AGENT_OBSERVABILITY_ENABLED        = "true"
+    UNIFIED_TRACES_DESTINATION_ENABLED = "true"
+    SKILLS_MCP_ARN = aws_bedrockagentcore_agent_runtime.hr_skills_mcp.agent_runtime_arn
+    GATEWAY_URL    = var.gateway_url
+  }
+}</code></pre>
+    </div>
+
+    <div class="callout callout-danger">
+      <div class="callout-title">🔥 A fixed S3 key means your code never ships</div>
+      <p>A runtime references its code as bucket + prefix. Rebuild the zip under the same key and the <em>bytes</em> change while the runtime's arguments do not — no diff, no update, <strong>no new version</strong>, and the container keeps running what it started with. <code>terraform apply</code> even reports the S3 object updating, so it looks like a successful deploy. Put the content hash in the key. The tell is an <code>agent_runtime_version</code> that never moves:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">terraform state show 'module.runtimes.aws_bedrockagentcore_agent_runtime.supervisor' \
+  | grep agent_runtime_version</code></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">Do not declare a <code>DEFAULT</code> endpoint</div>
+      <p><code>CreateAgentRuntime</code> makes one as part of the same call, so an endpoint resource named <code>DEFAULT</code> does not adopt it — it tries to create a second, and every apply fails with <code>ConflictException: An endpoint with the specified name already exists</code>. Waiting does not help; the endpoint really does exist. Declare one only for a <em>named</em> alias like <code>prod</code> that you want to repoint across versions.</p>
+    </div>
+
+    <p>Memory strategies, and a naming trap that costs an afternoon of searching:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terraform/04_memory/main.tf</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-hcl">resource "aws_bedrockagentcore_memory_strategy" "facts" {
+  name                = "candidate_facts"    # no hyphens allowed in the name
+  memory_id           = aws_bedrockagentcore_memory.hiring_desk.id
+  type                = "SEMANTIC"           # boto3 calls this semanticMemoryStrategy
+  namespace_templates = ["/requisitions/{sessionId}/facts"]
+}</code></pre>
+    </div>
+
+    <p><strong>Terraform's <code>type</code> values are not the API's field names.</strong> Terraform wants <code>SEMANTIC</code> / <code>SUMMARIZATION</code> / <code>USER_PREFERENCE</code> / <code>EPISODIC</code> / <code>CUSTOM</code>; boto3 wants <code>semanticMemoryStrategy</code> / <code>summaryMemoryStrategy</code> / <code>userPreferenceMemoryStrategy</code> nested under <code>memoryStrategies</code>. You will meet both, often in the same afternoon — and note that "summary" and <code>SUMMARIZATION</code> are two words for one thing.</p>
+
+    <h2 id="local">13. Run it on your laptop first</h2>
+
+    <p>Every failure in AWS has a cheaper version on <code>127.0.0.1</code>. The whole system runs locally on Ollama with no AWS account at all:</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">cd agent-core
+cp .env.example .env
+
+make mcp          # terminal 1 — :8000/mcp   the scoring engine
+make screening    # terminal 2 — :9001       the only agent with tools
+make outreach     # terminal 3 — :9002       no tools at all
+make compliance   # terminal 4 — :9007       reviews the draft
+make supervisor   # terminal 5 — the pipeline        (make supervisor JOB=J2002)
+
+make probe        # one A2A round-trip, no model on the calling side
+make test         # 85 tests, none of which touch AWS
+make down         # kill it — by port, because pkill misses `uv run` servers</code></pre>
+    </div>
+
+    <p>Five terminals is the best way to watch a delegation land: <code>[screening] rank_for_requisition('J2001', limit=2)</code> appears in window 2 the instant the supervisor delegates. That print statement becomes a CloudWatch log event when deployed, and an OTEL span on top of it.</p>
+
+    <table class="tight">
+      <thead><tr><th></th><th>local</th><th>AgentCore</th></tr></thead>
+      <tbody>
+        <tr><td>model</td><td>Ollama, <code>make_model()</code> returns <code>OllamaModel</code></td><td>Bedrock, same call, <code>BedrockModel</code></td></tr>
+        <tr><td>records</td><td>the lists in <code>hr_data.py</code></td><td><code>s3://hr-skills-…/employees/employees.json</code></td></tr>
+        <tr><td>A2A agents</td><td>127.0.0.1 on 9001 / 9002 / 9007</td><td>all three on 9000, addressed by ARN</td></tr>
+        <tr><td>MCP server</td><td><code>http://127.0.0.1:8000/mcp</code></td><td>identical — the only file with no branch</td></tr>
+        <tr><td>screener's tools</td><td>in-process <code>@tool</code> functions</td><td>two MCP clients: direct + gateway</td></tr>
+        <tr><td>supervisor</td><td>a script you run</td><td>HTTP service on 8080 <code>/invocations</code></td></tr>
+        <tr><td>memory</td><td>none</td><td><code>AgentCoreMemorySessionManager</code></td></tr>
+        <tr><td>tracing</td><td><code>print()</code> in a hook</td><td>ADOT spans, one trace per requisition</td></tr>
+      </tbody>
+    </table>
+
+    <p>The test that matters most scores E1002, E1003 and E1005 against J2001 twice — once from the Python dataset, once through the S3 code path — and demands byte-identical output. <strong>A score that changes when you move the data is a score nobody will defend.</strong></p>
+
+    <h2 id="order">14. The order to prove things in</h2>
+
+    <p>Each step is verifiable on its own. Do not proceed past a step you cannot prove — and note that <strong>steps 1–6 need no agent at all.</strong> Debug the tools with a client that has no model in it:</p>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>S3 + seed data</h4><p>Verify with <code>aws s3 ls</code>. Three JSON files, nothing clever.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>The Lambda</h4><p><code>aws lambda invoke</code> with a hand-written client context. <code>find_by_skill("pyspark", 4)</code> must return <code>['E1002', 'E1005']</code> — the alias table doing its job.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Cognito pool + client</h4><p>Get a token. Verify the discovery URL resolves.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Gateway + the target</h4><p>Point the MCP Inspector at it: <code>tools/list</code> must show four <code>hrdata___*</code> tools.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><h4>The MCP runtime</h4><p>Locally on <code>:8000/mcp</code> first, then deployed. <code>tools/list</code> must show four <strong>unprefixed</strong> tools — that difference is the whole design in one screen.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><h4>Both clients in one process</h4><p>Twenty lines, two <code>MCPClient</code>s, no agent: assert the merged list has eight tools and no duplicate names.</p></div></div>
+      <div class="step"><div class="step-num">7</div><div class="step-body"><h4>The three A2A runtimes</h4><p>Fetch each agent card <em>before</em> sending any message — the card proves the container is alive and the protocol is right.</p></div></div>
+      <div class="step"><div class="step-num">8</div><div class="step-body"><h4>The supervisor</h4><p>Invoke it — but not with <code>runtimeSessionId="J2001"</code>. Minimum length 33.</p></div></div>
+      <div class="step"><div class="step-num">9</div><div class="step-body"><h4>Memory</h4><p>Run two conversations a day apart and confirm the second recalls the first.</p></div></div>
+      <div class="step"><div class="step-num">10</div><div class="step-body"><h4>Observability</h4><p>Transaction Search, then the distro, then one trace spanning five runtimes.</p></div></div>
+      <div class="step"><div class="step-num">11</div><div class="step-body"><h4>The chat UI</h4><p>Locally against the local supervisor first. Only once a free-form prompt streams a progress feed is it worth putting CloudFront under it.</p></div></div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">This is not the order Terraform creates them in</div>
+      <p>Memory is exercised last but must <em>exist</em> before the runtimes, so it is <code>04</code>. The two orderings answer different questions: this list asks "what can I verify next?", the directory numbers answer "what does the next resource need?".</p>
+    </div>
+
+    <h2 id="gotchas">15. Everyday gotchas</h2>
+
+    <p>Every one of these was met the hard way. They are grouped by which capability they belong to:</p>
+
+    <table>
+      <thead><tr><th>Where</th><th>Trap</th><th>Remember</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime</td><td>Wrong port for the protocol</td><td>A2A is 9000 at <code>/</code>, MCP 8000 at <code>/mcp</code>, HTTP 8080 at <code>/invocations</code>. The deploy succeeds and the health check fails.</td></tr>
+        <tr><td>Runtime</td><td><code>stateless_http=False</code> on an MCP server</td><td>Runtime injects an <code>Mcp-Session-Id</code> and load-balances. A stateful server gets a second request from an instance that never saw the first.</td></tr>
+        <tr><td>Runtime</td><td>Declaring a <code>DEFAULT</code> endpoint</td><td><code>ConflictException</code> on every apply. It already exists; waiting does not help.</td></tr>
+        <tr><td>Runtime</td><td>A fixed S3 key for the code zip</td><td>No diff, no new version, and the container keeps running the old code while your fix sits in S3.</td></tr>
+        <tr><td>Runtime</td><td><code>runtimeSessionId</code> under 33 chars</td><td><code>ValidationException</code>. Pad deterministically — a random suffix per hop gives five traces that share nothing.</td></tr>
+        <tr><td>Runtime</td><td>Heavy dependencies</td><td>30 seconds to become healthy, and the auto-instrumentor walks every installed instrumentation first. HTTP 424.</td></tr>
+        <tr><td>Gateway</td><td>Splitting on <code>__</code></td><td>The prefix is <strong>three</strong> underscores. You get <code>_find_by_skill</code> and match nothing.</td></tr>
+        <tr><td>Gateway</td><td>Enabling semantic search later</td><td>Creation-time only. There is no update path — recreating the gateway recreates every target.</td></tr>
+        <tr><td>Gateway</td><td>A tool schema in two places</td><td>Python and HCL, and nothing checks them against each other. It is the tax for making a Lambda speak MCP.</td></tr>
+        <tr><td>Gateway</td><td>Leaving an <code>MCPClient</code> context</td><td>Silent. The agent keeps the tool names in history and starts improvising.</td></tr>
+        <tr><td>Gateway</td><td>Prompting by tool name</td><td>The screener's list mixes <code>hrdata___get_requisition</code> with a bare <code>score_match</code>. Name capabilities, not tool strings.</td></tr>
+        <tr><td>Identity</td><td>SDK against a <code>CUSTOM_JWT</code> runtime</td><td>The SDK signs SigV4. <em>"Authorization method mismatch"</em> names the symptom, not the rule.</td></tr>
+        <tr><td>Identity</td><td>Forwarding the caller's token inward</td><td>AgentCore consumes it at the edge. Machines use IAM; there is nothing to forward.</td></tr>
+        <tr><td>Identity</td><td>Setting both audience and clients</td><td>Different claims on different token types. Set one.</td></tr>
+        <tr><td>Memory</td><td><code>batch_size &gt; 1</code> with no <code>with</code> block</td><td>Buffered messages are lost — the buffer is not flushed on garbage collection.</td></tr>
+        <tr><td>Memory</td><td>Hyphens in a strategy name</td><td><code>candidate_facts</code>, not <code>candidate-facts</code>. The pattern rejects it.</td></tr>
+        <tr><td>Memory</td><td>Trusting a summary for a verdict</td><td>Paraphrase drops the blocker. Context from memory; verdicts from <code>match()</code>.</td></tr>
+        <tr><td>Observability</td><td>Enabling Transaction Search by API</td><td>The console's checkbox is two operations. The missing one is a log-group resource policy, so IAM shows you nothing.</td></tr>
+        <tr><td>Observability</td><td>Assuming log permissions cover traces</td><td>Spans go to X-Ray. The 403 is non-fatal — the agent answers and the dashboard stays empty.</td></tr>
+        <tr><td>Observability</td><td>Expecting Gateway/Memory log groups</td><td>Only Runtime creates one. The others need an explicit vended-log delivery.</td></tr>
+        <tr><td>UI</td><td><code>compress = true</code> on the API behaviour</td><td>CloudFront buffers in order to compress. Identical symptom to a buffered integration.</td></tr>
+        <tr><td>UI</td><td>An access token, or a <code>Bearer</code> prefix</td><td>A Cognito authorizer with no scopes wants the <strong>ID</strong> token, bare. Anything else is a 401 with no explanation.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="check">16. Check yourself</h2>
+
+    <div class="quiz-card">
+      <div class="quiz-question">Your A2A agent deploys successfully but every delegation to it times out. What do you check first?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">The IAM execution role's permissions</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">The port and mount path — A2A must be 9000 at <code>/</code></button></li>
+        <li><button class="quiz-option-btn" data-correct="false">The model id in the environment variables</button></li>
+      </ul>
+      <div class="quiz-explanation">The protocol determines the port, and nothing tells you when you get it wrong: the container starts, fails its health check, and the caller sees a timeout. A2A is 9000 at <code>/</code>, MCP 8000 at <code>/mcp</code>, HTTP 8080 at <code>/invocations</code>. Check this before anything else.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">You have a Lambda and an existing MCP server. Which goes behind the Gateway?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">Both — one merged tool list is simpler for the agent</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">Only the Lambda — the MCP server already speaks the protocol</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">Neither — the agent should call both directly</button></li>
+      </ul>
+      <div class="quiz-explanation">The Gateway is a protocol adapter, not a router. Put a thing behind it when it cannot speak MCP on its own. Routing the MCP server through anyway costs a permanent extra hop on the hottest call path plus a second copy of its schema in HCL — in exchange for merging two <code>tools/list</code> responses that the client merges for free. Reverse it only when a caller needs those tools without an execution role that can invoke the runtime.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">Why is <code>sessionId</code> the requisition id rather than a fresh UUID per request?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">UUIDs are rejected by the API</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">It is the one key that makes memory, namespaces and one distributed trace agree with each other and with the business</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">It is faster — session lookup is indexed on it</button></li>
+      </ul>
+      <div class="quiz-explanation">A UUID works for all three mechanisms and is useless to the recruiter asking "what happened on J2001 last week". <code>session_id</code> is a business key, not plumbing. It also decides microVM lifetime: a new id per request means a cold conversation every time, one id forever means it never expires. (Do remember the 33-character minimum — pad it deterministically, do not replace it.)</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">Your agent answers normally, logs look fine, and the GenAI Observability dashboard is empty. Most likely cause?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">The agent is not emitting spans — Strands needs manual instrumentation</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">Transaction Search is off, or the role lacks X-Ray permissions — both fail non-fatally</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">The dashboard only shows the last hour</button></li>
+      </ul>
+      <div class="quiz-explanation">Logs working proves nothing about traces: they are separate deliveries, and spans go to X-Ray rather than CloudWatch Logs. Both failure modes are non-fatal — the agent answers and every span export is a 403 visible only in the container's own log. Check Transaction Search first (it is two operations, not one), then <code>xray:PutTraceSegments</code> on the runtime role.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">A <code>SUMMARIZATION</code> memory strategy records "Rahul had some gaps for J2001". Next week the supervisor reads it. What is the bug?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">Nothing — that is what summarisation is for</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">A blocker was paraphrased into a gap; verdicts must come from <code>match()</code>, not from memory</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">The strategy should have used a longer <code>top_k</code></button></li>
+      </ul>
+      <div class="quiz-explanation">Rahul is missing Apache Spark, which J2001 marks mandatory — he is <code>blocked</code> and cannot be shortlisted however high the score. Every hop is a chance to paraphrase, and paraphrase drops the blocker. Read memory for context; re-derive verdicts from the arithmetic. This is why the facts travel between agents verbatim, and why the Lambda refuses to persist a blocked shortlist.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <h2 id="cheatsheet">17. Mini cheat sheet</h2>
+
+    <table>
+      <thead><tr><th>You want to…</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td>Host an agent</td><td><code>aws_bedrockagentcore_agent_runtime</code> + <code>protocol_configuration</code></td></tr>
+        <tr><td>Expose an HTTP front door</td><td><code>BedrockAgentCoreApp()</code> + <code>@app.entrypoint</code>, <code>app.run(port=8080)</code></td></tr>
+        <tr><td>Stream to a browser</td><td>make the entrypoint an <code>async def</code> with <code>yield</code></td></tr>
+        <tr><td>Publish an agent to other agents</td><td><code>serve_a2a(StrandsA2AExecutor(...), card)</code> on 9000</td></tr>
+        <tr><td>Host a tool server</td><td><code>mcp.run(transport="streamable-http", host="0.0.0.0", port=8000, path="/mcp", stateless_http=True)</code></td></tr>
+        <tr><td>Bound a served agent's loop</td><td>a <code>BeforeToolCallEvent</code> hook — there is no call site for <code>limits</code></td></tr>
+        <tr><td>Make a Lambda callable as tools</td><td><code>aws_bedrockagentcore_gateway_target</code> with one <code>inline_payload</code> per tool</td></tr>
+        <tr><td>Read the tool name in the Lambda</td><td><code>context.client_context.custom["bedrockAgentCoreToolName"]</code>, split on <code>___</code></td></tr>
+        <tr><td>Reach a deployed runtime</td><td><code>https://bedrock-agentcore.{region}.amazonaws.com/runtimes/{url-encoded arn}/invocations</code></td></tr>
+        <tr><td>Authenticate machine → machine</td><td>SigV4 with the execution role (<code>requires_request_body = True</code>)</td></tr>
+        <tr><td>Authenticate human → agent</td><td><code>custom_jwt_authorizer</code> with the Cognito discovery URL</td></tr>
+        <tr><td>Remember across days</td><td><code>AgentCoreMemorySessionManager</code> inside a <code>with</code> block</td></tr>
+        <tr><td>Retrieve long-term facts</td><td><code>RetrievalConfig(top_k=5, relevance_score=0.4)</code> on the namespace</td></tr>
+        <tr><td>Get one trace across N runtimes</td><td>propagate <code>X-Amzn-Bedrock-AgentCore-Runtime-Session-Id</code> on every hop</td></tr>
+        <tr><td>See tool and model spans</td><td><code>aws-opentelemetry-distro&gt;=0.18.0</code> + <code>opentelemetry-instrument</code></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip" style="margin-top:28px;">
+      <div class="callout-title">The five things worth remembering</div>
+      <p><strong>1.</strong> Runtime is where it runs, Gateway is what it can reach, Memory is what it carries between Tuesdays, Identity is who may ask, and Observability is the only reason you will ever find out what happened. <strong>2.</strong> The protocol picks the port, and getting it wrong is a timeout, not an error. <strong>3.</strong> Put a thing behind the Gateway only when it cannot speak MCP on its own. <strong>4.</strong> Humans authenticate with Cognito, machines with IAM — you cannot forward a token inward. <strong>5.</strong> The session id is a business key, and it is the thread through all five capabilities.</p>
+    </div>
+
+    <div class="callout callout-note" style="margin-top:20px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>Run the local original first — <a href="a2a.html">A2A</a> is this topology in three terminals, and every failure here has a cheaper version there. <a href="fastmcp.html">FastMCP</a> is the server that becomes <code>hr_skills_mcp</code>. <a href="strands-course.html">Lesson 17 of the Strands course</a> is the prerequisite for §7 — the seven persistence layers, and which four of them AWS takes over. And <a href="terraform.html">Terraform</a> plus its <a href="terraform-usecases.html">use-case catalogue</a> are the patterns the eight modules in §12 are built from.</p>
+    </div>
+  </main>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="toc-title">On This Page</div>
+    <ul id="toc-list"></ul>
+  </aside>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

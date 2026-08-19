@@ -1,0 +1,69 @@
+meta {
+  name: Add an employee with an impossible level
+  type: graphql
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation AddEmployee($employee: EmployeeInput!) {
+    addEmployee(employee: $employee) {
+      __typename
+      ... on Employee {
+        employeeId
+        name
+        location
+        availability
+        createdAt
+        skills {
+          skill
+          level
+        }
+      }
+      ... on ValidationFailed {
+        message
+        invalidFields {
+          field
+          message
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "employee": {
+      "name": "Over Nine Thousand",
+      "location": "Pune",
+      "experienceYears": 1,
+      "skills": [
+        { "skill": "SQL", "level": 9 }
+      ]
+    }
+  }
+}
+
+tests {
+  test("rejected by Pydantic, reported as data", function() {
+    expect(res.getBody().errors).to.be.undefined;
+    const result = res.getBody().data.addEmployee;
+    expect(result.__typename).to.equal("ValidationFailed");
+    expect(result.invalidFields[0].field).to.equal("skills.0.level");
+    expect(result.invalidFields[0].message).to.contain("less than or equal to 5");
+  });
+}
+
+docs {
+  `level: Int!` promises a whole number. It says **nothing** about 1–5 — GraphQL has no
+  `ge`/`le`, no regex, no cross-field rules. So the resolver runs the same Pydantic model
+  that guarded the REST edge and returns the failure as a type.
+
+  Compare with *Errors › Wrong argument type*, where GraphQL itself does the rejecting and
+  no Python ever runs.
+}

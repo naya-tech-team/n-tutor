@@ -1,0 +1,34 @@
+meta {
+  name: Only the fields you ask for
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query JustNames {
+    employees {
+      name
+    }
+  }
+}
+
+tests {
+  test("the response carries exactly one key per employee", function() {
+    const employees = res.getBody().data.employees;
+    expect(employees.length).to.be.above(0);
+    employees.forEach(e => expect(Object.keys(e)).to.eql(["name"]));
+  });
+}
+
+docs {
+  The same field as the previous request, asked for differently. No `location`, no
+  `skills` — the server did not decide that, the query did. This is the whole pitch of
+  GraphQL in one request, and it is why there is no versioned `/employees/summary`
+  endpoint to maintain.
+}

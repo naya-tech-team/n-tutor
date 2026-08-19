@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "HR Skills MCP Server",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

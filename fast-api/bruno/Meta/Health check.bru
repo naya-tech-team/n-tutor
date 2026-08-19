@@ -1,0 +1,34 @@
+meta {
+  name: Health check
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("the app is up", function() {
+    expect(res.getBody()).to.eql({ status: "ok" });
+  });
+
+  test("the middleware measured something, not nothing", function() {
+    expect(Number(res.getHeader("x-process-time-ms"))).to.be.above(0);
+  });
+}
+
+docs {
+  The cheapest possible request, and the one to run first — if this fails, nothing else in
+  the collection is telling you anything about the API.
+
+  `/health` is declared on the app itself rather than in a router, which is why it has no
+  prefix. It is also the clearest place to see the custom middleware from `main.py`: the
+  route does no work at all, so `X-Process-Time-ms` is almost pure framework overhead.
+}

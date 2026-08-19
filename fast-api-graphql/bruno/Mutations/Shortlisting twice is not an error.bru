@@ -1,0 +1,57 @@
+meta {
+  name: Shortlisting twice is not an error
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation Shortlist($jobId: ID!, $employeeId: ID!) {
+    shortlistCandidate(jobId: $jobId, employeeId: $employeeId) {
+      __typename
+      ... on ShortlistEntry {
+        employeeId
+        name
+        score
+        verdict
+        addedAt
+      }
+      ... on CandidateBlocked {
+        message
+        blockers
+        score
+      }
+      ... on NotFound {
+        message
+        kind
+        id
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "jobId": "{{jobId}}",
+    "employeeId": "{{strongEmployeeId}}"
+  }
+}
+
+tests {
+  test("the second call returns the SAME entry, not a duplicate", function() {
+    const entry = res.getBody().data.shortlistCandidate;
+    expect(entry.__typename).to.equal("ShortlistEntry");
+    expect(entry.addedAt).to.equal(bru.getVar("firstAddedAt"));
+  });
+}
+
+docs {
+  Idempotency, proved rather than asserted: the `addedAt` timestamp is the one from the
+  first call, so no second entry was created. Re-running this collection against a
+  long-lived server keeps passing for the same reason.
+}

@@ -1,0 +1,41 @@
+meta {
+  name: List requisitions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/requisitions
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("both open roles are listed", function() {
+    const ids = res.getBody().map(r => r.job_id);
+    expect(ids).to.eql(["J2001", "J2002"]);
+  });
+
+  test("each role carries its own skill requirements", function() {
+    res.getBody().forEach(r => {
+      expect(r.required_skills).to.be.an("array").that.is.not.empty;
+      r.required_skills.forEach(s => {
+        expect(s.min_level).to.be.within(1, 5);
+        expect(s.weight).to.be.within(1, 5);
+        expect(s.mandatory).to.be.a("boolean");
+      });
+    });
+  });
+}
+
+docs {
+  Requisitions are read-only in this API — there is no `POST /requisitions`, because the
+  point of the project is the *matching*, not CRUD.
+
+  An exact `eql` is safe here where it was not for employees: nothing in this collection
+  creates a requisition, so the list cannot grow on a re-run.
+}

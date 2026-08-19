@@ -1,0 +1,36 @@
+meta {
+  name: Unknown employee
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/employees/{{missingEmployeeId}}
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("404, with a reason", function() {
+    expect(res.getStatus()).to.equal(404);
+    expect(res.getBody().detail).to.equal("employee not found");
+  });
+
+  test("the middleware ran even though the route raised", function() {
+    expect(res.getHeader("x-process-time-ms")).to.be.a("string");
+  });
+}
+
+docs {
+  `raise HTTPException(404)` rather than returning `None`. An empty `200` would force every
+  client to invent its own meaning for "no body"; the status says it once, for everyone.
+
+  The second test is the point of putting this request in the collection. `HTTPException`
+  unwinds the route, and the timing header still arrives — because `add_timing_header`
+  wraps the entire stack, not the successful path through it. Middleware that only measures
+  requests that succeed will tell you your API is fast on the day it starts failing.
+}

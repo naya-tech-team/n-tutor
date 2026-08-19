@@ -1,0 +1,51 @@
+meta {
+  name: An impossible skill level
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/employees
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Impossible Person",
+    "location": "Pune",
+    "experience_years": 2,
+    "skills": [
+      { "skill": "SQL", "level": 9 }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 422
+}
+
+tests {
+  test("422 — rejected before the route function ran", function() {
+    expect(res.getStatus()).to.equal(422);
+  });
+
+  test("the error points at the exact element that was wrong", function() {
+    const err = res.getBody().detail[0];
+    expect(err.loc).to.eql(["body", "skills", 0, "level"]);
+    expect(err.msg).to.contain("less than or equal to 5");
+    expect(err.input).to.equal(9);
+  });
+}
+
+docs {
+  Level 9 on a 1-5 scale. No route ever checks this — `Field(ge=1, le=5)` on `SkillRating`
+  does, and FastAPI turns the failure into a `422` before `create_employee()` is called.
+
+  Read `loc` carefully: `["body", "skills", 0, "level"]` names the request part, the field,
+  the **array index**, and the attribute. A client can highlight the offending row in a form
+  from that path alone, which a hand-written `{"error": "invalid level"}` never allows.
+
+  This is also why nothing downstream re-checks levels. Validation happens once, at the
+  edge, and `store.score()` can treat every level as an integer in range.
+}

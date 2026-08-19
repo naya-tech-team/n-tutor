@@ -1,0 +1,76 @@
+meta {
+  name: Initialize
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "{{protocolVersion}}",
+      "capabilities": {},
+      "clientInfo": { "name": "bruno", "version": "1.0.0" }
+    }
+  }
+}
+
+script:post-response {
+  // The session id arrives as a HEADER, not in the body — so it is captured here rather
+  // than in a Vars expression. Every later request sends it back as `mcp-session-id`.
+  bru.setVar("mcpSessionId", res.getHeader("mcp-session-id"));
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("the server minted a session and put it in a header", function() {
+    expect(res.getHeader("mcp-session-id")).to.match(/^[0-9a-f]{32}$/);
+  });
+
+  test("the body came back as a Server-Sent Event", function() {
+    expect(res.getHeader("content-type")).to.contain("text/event-stream");
+  });
+
+  test("it is the hr-skills server, and it agreed on a protocol version", function() {
+    const r = res.getBody().result;
+    expect(r.serverInfo.name).to.equal("hr-skills");
+    expect(r.protocolVersion).to.equal(bru.getEnvVar("protocolVersion"));
+  });
+
+  test("it advertises tools, and admits it has no resources worth subscribing to", function() {
+    const caps = res.getBody().result.capabilities;
+    expect(caps).to.have.property("tools");
+    expect(caps.resources.subscribe).to.be.false;
+  });
+}
+
+docs {
+  **Run this first.** Nothing else in the collection works until it has.
+
+  Three things happen in one round trip:
+
+  - The client states which protocol version it speaks. The server answers with the version
+    it will actually use — which is why the reply is checked, not assumed.
+  - The server lists its **capabilities**. `tools` is present; that is what the rest of this
+    collection exercises.
+  - The server mints a **session** and returns it in the `mcp-session-id` *header*, not the
+    body. Because it is a header rather than a field, the **Script** tab captures it with
+    `bru.setVar("mcpSessionId", res.getHeader("mcp-session-id"))` — and every later request
+    sends it straight back.
+
+  Note the response `content-type`: `text/event-stream`. Even a plain request/response like
+  this one is framed as an SSE `data:` line, because the same channel can carry a server's
+  progress notifications during a long tool call. The collection's post-response script
+  unwraps it — open **collection.bru** to see the four lines that do it.
+}

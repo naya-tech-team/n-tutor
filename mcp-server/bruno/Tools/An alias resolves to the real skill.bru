@@ -1,0 +1,55 @@
+meta {
+  name: An alias resolves to the real skill
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 11,
+    "method": "tools/call",
+    "params": {
+      "name": "find_by_skill",
+      "arguments": { "skill": "pyspark", "min_level": 4 }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("'pyspark' found people whose records say 'Apache Spark'", function() {
+    const ids = res.getBody().result.structuredContent.result.map(e => e.employee_id);
+    expect(ids).to.eql(["E1002", "E1005"]);
+  });
+
+  test("nothing in the payload had to spell the skill correctly", function() {
+    expect(res.getBody().result.isError).to.be.false;
+  });
+}
+
+docs {
+  Nobody has *"pyspark"* on their record. The alias table in `_shared/hr_data.py` maps it to
+  **Apache Spark** before the search runs.
+
+  This is a small thing that decides whether an MCP server is usable by a model at all. A
+  model asked *"who knows PySpark?"* will send the word the user typed. A server that
+  answers `[]` has told a technically true lie, and the model will report that nobody in the
+  company knows Spark — with no way to discover it was a vocabulary problem.
+
+  **The alias table does this, not the model.** Fuzzy matching belongs on the side that owns
+  the data and can be tested, not in a prompt.
+}

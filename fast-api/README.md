@@ -10,6 +10,7 @@ The domain is the one the whole course uses: **employees have skills rated 1–5
 - [Install & run](#install--run)
 - [Try it](#try-it)
 - [Run the tests](#run-the-tests)
+- [Poke at it with Bruno](#poke-at-it-with-bruno)
 - [Troubleshooting](#troubleshooting)
 - [Next Steps](#next-steps)
 
@@ -23,6 +24,7 @@ fast-api/
 │   ├── store.py                # in-memory store + the scoring engine, injected via Depends()
 │   └── routers/candidates.py   # /employees and /requisitions routes in two APIRouters
 ├── tests/test_api.py           # 19 pytest tests
+├── bruno/                      # Bruno collection: 24 requests, 79 tests, runnable in CI
 ├── pyproject.toml              # dependencies + pytest config
 └── uv.lock                     # pinned, reproducible versions (commit this)
 ```
@@ -127,6 +129,82 @@ app.dependency_overrides[get_store] = lambda: store  # …handed to every reques
 Writing `lambda: HRStore()` there looks equivalent and is not: the provider runs
 *per request*, so every call would get a brand-new store and nothing would persist
 between two requests in the same test. (Yes, that bug was written first.)
+
+## Poke at it with Bruno
+
+`bruno/` is a [Bruno](https://www.usebruno.com/) collection — 24 requests grouped **Meta ·
+Employees · Requisitions · Matching · Shortlist · Errors**. Every request carries its own
+tests and a `docs` tab explaining what it demonstrates, so the collection doubles as a
+guided tour of the API.
+
+### Open it in the Bruno app
+
+A Bruno collection *is* a folder of `.bru` files, so there is nothing to import — **Import
+Collection** is for Postman/Insomnia/OpenAPI exports and will not work here.
+
+1. **Collection → Open Collection** (or the button on the welcome screen).
+2. Pick the `fast-api/bruno` folder **itself**, not a file inside it. Bruno recognises it by
+   the `bruno.json` at its root.
+3. Allow the macOS folder-access prompt if one appears, or the collection opens empty.
+
+Two things to do before running anything:
+
+- **Start the API** — the collection points at `localhost`, so otherwise every request is a
+  connection error.
+- **Switch the environment** from *No Environment* to **Local**, top right. Skip it and
+  every request fails on an unresolved `{{baseUrl}}`.
+
+> **On the port.** `Local` expects **8100**, which is what `uv run app/main.py` serves and
+> what this repo's VS Code launch config starts. Running `uv run uvicorn app.main:app
+> --reload` instead serves **8000** — change `baseUrl` in `environments/Local.bru` if you
+> use that command.
+
+Then run one request with the **→** arrow (⌘↵), or right-click the collection → **Run** to
+run all of them. Folders execute in the `seq` recorded in each `folder.bru`, which matters:
+*Employees* creates a person *Matching* then has to tolerate in the rankings, and
+*Shortlist* adds an entry before *Read the shortlist* checks it.
+
+Because the collection lives inside the repo, anything you change in the GUI is written
+straight back to the `.bru` files and shows up in `git status`.
+
+### Or run it headlessly
+
+With the server already running:
+
+```bash
+cd fast-api/bruno
+npx @usebruno/cli run --env Local -r
+```
+
+```
+Requests      24 (24 Passed)
+Tests         79/79
+Assertions    24/24
+```
+
+That is the same command a CI job would use — `-r` recurses into the folders, and a failing
+test exits non-zero.
+
+### What to look at first
+
+| Request | Shows |
+|---|---|
+| *Shortlist › Shortlist a blocked candidate* | **409**, not 400 — the request was fine, the *state* refused it |
+| *Matching › An allocated employee never ranks* | Arjun scores 86 and `strong`, and still never appears in a candidate list |
+| *Matching › The same people, a different role* | the ranking inverts on J2002 — there is no good candidate, only a good match |
+| *Errors › An impossible skill level* | a `422` whose `loc` names the request part, field, array index and attribute |
+
+The collection is **re-runnable against a long-lived server**: shortlisting is idempotent,
+the employee it creates is too weak to displace anyone in a top-3, and membership
+assertions use `include` rather than exact counts. A `tests` block in `collection.bru` runs
+against *every* response, checking the middleware's `X-Process-Time-ms` header — including
+on the 404s and 422s, which is where middleware most often turns out not to run.
+
+### Compare it with the GraphQL collection
+
+[`fast-api-graphql/bruno`](../fast-api-graphql/README.md) is the same domain over GraphQL,
+and the two are worth opening side by side. There, *every* response is **200** and the
+outcome lives in the body; here the status line carries it. Same refusal, two designs.
 
 ## Managing dependencies
 

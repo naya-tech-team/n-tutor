@@ -1,0 +1,38 @@
+meta {
+  name: One employee by id
+  type: graphql
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query OnePerson($employeeId: ID!) {
+    employee(employeeId: $employeeId) {
+      employeeId
+      name
+      location
+      experienceYears
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "employeeId": "e1002"
+  }
+}
+
+assert {
+  res.body.data.employee.name: eq Priya Raman
+}
+
+docs {
+  The id is deliberately lowercase: `store.get_employee()` upper-cases before the lookup,
+  so the API is case-insensitive on ids. Worth a test, because that is the kind of
+  behaviour that silently disappears in a refactor.
+}

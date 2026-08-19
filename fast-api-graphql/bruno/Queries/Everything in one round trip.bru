@@ -1,0 +1,55 @@
+meta {
+  name: Everything in one round trip
+  type: graphql
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Board {
+    requisitions {
+      jobId
+      title
+      candidates(limit: 2) {
+        name
+        score
+        verdict
+        employee {
+          location
+          experienceYears
+        }
+      }
+      shortlist {
+        name
+        score
+        addedAt
+      }
+    }
+  }
+}
+
+tests {
+  test("both roles, their top two candidates and their shortlists — one request", function() {
+    const roles = res.getBody().data.requisitions;
+    expect(roles.length).to.equal(2);
+    roles.forEach(r => expect(r.candidates.length).to.be.at.most(2));
+  });
+
+  test("the nested employee records resolved too", function() {
+    const first = res.getBody().data.requisitions[0].candidates[0];
+    expect(first.employee.location).to.be.a("string");
+  });
+}
+
+docs {
+  In REST this screen was five calls: two requisitions, their candidates, their shortlists.
+  Here it is one — and the `employee { … }` inside each candidate is batched by a
+  **DataLoader**, so it costs one lookup rather than one per row (the N+1 problem).
+
+  Watch the server log: you will see a single `POST /graphql`.
+}

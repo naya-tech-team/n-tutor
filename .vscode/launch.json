@@ -13,5 +13,29 @@
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/strands-ai/.venv/bin/python" 
         },
+        {
+            "name": "Graphql API (venv)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "fast-api-graphql/app/main.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/fast-api-graphql/.venv/bin/python" 
+        },
+        {
+            "name": "Fast API (venv)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "fast-api/app/main.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/fast-api/.venv/bin/python" 
+        },
+        {
+            "name": "MCP Server (venv)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "mcp-server/app/main.py",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/mcp-server/.venv/bin/python" 
+        },
     ]
 }

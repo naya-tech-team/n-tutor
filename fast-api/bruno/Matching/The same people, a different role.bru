@@ -1,0 +1,44 @@
+meta {
+  name: The same people, a different role
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{streamingJobId}}/candidates?limit=3
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 3
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Vikram tops the streaming role outright", function() {
+    const top = res.getBody()[0];
+    expect(top.name).to.equal("Vikram Iyer");
+    expect(top.score).to.equal(100);
+    expect(top.verdict).to.equal("strong");
+  });
+
+  test("Priya — 100% on J2001 — is blocked here", function() {
+    const priya = res.getBody().find(c => c.name === "Priya Raman");
+    expect(priya.score).to.equal(60);
+    expect(priya.verdict).to.equal("blocked");
+    expect(priya.blockers).to.eql(["Apache Kafka"]);
+  });
+}
+
+docs {
+  The same four people, the same engine, a different requisition — and the ranking inverts.
+
+  Priya scores 100 on J2001 and 60 here, blocked on a Kafka skill she has never been rated
+  on. Vikram is blocked on J2001 and perfect here. **There is no such thing as a good
+  candidate, only a good match for a specific requisition**, and that falls out of the data
+  rather than being asserted anywhere in the code.
+}

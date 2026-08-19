@@ -18,6 +18,12 @@
     "keywords": ["fastapi", "quick start", "quickstart", "api", "web", "rest", "uvicorn", "pydantic", "route", "router", "middleware", "endpoint", "async", "docs", "code first"]
   },
   {
+    "title": "GraphQL: Quick Start",
+    "url": "quickstart/graphql.html",
+    "track": "Quick Starts",
+    "keywords": ["graphql", "strawberry", "schema", "query", "mutation", "resolver", "nested resolvers", "union", "dataloader", "n+1", "graphiql", "sdl", "introspection", "fastapi", "api", "rest vs graphql", "fragments"]
+  },
+  {
     "title": "FastMCP: Quick Start",
     "url": "quickstart/fastmcp.html",
     "track": "Quick Starts",
@@ -72,16 +78,64 @@
     "keywords": ["a2a", "agent2agent", "agent to agent", "quick start", "quickstart", "agent card", "executor", "task", "lifecycle", "client", "delegation", "multi-agent", "a2a-sdk", "code first", "strands", "ollama", "llama", "llama3.2", "local model", "a2aserver", "agent_factory", "agent skill", "orchestrator", "specialist", "artifact"]
   },
   {
-    "title": "Strands: Quick Start",
-    "url": "quickstart/strands.html",
+    "title": "Strands Agents: Full Course Guide",
+    "url": "quickstart/strands-course.html",
     "track": "Quick Starts",
-    "keywords": ["strands", "strands agents", "quick start", "quickstart", "agent", "agent loop", "tool", "model", "bedrock", "mcp", "multi-agent", "swarm", "graph", "conversation manager", "code first", "ollama", "llama", "llama3.2", "local model", "ollamamodel", "a2aserver", "agent_factory", "a2aclienttoolprovider"]
+    "keywords": ["strands", "strands agents", "tutorial", "strands course", "course guide", "full course", "quick start", "quickstart", "agent", "agent loop", "tool", "model", "bedrock", "mcp", "multi-agent", "swarm", "graph", "conversation manager", "code first", "ollama", "llama", "llama3.2", "local model", "ollamamodel", "a2aserver", "agent_factory", "a2aclienttoolprovider"]
   },
   {
     "title": "Terraform: Quick Start",
     "url": "quickstart/terraform.html",
     "track": "Quick Starts",
     "keywords": ["terraform", "quick start", "quickstart", "infrastructure as code", "iac", "hcl", "provider", "resource", "variable", "output", "module", "state", "plan", "apply", "for_each", "count", "data source", "aws", "cloud", "code first"]
+  },
+  {
+    "title": "Terraform: Use Case Catalogue",
+    "url": "quickstart/terraform-usecases.html",
+    "track": "Quick Starts",
+    "keywords": ["terraform", "use cases", "usecases", "scenarios", "catalogue", "catalog", "examples", "recipes", "ec2", "security group", "elastic ip", "iam", "rds", "database", "depends_on", "variable types", "count", "count.index", "splat", "tfvars", "feature flag", "conditional", "dynamic block", "module", "for_each", "error handling", "import", "remote state", "s3 backend", "vpc", "challenge", "aws"]
+  },
+  {
+    "title": "AWS AgentCore: Tutorial",
+    "url": "quickstart/agentcore.html",
+    "track": "Quick Starts",
+    "keywords": ["agentcore", "aws agentcore", "bedrock agentcore", "amazon bedrock", "runtime", "gateway", "memory", "identity", "observability", "code interpreter", "browser tool", "deploy", "deployment", "serverless", "mcp", "a2a", "session id", "sigv4", "cognito", "jwt", "lambda", "s3", "terraform", "cloudwatch", "x-ray", "transaction search", "adot", "opentelemetry", "tracing", "strands", "tutorial", "capabilities"]
+  },
+  {
+    "title": "AgentCore: Q&A",
+    "url": "quickstart/agentcore-qa.html",
+    "track": "Quick Starts",
+    "keywords": ["agentcore questions", "agentcore faq", "q&a", "qa", "dialogue", "interview", "aws agentcore", "bedrock agentcore", "vs bedrock agents", "framework agnostic", "model agnostic", "langchain", "langgraph", "crewai", "mcp", "gateway", "runtime", "memory", "identity", "observability", "code interpreter", "browser", "cost", "pricing", "migration", "getting started", "adoption", "okta", "entra", "cognito", "compliance", "gdpr", "hipaa", "soc 2"]
+  },
+  {
+    "title": "AgentCore: Deployment Prerequisites",
+    "url": "quickstart/agentcore-deploy.html",
+    "track": "Quick Starts",
+    "keywords": ["agentcore", "prerequisites", "iam", "roles", "policies", "permissions", "terraform", "deploy", "passrole", "execution role", "trust policy", "getagentcard", "invokeagentruntime", "invokegateway", "sigv4", "cognito", "dependencies", "dependency order", "module prerequisites", "terraform outputs", "least privilege", "deploy order", "what permissions"]
+  },
+  {
+    "title": "AgentCore: Complete Technical Reference",
+    "url": "quickstart/agentcore-complete-reference.html",
+    "track": "Quick Starts",
+    "keywords": ["agentcore reference", "complete reference", "technical reference", "aws agentcore", "bedrock agentcore", "runtime", "gateway", "memory", "identity", "observability", "code interpreter", "browser", "microvm", "isolation", "session affinity", "cold start", "capacity providers", "streaming", "health status", "ping", "http contract", "mcp contract", "error responses", "invocation ceilings", "container deployment", "direct code deployment", "infrastructure as code", "starter toolkit", "cli", "sdk", "quotas", "limits", "cost", "pricing", "identifiers", "dependency map", "good fits", "poor fits", "retrofit", "lifecycle"]
+  },
+  {
+    "title": "AWS AgentCore: Slides",
+    "url": "quickstart/agentcore-slides.html",
+    "track": "Slide Decks",
+    "keywords": ["agentcore slides", "slides", "slide deck", "deck", "presentation", "present", "talk", "aws agentcore", "bedrock agentcore", "capabilities", "runtime", "gateway", "memory", "identity", "observability", "code interpreter", "browser", "speaker notes", "pdf"]
+  },
+  {
+    "title": "AWS AgentCore: Capabilities, Pros & Cons, Guide, Use Cases",
+    "url": "quickstart/agentcore-capabilities.html",
+    "track": "Slide Decks",
+    "keywords": ["agentcore capabilities", "nine capabilities", "pros and cons", "trade-offs", "tradeoffs", "advantages", "disadvantages", "limitations", "step by step", "guide", "how to", "getting started", "use cases", "presentation", "slides", "deck", "aws agentcore", "bedrock agentcore", "runtime", "gateway", "memory", "identity", "observability", "code interpreter", "browser", "policy", "cedar", "evaluations", "evaluators", "llm as a judge", "episodic memory", "2lo", "3lo", "token vault", "semantic search", "log_only", "enforce", "should i use", "vs ecs", "vs lambda", "lock-in", "cost", "adoption roadmap", "anti-patterns", "gotchas"]
+  },
+  {
+    "title": "AgentCore: Developer Deep Dive (30 min)",
+    "url": "quickstart/agentcore-dev-deck.html",
+    "track": "Slide Decks",
+    "keywords": ["agentcore dev deck", "developer deep dive", "deep dive", "30 min", "slides", "slide deck", "deck", "presentation", "talk", "aws agentcore", "bedrock agentcore", "six services", "runtime", "memory", "gateway", "identity", "observability", "ship it", "production", "isolation", "microvm", "session", "http endpoints", "invocations", "ping", "short-term memory", "long-term memory", "strategies", "namespace", "m x n", "tool names", "discovery", "confused deputy", "outbound auth", "token vault", "traces", "spans"]
   },
   {
     "title": "1 · Your First Program",

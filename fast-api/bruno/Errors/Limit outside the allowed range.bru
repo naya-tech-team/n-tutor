@@ -1,0 +1,36 @@
+meta {
+  name: Limit outside the allowed range
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{jobId}}/candidates?limit=99
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 99
+}
+
+assert {
+  res.status: eq 422
+}
+
+tests {
+  test("a query parameter is validated exactly like a body field", function() {
+    expect(res.getStatus()).to.equal(422);
+    const err = res.getBody().detail[0];
+    expect(err.loc).to.eql(["query", "limit"]);
+    expect(err.msg).to.contain("less than or equal to 20");
+  });
+}
+
+docs {
+  `Query(3, ge=1, le=20)` — the same declarative validation as a Pydantic field, applied to
+  the query string, with `loc` starting at `"query"` instead of `"body"`.
+
+  The cap is not paranoia about this four-person dataset; it is the habit that stops
+  `?limit=1000000` from becoming a denial-of-service on the day the directory is real.
+}

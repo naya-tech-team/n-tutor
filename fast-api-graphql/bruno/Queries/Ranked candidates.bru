@@ -1,0 +1,70 @@
+meta {
+  name: Ranked candidates
+  type: graphql
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Candidates($jobId: ID!, $limit: Int!) {
+    requisition(jobId: $jobId) {
+      title
+      candidates(limit: $limit) {
+        name
+        score
+        verdict
+        blockers
+        meetsExperience
+        gaps {
+          skill
+          required
+          actual
+          mandatory
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "jobId": "{{jobId}}",
+    "limit": 3
+  }
+}
+
+tests {
+  test("best first", function() {
+    const scores = res.getBody().data.requisition.candidates.map(c => c.score);
+    expect(scores).to.eql([...scores].sort((a, b) => b - a));
+  });
+
+  test("Priya is a perfect, unblocked fit", function() {
+    const top = res.getBody().data.requisition.candidates[0];
+    expect(top.name).to.equal("Priya Raman");
+    expect(top.score).to.equal(100);
+    expect(top.verdict).to.equal("strong");
+    expect(top.blockers).to.eql([]);
+  });
+
+  test("a high score does not survive a missing mandatory skill", function() {
+    const rahul = res.getBody().data.requisition.candidates.find(c => c.name === "Rahul Menon");
+    expect(rahul.score).to.equal(79);
+    expect(rahul.verdict).to.equal("blocked");
+    expect(rahul.blockers).to.eql(["Apache Spark"]);
+  });
+}
+
+docs {
+  `candidates` is a **nested resolver with an argument** — the thing REST cannot do. In the
+  REST version this was a second round trip to
+  `GET /requisitions/J2001/candidates?limit=3`.
+
+  Rahul is the interesting row: 79% and still `blocked`, because Apache Spark 3 is below a
+  mandatory 4. The score and the verdict answer different questions.
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Bench only
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/employees?available_only=true
+  body: none
+  auth: inherit
+}
+
+params:query {
+  available_only: true
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("everyone returned is actually on the bench", function() {
+    res.getBody().forEach(e => expect(e.availability).to.equal("bench"));
+  });
+
+  test("the allocated person is filtered out", function() {
+    const ids = res.getBody().map(e => e.employee_id);
+    expect(ids).to.not.include("E1007");
+    expect(ids).to.include.members(["E1002", "E1003", "E1005"]);
+  });
+}
+
+docs {
+  `available_only` is a `Query(False, ...)` parameter — typed `bool`, so `true`, `True` and
+  `1` all arrive as a Python boolean and anything else is a **422** before the route runs.
+
+  Arjun Nair (E1007) disappears here. Keep him in mind: *Matching › An allocated employee
+  never ranks* shows that he would score 86 against J2001 if anyone asked, and still never
+  appears in a candidate list.
+}

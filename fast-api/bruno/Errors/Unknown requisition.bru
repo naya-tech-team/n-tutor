@@ -1,0 +1,29 @@
+meta {
+  name: Unknown requisition
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{missingJobId}}/candidates
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("a missing role fails before any scoring happens", function() {
+    expect(res.getStatus()).to.equal(404);
+    expect(res.getBody().detail).to.equal("requisition not found");
+  });
+}
+
+docs {
+  `rank_candidates` looks the requisition up and raises before it touches the employee list.
+  The alternative — scoring everyone against nothing and returning `[]` — would have
+  answered `200` and looked like *"nobody is suitable"*, which is a far more expensive lie
+  than a 404.
+}

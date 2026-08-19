@@ -1,0 +1,42 @@
+auth {
+  mode: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  // Runs after EVERY request in this collection.
+  test("the server answers 200 — GraphQL says everything with the body", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("the timing middleware tagged the response", function() {
+    expect(res.getHeader("x-process-time-ms")).to.be.a("string");
+  });
+}
+
+docs {
+  # HR Skills GraphQL API
+
+  Every request below points at one URL — `POST {{baseUrl}}/graphql` — and asks for a
+  different slice of the same graph. Start the server first:
+
+      cd fast-api-graphql
+      uv run uvicorn app.main:app --reload
+
+  Then pick the **Local** environment (top right) and run the collection.
+
+  ## The one habit to unlearn
+
+  A GraphQL server answers **200** for a blocked candidate, a missing requisition and a
+  rejected skill level alike. The status line stops carrying meaning, so every test here
+  asserts on the *body*:
+
+  - `errors` with `data: null` → the request was never valid. A bug in the client.
+  - a `__typename` inside `data` → a domain outcome. The server working correctly.
+
+  The folders are ordered so the collection can be run top to bottom against a freshly
+  started server, and re-run without resetting it.
+}

@@ -1,0 +1,1318 @@
+<title>AgentCore — Prerequisites, Roles &amp; Policies</title>
+<style>
+  /* ---------------------------------------------------------------------
+     Tokens. The bare :root block is the complete light palette. Dark is a
+     token-level override in two places — the un-stamped prefers-color-scheme
+     case, and the explicitly stamped case — so all three viewer states resolve.
+     No component below reads a colour that is defined only inside one of them.
+     --------------------------------------------------------------------- */
+  :root {
+    --ground:      #F5F5F8;
+    --surface:     #FFFFFF;
+    --surface-sub: #EDEDF3;
+    --ink:         #14141C;
+    --ink-soft:    #55556A;
+    --ink-faint:   #7E7E93;
+    --rule:        #E1E1EA;
+    --rule-strong: #C9C9D6;
+
+    --accent:      #8A6520;   /* brass — credentials, keys, the thing you must hold */
+    --accent-soft: #F3EBDC;
+    --accent-line: #D9C08A;
+
+    --allow:       #1C6B47;
+    --allow-soft:  #E2F1EA;
+    --deny:        #A32B26;
+    --deny-soft:   #F8E6E5;
+    --warn:        #8A5A12;
+    --warn-soft:   #FBEFD9;
+
+    --shadow: 0 1px 2px rgba(20, 20, 28, .05), 0 8px 24px -16px rgba(20, 20, 28, .28);
+
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0E0E15;
+      --surface:     #16161F;
+      --surface-sub: #1E1E29;
+      --ink:         #E9E9F1;
+      --ink-soft:    #A0A0B4;
+      --ink-faint:   #7A7A8E;
+      --rule:        #282833;
+      --rule-strong: #3A3A49;
+
+      --accent:      #D6A44C;
+      --accent-soft: #2A2318;
+      --accent-line: #55452A;
+
+      --allow:       #55C08A;
+      --allow-soft:  #16261F;
+      --deny:        #E88079;
+      --deny-soft:   #2B1A19;
+      --warn:        #DDA94F;
+      --warn-soft:   #2A2213;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E0E15;
+    --surface:     #16161F;
+    --surface-sub: #1E1E29;
+    --ink:         #E9E9F1;
+    --ink-soft:    #A0A0B4;
+    --ink-faint:   #7A7A8E;
+    --rule:        #282833;
+    --rule-strong: #3A3A49;
+
+    --accent:      #D6A44C;
+    --accent-soft: #2A2318;
+    --accent-line: #55452A;
+
+    --allow:       #55C08A;
+    --allow-soft:  #16261F;
+    --deny:        #E88079;
+    --deny-soft:   #2B1A19;
+    --warn:        #DDA94F;
+    --warn-soft:   #2A2213;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  /* --- masthead ------------------------------------------------------- */
+
+  .masthead {
+    grid-column: 1 / -1;
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(28px, 4.4vw, 44px);
+    font-weight: 600;
+    letter-spacing: -.02em;
+    line-height: 1.12;
+    text-wrap: balance;
+    margin: 0;
+    max-width: 20ch;
+  }
+
+  .standfirst {
+    max-width: 66ch;
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .facts li {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 4px 9px;
+  }
+
+  .facts b { color: var(--ink); font-weight: 600; }
+
+  /* --- stage index ---------------------------------------------------- */
+
+  .index {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    padding-top: 48px;
+  }
+
+  .index h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .index ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; }
+
+  .index a {
+    display: flex;
+    gap: 9px;
+    align-items: baseline;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 5px 8px;
+    border-radius: 3px;
+    border-left: 2px solid transparent;
+  }
+
+  .index a:hover { background: var(--surface); color: var(--ink); border-left-color: var(--accent-line); }
+  .index a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .index a .n { color: var(--accent); font-variant-numeric: tabular-nums; }
+
+  /* --- main ----------------------------------------------------------- */
+
+  main { padding-top: 48px; display: flex; flex-direction: column; gap: 56px; min-width: 0; }
+
+  section { scroll-margin-top: 24px; }
+
+  h2.section-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin: 0 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  p { margin: 0 0 14px; max-width: 68ch; }
+  p:last-child { margin-bottom: 0; }
+
+  .lead { color: var(--ink-soft); }
+
+  code, .mono { font-family: var(--mono); font-size: .875em; }
+
+  p code, li code, td code, dd code {
+    background: var(--surface-sub);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  a { color: var(--accent); }
+
+  /* --- stage cards ---------------------------------------------------- */
+
+  .stage {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .stage-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--rule);
+    background: linear-gradient(to bottom, var(--surface-sub), var(--surface));
+  }
+
+  .stage-n {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: 3px;
+    padding: 3px 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stage-head h3 {
+    font-family: var(--mono);
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  .stage-head .what { color: var(--ink-soft); font-size: 14.5px; flex: 1 1 100%; margin: 0; }
+
+  .stage-body { padding: 4px 24px 24px; display: flex; flex-direction: column; }
+
+  .block { padding: 20px 0; border-bottom: 1px dashed var(--rule); }
+  .block:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  .block > h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  /* --- needs list ----------------------------------------------------- */
+
+  dl.needs { margin: 0; display: grid; grid-template-columns: minmax(120px, max-content) minmax(0, 1fr); gap: 8px 18px; }
+  dl.needs dt { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; padding-top: 2px; }
+  dl.needs dd { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
+  dl.needs dd b { color: var(--ink); font-weight: 600; }
+
+  .none { color: var(--ink-faint); font-style: italic; }
+
+  /* --- tables --------------------------------------------------------- */
+
+  .scroller { overflow-x: auto; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 520px; }
+
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 0 14px 8px 0;
+    border-bottom: 1px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--rule); vertical-align: top; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child, th:first-child { padding-left: 0; }
+  td.role { font-family: var(--mono); font-size: 12.5px; color: var(--ink); white-space: nowrap; }
+  td.actions { font-family: var(--mono); font-size: 12px; line-height: 1.75; }
+
+  /* --- chips ---------------------------------------------------------- */
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 12px;
+    border-radius: 3px;
+    padding: 3px 8px;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface-sub);
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .chip.key { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent); }
+  .chip.allow { border-color: color-mix(in srgb, var(--allow) 40%, transparent); background: var(--allow-soft); color: var(--allow); }
+
+  /* --- callouts ------------------------------------------------------- */
+
+  .note {
+    border-left: 3px solid var(--rule-strong);
+    background: var(--surface-sub);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 14px 0 0;
+    max-width: none;
+  }
+
+  .note.warn   { border-left-color: var(--warn);  background: var(--warn-soft); }
+  .note.danger { border-left-color: var(--deny);  background: var(--deny-soft); }
+
+  .note b { color: var(--ink); }
+  .note .tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .note.warn .tag { color: var(--warn); }
+  .note.danger .tag { color: var(--deny); }
+  .note .tag:not([class]) { color: var(--ink-faint); }
+
+  /* --- code ----------------------------------------------------------- */
+
+  pre {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    background: var(--surface-sub);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  pre .c { color: var(--ink-faint); }
+
+  /* --- dependency flow ------------------------------------------------ */
+
+  .flow { display: flex; flex-direction: column; gap: 10px; }
+
+  .tier { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  .tier-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    width: 88px;
+    flex: none;
+  }
+
+  .node {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    padding: 6px 11px;
+    color: var(--ink);
+  }
+
+  .node .n { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .node .from { color: var(--ink-faint); font-size: 11px; }
+
+  /* --- responsive ----------------------------------------------------- */
+
+  @media (max-width: 860px) {
+    .page { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .index { position: static; padding-top: 40px; }
+    .index ol { flex-direction: row; flex-wrap: wrap; gap: 4px; }
+    .index a { border-left: 0; border: 1px solid var(--rule); }
+    main { padding-top: 40px; }
+    .masthead { padding-top: 48px; }
+    dl.needs { grid-template-columns: minmax(0, 1fr); gap: 4px 0; }
+    dl.needs dt { padding-top: 10px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">AWS Bedrock AgentCore · terraform/00_all_at_once · 8 stages</p>
+    <h1>Prerequisites, roles and policies</h1>
+    <p class="standfirst">
+      What must exist before each <code>terraform apply</code>, what each stage creates for the
+      services to assume, and what the human or CI principal running the apply needs to be
+      allowed to do. Stage order is dependency order — every input comes from an earlier
+      stage's output.
+    </p>
+    <ul class="facts">
+      <li>provider <b>hashicorp/aws &ge; 6.58</b></li>
+      <li>plus <b>hashicorp/time</b></li>
+      <li>runtime <b>PYTHON_3_13</b></li>
+      <li>architecture <b>arm64 only</b></li>
+      <li>state <b>local, per directory</b></li>
+    </ul>
+  </header>
+
+  <nav class="index" aria-label="Stages">
+    <h2>Stages</h2>
+    <ol>
+      <li><a href="#before"><span class="n">00</span> Before anything</a></li>
+      <li><a href="#s01"><span class="n">01</span> s3_data</a></li>
+      <li><a href="#s02"><span class="n">02</span> lambda</a></li>
+      <li><a href="#s03"><span class="n">03</span> gateway</a></li>
+      <li><a href="#s04"><span class="n">04</span> memory</a></li>
+      <li><a href="#s05"><span class="n">05</span> runtimes</a></li>
+      <li><a href="#s06"><span class="n">06</span> observability</a></li>
+      <li><a href="#s07"><span class="n">07</span> api</a></li>
+      <li><a href="#s08"><span class="n">08</span> ui</a></li>
+      <li><a href="#deployer"><span class="n">→</span> The deployer</a></li>
+      <li><a href="#verify"><span class="n">→</span> Verifying</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- ============================ BEFORE ============================ -->
+    <section id="before">
+      <h2 class="section-title">Before anything</h2>
+
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">00</span>
+          <h3>Toolchain and account</h3>
+          <p class="what">None of this is stage-specific. All of it blocks the first apply.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Local toolchain</h4>
+            <dl class="needs">
+              <dt>terraform</dt>
+              <dd>Resolves <b>hashicorp/aws &ge; 6.58</b> and <b>hashicorp/time</b>. <code>terraform init</code> per directory, or once in <code>00_all_at_once</code>.</dd>
+
+              <dt>aws cli</dt>
+              <dd>Not used by terraform, but every verification step below is a CLI call. Credentials must resolve — <code>aws sts get-caller-identity</code> should print your ARN.</dd>
+
+              <dt>uv</dt>
+              <dd>Installs <b>Python 3.13</b> for you. The deployment zips target <code>PYTHON_3_13</code>; building on the same minor version the container runs avoids a class of wheel mismatch.</dd>
+
+              <dt>node + npm</dt>
+              <dd>The chat proxy is Node because Lambda response streaming exists on Node.js managed runtimes only. The UI is a Vite build.</dd>
+            </dl>
+            <p class="note">
+              <span class="tag">Behind a TLS-inspecting proxy</span>
+              <code>uv</code> needs <code>UV_SYSTEM_CERTS=1</code> (or <code>uv sync --system-certs</code>), otherwise
+              every install fails with <code>invalid peer certificate: UnknownIssuer</code>.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Build artifacts — before <em>plan</em>, not before apply</h4>
+            <p class="lead">
+              Four stages read files with <code>filemd5()</code> or <code>filebase64sha256()</code>, and those
+              are evaluated at <b>plan</b> time. A missing zip is not a slow apply — it is a plan that
+              refuses to produce a diff.
+            </p>
+            <pre>make artifacts   <span class="c"># package + seed + ui-build — everything below at once</span>
+
+<span class="c"># or individually</span>
+uv run scripts/package.py   <span class="c"># dist/*.zip  → stages 02, 05, 07</span>
+uv run scripts/seed_s3.py   <span class="c"># terraform/01_s3_data/seed/*.json → stage 01</span>
+make ui-build               <span class="c"># ui/dist/ → stage 08</span></pre>
+          </div>
+
+          <div class="block">
+            <h4>Account and region</h4>
+            <dl class="needs">
+              <dt>Region</dt>
+              <dd>One region for the whole stack. AgentCore Runtime, Gateway and Memory must all be in it, and the Cognito discovery URL is built from it.</dd>
+
+              <dt>Model access</dt>
+              <dd>
+                <code>bedrock_model_id</code> has no safe default — model ids are account- and region-specific.
+                This stack ships <code>us.amazon.nova-lite-v1:0</code>.
+              </dd>
+
+              <dt>Password</dt>
+              <dd>One human input besides the model id: <code>password</code> for the Cognito machine user, minimum 8 characters, marked <code>sensitive</code>. Keep it out of any <code>*.tfvars</code> you commit.</dd>
+            </dl>
+            <p class="note warn">
+              <span class="tag">Anthropic models need a form</span>
+              Anthropic models on Bedrock require a use-case submission approved per account. Until it is,
+              every call fails with <code>ResourceNotFoundException: Model use case details have not been
+              submitted for this account</code> — which names neither the model nor the agent that asked for it.
+              Amazon's own models have no such gate, which is why the default here is Nova.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ ORDER ============================ -->
+    <section id="order">
+      <h2 class="section-title">Dependency order</h2>
+      <p class="lead">
+        The number is the order. Two stages are roots and could run first or in parallel;
+        everything else consumes an earlier stage's <code>terraform output</code>.
+      </p>
+      <div class="flow">
+        <div class="tier">
+          <span class="tier-label">Roots</span>
+          <span class="node"><span class="n">01</span> s3_data <span class="from">— nothing</span></span>
+          <span class="node"><span class="n">04</span> memory <span class="from">— nothing</span></span>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Then</span>
+          <span class="node"><span class="n">02</span> lambda <span class="from">← 01</span></span>
+          <span class="node"><span class="n">03</span> gateway <span class="from">← 02</span></span>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Then</span>
+          <span class="node"><span class="n">05</span> runtimes <span class="from">← 01, 03, 04</span></span>
+          <span class="node"><span class="n">06</span> observability <span class="from">← 03, 04</span></span>
+        </div>
+        <div class="tier">
+          <span class="tier-label">Last</span>
+          <span class="node"><span class="n">07</span> api <span class="from">← 03, 05</span></span>
+          <span class="node"><span class="n">08</span> ui <span class="from">← 07</span></span>
+        </div>
+      </div>
+      <p class="note">
+        <span class="tag">Worth knowing</span>
+        <b>06 does not depend on 05.</b> Its number reads as "after the runtimes", but it needs only the
+        gateway and memory ARNs. There is an argument for applying it earlier — the X-Ray trace destination
+        is account-level, so setting it after the runtimes exist loses the first container's start-up traces.
+      </p>
+    </section>
+
+    <!-- ============================ 01 ============================ -->
+    <section id="s01">
+      <h2 class="section-title">Stage 01</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">01</span>
+          <h3>s3_data</h3>
+          <p class="what">The system of record — one bucket, versioned, encrypted, private, plus the three seed objects.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From earlier</dt>
+              <dd class="none">Nothing. This is a root.</dd>
+              <dt>Files</dt>
+              <dd><code>terraform/01_s3_data/seed/*.json</code> — employees, requisitions, skills. Written by <code>uv run scripts/seed_s3.py</code>.</dd>
+              <dt>Decisions</dt>
+              <dd class="none">None. All three variables have defaults.</dd>
+            </dl>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <p class="none">No IAM roles. This stage makes a bucket and puts objects in it.</p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip key">s3:CreateBucket</li>
+              <li class="chip">s3:PutBucketVersioning</li>
+              <li class="chip">s3:PutEncryptionConfiguration</li>
+              <li class="chip">s3:PutBucketPublicAccessBlock</li>
+              <li class="chip">s3:PutObject</li>
+              <li class="chip">s3:GetBucket*</li>
+              <li class="chip">sts:GetCallerIdentity</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 02 ============================ -->
+    <section id="s02">
+      <h2 class="section-title">Stage 02</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">02</span>
+          <h3>lambda</h3>
+          <p class="what"><code>hr-data-fn</code> — the estate as MCP tools, for the Gateway to call. The only thing that writes shortlists.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From 01</dt>
+              <dd><code>bucket</code>, <code>bucket_arn</code></dd>
+              <dt>Files</dt>
+              <dd><code>dist/hr_data_fn.zip</code> — read at <b>plan</b> time via <code>filebase64sha256()</code>.</dd>
+              <dt>Decisions</dt>
+              <dd class="none">None.</dd>
+            </dl>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>Role</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="role">hr-data-fn-role</td>
+                    <td><code>lambda.amazonaws.com</code></td>
+                    <td class="actions">
+                      s3:GetObject, s3:PutObject <span class="chip">scoped to the bucket</span><br>
+                      <em>managed:</em> AWSLambdaBasicExecutionRole
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note">
+              <span class="tag">The split is enforced by IAM, not convention</span>
+              This function is the <b>only</b> writer to <code>shortlists/</code>. The scoring runtime reads the
+              same bucket read-only. A scoring engine that can edit the employee record is one nobody will trust.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip key">iam:CreateRole</li>
+              <li class="chip key">iam:PassRole</li>
+              <li class="chip">iam:PutRolePolicy</li>
+              <li class="chip">iam:AttachRolePolicy</li>
+              <li class="chip">iam:GetRole</li>
+              <li class="chip">lambda:CreateFunction</li>
+              <li class="chip">lambda:UpdateFunctionCode</li>
+              <li class="chip">lambda:UpdateFunctionConfiguration</li>
+              <li class="chip">lambda:AddPermission</li>
+              <li class="chip">lambda:GetFunction</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 03 ============================ -->
+    <section id="s03">
+      <h2 class="section-title">Stage 03</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">03</span>
+          <h3>gateway</h3>
+          <p class="what">Identity <em>and</em> the AgentCore Gateway with one target. The widest output surface in the stack — three later stages need something from it.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From 02</dt>
+              <dd><code>lambda_arn</code>, <code>lambda_name</code></dd>
+              <dt>You supply</dt>
+              <dd><code>password</code> — the Cognito machine user's, minimum 8 characters, <code>sensitive</code>.</dd>
+              <dt>Decisions</dt>
+              <dd>
+                <b><code>gateway_authorizer_type</code></b> — <code>AWS_IAM</code> (default) or <code>CUSTOM_JWT</code>.
+                Decide before the first apply.
+              </dd>
+            </dl>
+            <p class="note danger">
+              <span class="tag">Immutable</span>
+              <code>authorizer_type</code> cannot be changed in place. Switching it <b>replaces the gateway and
+              every target under it</b>, and the replacement has a new <code>gateway_url</code> — which then
+              propagates into stage 05.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>Role</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="role">&lt;gateway_name&gt;-role</td>
+                    <td>
+                      <code>bedrock-agentcore.amazonaws.com</code><br>
+                      <span class="chip">optional <code>aws:SourceAccount</code> / <code>aws:SourceArn</code></span>
+                    </td>
+                    <td class="actions">lambda:InvokeFunction <span class="chip">the one target function</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note">
+              <span class="tag">Also creates, and they are not roles</span>
+              A Cognito <b>user pool</b>, an app <b>client</b> (<code>ALLOW_USER_PASSWORD_AUTH</code>,
+              <code>ALLOW_REFRESH_TOKEN_AUTH</code>, no secret) and one <b>user</b> with a permanent password.
+              Without the user the stack deploys and nothing is callable.
+            </p>
+            <p class="note warn">
+              <span class="tag">Confused-deputy conditions are a second apply</span>
+              <code>restrict_trust_to_gateway = true</code> adds <code>aws:SourceArn</code> to the trust policy —
+              but that ARN does not exist until the gateway does. Apply once with <code>false</code>, then flip it.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip key">bedrock-agentcore:CreateGateway</li>
+              <li class="chip">bedrock-agentcore:CreateGatewayTarget</li>
+              <li class="chip">bedrock-agentcore:Get/Update/DeleteGateway</li>
+              <li class="chip key">cognito-idp:CreateUserPool</li>
+              <li class="chip">cognito-idp:CreateUserPoolClient</li>
+              <li class="chip">cognito-idp:AdminCreateUser</li>
+              <li class="chip">cognito-idp:AdminSetUserPassword</li>
+              <li class="chip key">iam:PassRole</li>
+              <li class="chip">iam:CreateRole</li>
+              <li class="chip">iam:PutRolePolicy</li>
+            </ul>
+            <p class="note">
+              <span class="tag">Expect one retry</span>
+              A <code>time_sleep</code> sits between the role and the gateway because IAM is eventually
+              consistent. If you still see
+              <code>ValidationException: Gateway service is not authorized to perform AssumeRole</code>,
+              the policy is correct and has not propagated — raise <code>iam_propagation_delay</code>.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 04 ============================ -->
+    <section id="s04">
+      <h2 class="section-title">Stage 04</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">04</span>
+          <h3>memory</h3>
+          <p class="what">One AgentCore Memory resource and three extraction strategies — facts, preferences, summaries.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From earlier</dt>
+              <dd class="none">Nothing. A second root — it can run as early as 01.</dd>
+              <dt>Files</dt>
+              <dd class="none">None.</dd>
+              <dt>Decisions</dt>
+              <dd class="none">None. Both variables default.</dd>
+            </dl>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>Role</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="role">hr-memory-role</td>
+                    <td><code>bedrock-agentcore.amazonaws.com</code></td>
+                    <td class="actions">
+                      <em>managed:</em><br>
+                      AmazonBedrockAgentCoreMemoryBedrockModelInferenceExecutionRolePolicy
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note">
+              <span class="tag">Why a managed policy here</span>
+              Extraction runs a model on your conversation to derive facts. The service needs its own
+              inference permissions to do that — they are not borrowed from the runtime that wrote the event.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip key">bedrock-agentcore:CreateMemory</li>
+              <li class="chip">bedrock-agentcore:Get/Update/DeleteMemory</li>
+              <li class="chip">iam:CreateRole</li>
+              <li class="chip key">iam:PassRole</li>
+              <li class="chip">iam:AttachRolePolicy</li>
+            </ul>
+            <p class="note warn">
+              <span class="tag">Strategy names take no hyphens</span>
+              <code>Attribute name value must match '^[a-zA-Z][a-zA-Z0-9_]{0,47}$'</code> — so
+              <code>candidate_facts</code>, never <code>candidate-facts</code>.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 05 ============================ -->
+    <section id="s05">
+      <h2 class="section-title">Stage 05</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">05</span>
+          <h3>runtimes</h3>
+          <p class="what">Five agent runtimes in three tiers, five execution roles, and the artifacts they run. The most required inputs in the stack.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From 01</dt>
+              <dd><code>bucket</code>, <code>bucket_arn</code></dd>
+              <dt>From 03</dt>
+              <dd><code>gateway_url</code>, <code>gateway_arn</code>, <code>cognito_discovery_url</code>, <code>cognito_client_id</code></dd>
+              <dt>From 04</dt>
+              <dd><code>memory_id</code></dd>
+              <dt>You supply</dt>
+              <dd><code>bedrock_model_id</code></dd>
+              <dt>Files</dt>
+              <dd>Five zips in <code>dist/</code>, hashed at <b>plan</b> time with <code>filemd5()</code>.</dd>
+            </dl>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <p class="lead">
+              <code>agentcore-&lt;name&gt;-role</code> &times; 5, each trusted by
+              <code>bedrock-agentcore.amazonaws.com</code>. Four statements are common to all five;
+              the rest are granted per agent.
+            </p>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>Granted to</th><th>Actions</th><th>Scope</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="role">all five</td>
+                    <td class="actions">s3:GetObject</td>
+                    <td>its own artifact, plus <code>employees/</code>, <code>requisitions/</code>, <code>skills/</code> — <b>read only</b></td>
+                  </tr>
+                  <tr>
+                    <td class="role">all five</td>
+                    <td class="actions">bedrock:InvokeModel<br>bedrock:InvokeModelWithResponseStream</td>
+                    <td><code>*</code></td>
+                  </tr>
+                  <tr>
+                    <td class="role">all five</td>
+                    <td class="actions">logs:CreateLogGroup, CreateLogStream,<br>PutLogEvents, Describe*, PutResourcePolicy</td>
+                    <td><code>*</code> — the group name contains a service-generated id</td>
+                  </tr>
+                  <tr>
+                    <td class="role">all five</td>
+                    <td class="actions">xray:PutTraceSegments, PutTelemetryRecords,<br>GetSamplingRules, GetSamplingTargets<br>cloudwatch:PutMetricData</td>
+                    <td><code>*</code>; metrics bounded by a namespace condition</td>
+                  </tr>
+                  <tr>
+                    <td class="role">hiring_supervisor</td>
+                    <td class="actions">bedrock-agentcore:InvokeAgentRuntime<br>bedrock-agentcore:GetAgentCard</td>
+                    <td>its three specialists only</td>
+                  </tr>
+                  <tr>
+                    <td class="role">hiring_supervisor</td>
+                    <td class="actions">bedrock-agentcore:CreateEvent, ListEvents, GetEvent,<br>ListSessions, RetrieveMemoryRecords,<br>ListMemoryRecords, GetMemoryRecord</td>
+                    <td><code>*</code></td>
+                  </tr>
+                  <tr>
+                    <td class="role">talent_screening</td>
+                    <td class="actions">bedrock-agentcore:InvokeAgentRuntime<br>bedrock-agentcore:GetAgentCard</td>
+                    <td><code>hr_skills_mcp</code> only</td>
+                  </tr>
+                  <tr>
+                    <td class="role">talent_screening</td>
+                    <td class="actions">bedrock-agentcore:InvokeGateway</td>
+                    <td>the one gateway ARN</td>
+                  </tr>
+                  <tr>
+                    <td class="role">the three leaves</td>
+                    <td class="actions"><span class="none">no invoke grant at all</span></td>
+                    <td>they receive work and answer</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p class="note warn">
+              <span class="tag">Three separate actions, one conversation</span>
+              <code>InvokeAgentRuntime</code> sends the message. <b><code>GetAgentCard</code> fetches the card,
+              and runs first</b> — grant only the former and every delegation dies at discovery with a 403 that
+              reads like the remote agent is down. <code>InvokeGateway</code> is a third action again, and does
+              not follow from either.
+            </p>
+            <p class="note">
+              <span class="tag">IAM is the entire check between services</span>
+              Only the supervisor has an authorizer (<code>CUSTOM_JWT</code>, because a person is on the other
+              side). The other four take <b>SigV4</b> with their execution role, so there is no second lock
+              behind the policy above.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip key">bedrock-agentcore:CreateAgentRuntime</li>
+              <li class="chip">bedrock-agentcore:Get/Update/DeleteAgentRuntime</li>
+              <li class="chip">bedrock-agentcore:ListAgentRuntimes</li>
+              <li class="chip key">iam:PassRole</li>
+              <li class="chip">iam:CreateRole &times; 5</li>
+              <li class="chip">iam:PutRolePolicy</li>
+              <li class="chip">s3:PutObject</li>
+              <li class="chip">s3:GetObject</li>
+            </ul>
+            <p class="note">
+              <span class="tag">Two things this stage deliberately does not create</span>
+              <b>No endpoint resources</b> — <code>CreateAgentRuntime</code> makes <code>DEFAULT</code> itself, so
+              declaring one is a <code>ConflictException</code> on every apply. <b>No log groups</b> — their names
+              contain a service-generated runtime id, so they cannot exist before the runtime does, and the
+              container creates its own.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 06 ============================ -->
+    <section id="s06">
+      <h2 class="section-title">Stage 06</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">06</span>
+          <h3>observability</h3>
+          <p class="what">Vended log delivery for the Gateway and Memory, plus the account-level switch that makes traces possible.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From 03</dt>
+              <dd><code>gateway_arn</code></dd>
+              <dt>From 04</dt>
+              <dd><code>memory_arn</code></dd>
+              <dt>Decisions</dt>
+              <dd><code>enable_transaction_search</code> — <b>account and region wide</b>, and it bills.</dd>
+            </dl>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <p class="none">No IAM roles.</p>
+            <p class="note">
+              <span class="tag">There is no role to fix here</span>
+              X-Ray's permission to write spans is a <b>CloudWatch Logs resource policy</b> attached to the
+              <code>aws/spans</code> group, not an identity policy. That is why
+              <code>AccessDeniedException: XRay does not have permission to call PutLogEvents</code> shows you
+              nothing when you go looking through IAM.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip">logs:CreateLogGroup</li>
+              <li class="chip">logs:PutRetentionPolicy</li>
+              <li class="chip key">logs:PutResourcePolicy</li>
+              <li class="chip">logs:PutDeliverySource</li>
+              <li class="chip">logs:PutDeliveryDestination</li>
+              <li class="chip">logs:CreateDelivery</li>
+              <li class="chip key">xray:UpdateTraceSegmentDestination</li>
+              <li class="chip">xray:GetTraceSegmentDestination</li>
+            </ul>
+            <p class="note danger">
+              <span class="tag">Account-wide, and destroy turns it off</span>
+              <code>enable_transaction_search</code> is not scoped to this stack. Enabling it affects every
+              trace in the account and region, and <code>terraform destroy</code> disables it again — including
+              for anything else that was relying on it.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 07 ============================ -->
+    <section id="s07">
+      <h2 class="section-title">Stage 07</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">07</span>
+          <h3>api</h3>
+          <p class="what">The supervisor exposed over HTTP — API Gateway REST with response streaming, a Cognito authorizer, and the Node proxy behind it. The largest stage.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From 03</dt>
+              <dd><code>cognito_user_pool_id</code>, <code>cognito_client_id</code></dd>
+              <dt>From 05</dt>
+              <dd><code>supervisor_arn</code></dd>
+              <dt>Files</dt>
+              <dd><code>dist/chat_proxy.zip</code></dd>
+              <dt>Decisions</dt>
+              <dd><code>manage_apigw_account_logging</code> — see the warning below.</dd>
+            </dl>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>Role</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="role">hr-chat-proxy-role-&lt;env&gt;</td>
+                    <td><code>lambda.amazonaws.com</code></td>
+                    <td class="actions">logs:CreateLogStream, logs:PutLogEvents <span class="chip">its own group</span></td>
+                  </tr>
+                  <tr>
+                    <td class="role">hr-apigw-cloudwatch-&lt;env&gt;</td>
+                    <td><code>apigateway.amazonaws.com</code></td>
+                    <td class="actions"><em>managed:</em> AmazonAPIGatewayPushToCloudWatchLogs</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note">
+              <span class="tag">The proxy holds no AWS credentials</span>
+              It reaches the supervisor over plain HTTPS with the caller's own bearer token, because a
+              <code>CUSTOM_JWT</code> agent cannot be invoked with the SDK — the SDK only signs SigV4. So its role
+              grants logging and nothing else.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip key">apigateway:POST</li>
+              <li class="chip">apigateway:GET</li>
+              <li class="chip">apigateway:PUT</li>
+              <li class="chip">apigateway:PATCH</li>
+              <li class="chip">apigateway:DELETE</li>
+              <li class="chip">lambda:CreateFunction</li>
+              <li class="chip">lambda:AddPermission</li>
+              <li class="chip key">iam:PassRole</li>
+              <li class="chip">iam:CreateRole</li>
+              <li class="chip">iam:AttachRolePolicy</li>
+              <li class="chip">logs:CreateLogGroup</li>
+            </ul>
+            <p class="note danger">
+              <span class="tag">One CloudWatch role per account, per region</span>
+              <code>aws_api_gateway_account</code> is an <b>account-level</b> setting shared by every REST API in
+              the region. If something else already manages it, set
+              <code>manage_apigw_account_logging = false</code> — otherwise this stack takes it over. Leave it
+              unset when nothing manages it and the stage fails with
+              <code>BadRequestException: CloudWatch Logs role ARN must be set in account settings</code>,
+              pointing at a resource nothing in your API refers to.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ 08 ============================ -->
+    <section id="s08">
+      <h2 class="section-title">Stage 08</h2>
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">08</span>
+          <h3>ui</h3>
+          <p class="what">The React build on CloudFront, with stage 07 as its <code>/api/*</code> origin — which is what removes CORS entirely.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Needs</h4>
+            <dl class="needs">
+              <dt>From 07</dt>
+              <dd><code>api_domain</code>, <code>api_stage</code></dd>
+              <dt>Files</dt>
+              <dd><code>ui/dist/</code> — every built file becomes an <code>aws_s3_object</code>. Run <code>make ui-build</code> first.</dd>
+              <dt>Decisions</dt>
+              <dd><code>price_class</code> for the distribution.</dd>
+            </dl>
+          </div>
+
+          <div class="block">
+            <h4>Creates — roles</h4>
+            <p class="none">No IAM roles — but one bucket policy, which does the same job.</p>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>Policy on</th><th>Principal</th><th>Permissions</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="role">the site bucket</td>
+                    <td><code>cloudfront.amazonaws.com</code></td>
+                    <td class="actions">s3:GetObject <span class="chip">condition: this distribution only</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note">
+              <span class="tag">Only S3 gets an origin access control</span>
+              CloudFront OAC has no <code>apigateway</code> origin type, so <code>execute-api</code> stays publicly
+              resolvable and <b>the Cognito authorizer is the gate</b> — not network placement. That is also why
+              the stage carries a throttle.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Deployer must be able to</h4>
+            <ul class="chips">
+              <li class="chip key">cloudfront:CreateDistribution</li>
+              <li class="chip">cloudfront:CreateOriginAccessControl</li>
+              <li class="chip">cloudfront:UpdateDistribution</li>
+              <li class="chip">cloudfront:GetCachePolicy</li>
+              <li class="chip">cloudfront:GetOriginRequestPolicy</li>
+              <li class="chip">s3:CreateBucket</li>
+              <li class="chip">s3:PutBucketPolicy</li>
+              <li class="chip">s3:PutObject</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ DEPLOYER ============================ -->
+    <section id="deployer">
+      <h2 class="section-title">The deploying principal</h2>
+
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">→</span>
+          <h3>What the human or CI identity needs</h3>
+          <p class="what">Everything above, consolidated. This is the identity that runs <code>terraform apply</code> — not any role the stack creates.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>By service</h4>
+            <div class="scroller">
+              <table>
+                <thead><tr><th>Service</th><th>Needed by</th><th>Why</th></tr></thead>
+                <tbody>
+                  <tr><td class="role">iam</td><td>02, 03, 04, 05, 07</td><td>Nine roles across the stack, and <code>PassRole</code> for every one handed to a service</td></tr>
+                  <tr><td class="role">s3</td><td>01, 05, 08</td><td>Three buckets' worth of create, policy and object writes</td></tr>
+                  <tr><td class="role">lambda</td><td>02, 07</td><td>Two functions, plus the resource policies that let Gateway and API Gateway call them</td></tr>
+                  <tr><td class="role">cognito-idp</td><td>03</td><td>Pool, client, and one user with a permanent password</td></tr>
+                  <tr><td class="role">bedrock-agentcore</td><td>03, 04, 05</td><td>Gateway, target, memory, memory strategies, five runtimes</td></tr>
+                  <tr><td class="role">logs</td><td>05, 06, 07</td><td>Groups, retention, deliveries, and a resource policy</td></tr>
+                  <tr><td class="role">xray</td><td>06</td><td>The account-level trace segment destination</td></tr>
+                  <tr><td class="role">apigateway</td><td>07</td><td>REST API, authorizer, methods, deployment, stage, account settings</td></tr>
+                  <tr><td class="role">cloudfront</td><td>08</td><td>Distribution and origin access control</td></tr>
+                  <tr><td class="role">sts</td><td>all</td><td><code>GetCallerIdentity</code> — the account id appears in ARNs and bucket names</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="block">
+            <h4>The one people miss</h4>
+            <p>
+              <b><code>iam:PassRole</code>.</b> Creating a role is not the same as being allowed to hand it to a
+              service. Five stages create a role and immediately give it to Lambda, API Gateway or AgentCore,
+              and without <code>PassRole</code> each fails at the second step with a message about the
+              <em>service</em> rather than about you.
+            </p>
+            <p class="note">
+              <span class="tag">Scope</span>
+              The action lists on this page are derived from the resource types each module declares.
+              Treat them as the shape of the policy, not a copy-paste artefact — confirm against your own
+              identity with the simulator below before assuming a gap is a bug in the stack.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ VERIFY ============================ -->
+    <section id="verify">
+      <h2 class="section-title">Verifying, before and after</h2>
+
+      <div class="stage">
+        <div class="stage-head">
+          <span class="stage-n">→</span>
+          <h3>Four checks that answer without an apply</h3>
+          <p class="what">Each one turns a guess into a fact.</p>
+        </div>
+        <div class="stage-body">
+
+          <div class="block">
+            <h4>Does this principal have the action?</h4>
+            <p class="lead">
+              The fastest way to settle any permission question, and it modifies nothing. It distinguishes
+              <span class="chip allow">allowed</span> from <code>implicitDeny</code>, which is what a missing
+              action looks like.
+            </p>
+            <pre>aws iam simulate-principal-policy \
+  --policy-source-arn arn:aws:iam::&lt;account&gt;:role/agentcore-hiring_supervisor-role \
+  --action-names bedrock-agentcore:InvokeAgentRuntime bedrock-agentcore:GetAgentCard \
+  --resource-arns &lt;the callee's runtime arn&gt; \
+  --query 'EvaluationResults[].{action:EvalActionName,decision:EvalDecision}' --output table</pre>
+          </div>
+
+          <div class="block">
+            <h4>Does the chain hold?</h4>
+            <p class="lead">
+              <code>terraform validate</code> checks one directory in isolation, so a stack where 06 needs
+              <code>gateway_arn</code> and 03 never exports it validates cleanly and then cannot apply. This is
+              that audit, plus the IAM and documentation invariants on this page.
+            </p>
+            <pre>uv run scripts/check_terraform_chain.py</pre>
+          </div>
+
+          <div class="block">
+            <h4>Is the Gateway reachable, without an agent in the way?</h4>
+            <p class="lead">
+              Signs with your own credentials and lists what the Gateway publishes. Needs
+              <code>bedrock-agentcore:InvokeGateway</code> on your identity — the grant in stage 05 is for the
+              screening runtime, which is a different principal.
+            </p>
+            <pre>make gateway                                        <span class="c"># list the tools</span>
+make gateway CALL=hrdata___get_requisition ARGS='{"job_id":"J2001"}'</pre>
+            <p class="note">
+              <span class="tag">MCP Inspector will not work here</span>
+              It sends a bearer token and cannot sign SigV4. It is usable only if you set
+              <code>gateway_authorizer_type = "CUSTOM_JWT"</code>.
+            </p>
+          </div>
+
+          <div class="block">
+            <h4>Did the code actually ship?</h4>
+            <p class="lead">
+              Artifact keys are content-addressed, so new bytes mean a new S3 key, a new object and a new
+              runtime version. A version that never moves is the one symptom of a deploy that silently
+              changed nothing.
+            </p>
+            <pre>aws bedrock-agentcore-control get-agent-runtime \
+  --agent-runtime-id &lt;id&gt; \
+  --query '{version:agentRuntimeVersion,prefix:agentRuntimeArtifact.codeConfiguration.code.s3.prefix}'</pre>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>

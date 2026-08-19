@@ -1,0 +1,57 @@
+meta {
+  name: Add an employee
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/employees
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Bruno Tester",
+    "location": "Pune",
+    "experience_years": 2,
+    "skills": [
+      { "skill": "SQL", "level": 3 }
+    ]
+  }
+}
+
+vars:post-response {
+  newEmployeeId: res.body.employee_id
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  test("201 Created, not 200 — the status says a resource appeared", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("the server assigned the id; the request never mentioned one", function() {
+    expect(res.getBody().employee_id).to.match(/^E\d+$/);
+  });
+
+  test("fields the payload omitted came back with server defaults", function() {
+    expect(res.getBody().availability).to.equal("bench");
+    expect(res.getBody().created_at).to.be.a("string");
+  });
+}
+
+docs {
+  The request body is an `EmployeeCreate`; the response is an `Employee`. Two models, one
+  reason: `employee_id` and `created_at` exist only on the way out, so a client physically
+  cannot set them.
+
+  `status_code=status.HTTP_201_CREATED` is declared on the decorator rather than returned by
+  hand, so it also shows up in `/docs` as the documented success code.
+
+  Deliberately weak skills — 2 years and a single SQL 3 scores about 21% against J2001, so
+  this person never displaces anyone in a top-3 when the collection is re-run.
+}

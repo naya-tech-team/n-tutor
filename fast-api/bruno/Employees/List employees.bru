@@ -1,0 +1,43 @@
+meta {
+  name: List employees
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/employees
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("the four seeded people are all there", function() {
+    const ids = res.getBody().map(e => e.employee_id);
+    expect(ids).to.include.members(["E1002", "E1003", "E1005", "E1007"]);
+  });
+
+  test("skills come nested inside each person", function() {
+    const priya = res.getBody().find(e => e.employee_id === "E1002");
+    expect(priya.skills.map(s => s.skill)).to.include("Apache Spark");
+  });
+
+  test("server-set fields are present on the way out", function() {
+    res.getBody().forEach(e => {
+      expect(e.employee_id).to.match(/^E\d+$/);
+      expect(e.created_at).to.be.a("string");
+    });
+  });
+}
+
+docs {
+  The whole directory, allocated people included. `response_model=list[Employee]` does two
+  jobs here: it shapes the JSON and it documents the endpoint, so there is no hand-written
+  serializer to drift out of sync.
+
+  The test asserts the seeded ids are *included* rather than counting them — the Employees
+  folder adds a person further down, so a re-run against the same server sees five or more.
+}

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AgentCore: Deployment Prerequisites — AI Engineering</title>
+<meta name="description" content="Per-module prerequisites and dependencies for the AgentCore stack: what must be applied, built and decided before each terraform apply, the nine IAM roles it creates for AWS services to assume, and every permission the deploying principal needs — with the reason for each one." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+<style>
+  /* Page-local only. Everything else comes from the course stylesheets. */
+  .lead { color:var(--fg-muted); }
+  .stage-rule { border:0; border-top:1px solid var(--border); margin:44px 0 0; }
+  .needs { display:grid; grid-template-columns:minmax(110px,max-content) minmax(0,1fr); gap:8px 18px; margin:0 0 18px; }
+  .needs dt { font-family:var(--font-mono,ui-monospace,monospace); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-faint); padding-top:3px; }
+  .needs dd { margin:0; }
+  .needs dd.none { color:var(--fg-faint); font-style:italic; }
+  .table-scroll { overflow-x:auto; }
+  .table-scroll table { min-width:520px; }
+  table.perm td.action { font-family:var(--font-mono,ui-monospace,monospace); font-size:.78rem; white-space:nowrap; color:var(--fg-muted); vertical-align:top; }
+  table.perm td.action.key { color:var(--accent); font-weight:600; }
+  table.matrix td.dash { color:var(--fg-faint); }
+  .stage-no { font-family:var(--font-mono,ui-monospace,monospace); color:var(--accent); font-variant-numeric:tabular-nums; }
+  td.mono, .mono { font-family:var(--font-mono,ui-monospace,monospace); font-size:.82rem; }
+  .flow-tier { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
+  .flow-tier .tier-name { font-family:var(--font-mono,ui-monospace,monospace); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-faint); width:74px; flex:none; }
+  .flow-tier .node { font-family:var(--font-mono,ui-monospace,monospace); font-size:.82rem; border:1px solid var(--border); border-radius:4px; padding:5px 10px; }
+  .flow-tier .node .from { color:var(--fg-faint); }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="graphql.html"><span class="badge-dot"></span> GraphQL: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands-course.html"><span class="badge-dot"></span> Strands: Full Course Guide</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+      <a class="sidebar-link" href="agentcore.html"><span class="badge-dot"></span> AWS AgentCore: Tutorial</a>
+      <a class="sidebar-link" href="agentcore-qa.html"><span class="badge-dot"></span> AgentCore: Q&amp;A</a>
+      <a class="sidebar-link" href="agentcore-deploy.html"><span class="badge-dot"></span> AgentCore: Deploy Prerequisites</a>
+      <a class="sidebar-link" href="agentcore-complete-reference.html"><span class="badge-dot"></span> AgentCore: Complete Reference</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Slide Decks <span class="qs-count">3</span></div>
+      <a class="sidebar-link" href="agentcore-capabilities.html"><span class="badge-dot"></span> AgentCore: Capabilities &amp; Trade-offs</a>
+      <a class="sidebar-link" href="agentcore-slides.html"><span class="badge-dot"></span> AgentCore: Capabilities (slides)</a>
+      <a class="sidebar-link" href="agentcore-dev-deck.html"><span class="badge-dot"></span> AgentCore: Developer Deep Dive</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+  </nav>
+
+    <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>AgentCore: Deploy Prerequisites</span>
+    </nav>
+
+    <h1>AgentCore: Deployment Prerequisites</h1>
+    <div class="meta-row">
+      <span class="badge badge-advanced">Reference</span>
+      <span class="badge badge-info">8 stages</span>
+      <span class="badge badge-info">9 IAM roles</span>
+      <span class="badge badge-info">terraform</span>
+    </div>
+
+    <p>Deploying the AgentCore stack means eight <code>terraform apply</code> runs, in order, each consuming an earlier one's outputs. This page answers the three questions that block them: <strong>what must already exist</strong>, <strong>what each stage creates for AWS services to assume</strong>, and <strong>what the identity running the apply needs to be allowed to do</strong>.</p>
+
+    <p>Every module below opens with the same five lines &mdash; what it <strong>depends on</strong>, what it <strong>consumes</strong>, what must be <strong>built</strong> first, what you must <strong>decide</strong>, and what it <strong>unblocks</strong> &mdash; followed by the standalone apply that wires those outputs in, the roles it creates, and every deployer permission with the reason it is needed.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">🔑 The distinction this page is built around</div>
+      <p>The roles the stack <em>creates</em> are not the permissions you need to <em>run</em> it. A Lambda execution role and the engineer typing <code>terraform apply</code> are different principals, and conflating them is why &ldquo;but the runtime has admin&rdquo; never helps. Every stage below lists both, separately.</p>
+    </div>
+
+    <h2 id="before">Before anything</h2>
+
+    <h3>Local toolchain</h3>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Tool</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">terraform</td><td>Resolves <code>hashicorp/aws &gt;= 6.58</code> and <code>hashicorp/time</code>. Run <code>terraform init</code> per directory, or once in <code>00_all_at_once</code>.</td></tr>
+        <tr><td class="mono">aws cli</td><td>Terraform does not need it; every verification step on this page is a CLI call. <code>aws sts get-caller-identity</code> should print your ARN.</td></tr>
+        <tr><td class="mono">uv</td><td>Installs <strong>Python 3.13</strong>. The zips target <code>PYTHON_3_13</code> on <strong>arm64</strong> — building on the same minor version the container runs avoids a class of wheel mismatch.</td></tr>
+        <tr><td class="mono">node + npm</td><td>The chat proxy is Node because Lambda response streaming exists on Node.js managed runtimes only. The UI is a Vite build.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Behind a TLS-inspecting proxy</div>
+      <p><code>uv</code> needs <code>UV_SYSTEM_CERTS=1</code> (or <code>uv sync --system-certs</code>), otherwise installs fail with <code>invalid peer certificate: UnknownIssuer</code>.</p>
+    </div>
+
+    <h3>Build the artifacts first — before <em>plan</em>, not before apply</h3>
+    <p>Four stages read files with <code>filemd5()</code> or <code>filebase64sha256()</code>, and those are evaluated at <strong>plan</strong> time. A missing zip is not a slow apply; it is a plan that refuses to produce a diff at all.</p>
+
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">make artifacts              # package + seed + ui-build, all at once
+
+# or individually
+uv run scripts/package.py   # dist/*.zip   -&gt; stages 02, 05, 07
+uv run scripts/seed_s3.py   # seed/*.json  -&gt; stage 01
+make ui-build               # ui/dist/     -&gt; stage 08</code></pre>
+    </div>
+
+    <h3>Account and region</h3>
+    <p>One region for the whole stack — Runtime, Gateway and Memory must share it, and the Cognito discovery URL is built from it. Two values have no safe default and must be supplied: <code>bedrock_model_id</code> (model ids are account- and region-specific; this stack ships <code>us.amazon.nova-lite-v1:0</code>) and <code>password</code> for the Cognito machine user, minimum 8 characters and marked <code>sensitive</code>.</p>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Anthropic models need a form first</div>
+      <p>Anthropic models on Bedrock require a use-case submission approved per account. Until then every call fails with <code>ResourceNotFoundException: Model use case details have not been submitted for this account</code> — which names neither the model nor the agent that asked for it. Amazon's own models have no such gate, which is why the default here is Nova.</p>
+    </div>
+
+    <h2 id="order">Dependency order</h2>
+    <p>The number is the order. Two stages are roots and could run first, or in parallel; every other stage consumes an earlier one's <code>terraform output</code>.</p>
+
+    <div class="flow-tier"><span class="tier-name">Roots</span>
+      <span class="node"><span class="stage-no">01</span> s3_data <span class="from">— nothing</span></span>
+      <span class="node"><span class="stage-no">04</span> memory <span class="from">— nothing</span></span>
+    </div>
+    <div class="flow-tier"><span class="tier-name">Then</span>
+      <span class="node"><span class="stage-no">02</span> lambda <span class="from">← 01</span></span>
+      <span class="node"><span class="stage-no">03</span> gateway <span class="from">← 02</span></span>
+    </div>
+    <div class="flow-tier"><span class="tier-name">Then</span>
+      <span class="node"><span class="stage-no">05</span> runtimes <span class="from">← 01, 03, 04</span></span>
+      <span class="node"><span class="stage-no">06</span> observability <span class="from">← 03, 04</span></span>
+    </div>
+    <div class="flow-tier"><span class="tier-name">Last</span>
+      <span class="node"><span class="stage-no">07</span> api <span class="from">← 03, 05</span></span>
+      <span class="node"><span class="stage-no">08</span> ui <span class="from">← 07</span></span>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📘 06 does not depend on 05</div>
+      <p>Its number reads as &ldquo;after the runtimes&rdquo;, but it needs only the gateway and memory ARNs. There is an argument for applying it earlier: the X-Ray trace destination is account-level, so setting it after the runtimes exist loses the first container's start-up traces.</p>
+    </div>
+
+    <h3>Prerequisites at a glance</h3>
+    <p>Read a row as a precondition for <code>terraform plan</code>, not just for apply. The <em>built</em> column is the one that bites: those files are read while the plan is being computed, so a missing artifact is a plan that produces no diff at all.</p>
+    <div class="table-scroll">
+    <table class="matrix">
+      <thead><tr><th>Module</th><th>Applied first</th><th>Built first</th><th>Decided first</th></tr></thead>
+      <tbody>
+        <tr><td class="mono"><a href="#s01">01</a> s3_data</td><td class="dash">&mdash;</td><td class="mono">seed/**</td><td class="dash">&mdash;</td></tr>
+        <tr><td class="mono"><a href="#s02">02</a> lambda</td><td class="mono">01</td><td class="mono">dist/hr_data_fn.zip</td><td class="dash">&mdash;</td></tr>
+        <tr><td class="mono"><a href="#s03">03</a> gateway</td><td class="mono">02</td><td class="dash">&mdash;</td><td class="mono">password, gateway_authorizer_type</td></tr>
+        <tr><td class="mono"><a href="#s04">04</a> memory</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td></tr>
+        <tr><td class="mono"><a href="#s05">05</a> runtimes</td><td class="mono">01, 03, 04</td><td class="mono">dist/*.zip &times;5</td><td class="mono">bedrock_model_id</td></tr>
+        <tr><td class="mono"><a href="#s06">06</a> observability</td><td class="mono">03, 04</td><td class="dash">&mdash;</td><td class="mono">enable_transaction_search</td></tr>
+        <tr><td class="mono"><a href="#s07">07</a> api</td><td class="mono">03, 05</td><td class="mono">dist/chat_proxy.zip</td><td class="mono">manage_apigw_account_logging</td></tr>
+        <tr><td class="mono"><a href="#s08">08</a> ui</td><td class="mono">07</td><td class="mono">ui/dist/</td><td class="mono">price_class</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Two commands cover the whole table: <code>make artifacts</code> builds every entry in the <em>built</em> column, and <code>make check</code> asserts that each module's required input really is an earlier module's output &mdash; which <code>terraform validate</code>, working one directory at a time, cannot.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📘 Applying standalone, or all at once</div>
+      <p>The numbered directories are also modules of <code>terraform/00_all_at_once</code>, where the wiring is done for you and <code>make deploy</code> is the whole thing in one apply. The per-stage commands below are the standalone path &mdash; the same modules, with the outputs passed by hand. They declare no provider block of their own, so set the region in the environment: <code>export AWS_REGION=us-west-2</code>.</p>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s01"><span class="stage-no">01</span> · s3_data</h2>
+    <p class="lead">The system of record — one bucket (versioned, encrypted, private) and the three seed objects.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd>Nothing. A root &mdash; it can be the first apply, or run in parallel with <a href="#s04">04</a>.</dd>
+      <dt>Consumes</dt><dd>No required variables. <code>region</code>, <code>env</code> and <code>seed_dir</code> all have defaults.</dd>
+      <dt>Build first</dt><dd><code>uv run scripts/seed_s3.py</code> &rarr; <code>terraform/01_s3_data/seed/{employees,requisitions,skills}/*.json</code>, read with <code>filemd5()</code> at <strong>plan</strong> time. <code>app/_shared/config.py</code> points at the same directory, so if you move it, move both.</dd>
+      <dt>You decide</dt><dd class="none">Nothing.</dd>
+      <dt>Unblocks</dt><dd><a href="#s02">02</a> and <a href="#s05">05</a>, with <code>bucket</code> and <code>bucket_arn</code>.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">export AWS_REGION=us-west-2
+uv run scripts/seed_s3.py                     # the three JSON files, first
+
+cd terraform/01_s3_data &amp;&amp; terraform init &amp;&amp; terraform apply</code></pre>
+    </div>
+    <p><strong>Creates:</strong> <span class="mono">no IAM roles</span> — a bucket, and objects in it.</p>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action key">s3:CreateBucket</td><td>Creates <code>hr-skills-&lt;account&gt;-&lt;region&gt;</code>. The name is derived rather than configurable, so a bucket of that name already owned by another account is a hard stop.</td></tr>
+        <tr><td class="action">s3:PutBucketVersioning</td><td>Turns versioning on. This is what lets you answer &ldquo;what did the record say when we scored her?&rdquo; a quarter later.</td></tr>
+        <tr><td class="action">s3:PutEncryptionConfiguration</td><td>Default AES256 on everything written to the bucket.</td></tr>
+        <tr><td class="action">s3:PutBucketPublicAccessBlock</td><td>All four blocks. The bucket holds employee records; nothing in it is ever public.</td></tr>
+        <tr><td class="action">s3:PutObject</td><td>The three seed objects. <code>skills.json</code> is the one people forget &mdash; without the alias table, <code>find_by_skill("pyspark")</code> stops finding people whose records say Apache Spark, and nothing errors.</td></tr>
+        <tr><td class="action">s3:GetBucket*<br />s3:ListBucket</td><td>Refresh. Every plan reads the bucket's current configuration back before it can show a diff.</td></tr>
+        <tr><td class="action">sts:GetCallerIdentity</td><td>Runs before any resource: the account id is part of the bucket name.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s02"><span class="stage-no">02</span> · lambda</h2>
+    <p class="lead"><code>hr-data-fn</code> — the estate as MCP tools, for the Gateway to call.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd><a href="#s01">01</a>, applied, with its outputs readable.</dd>
+      <dt>Consumes</dt><dd><code>bucket</code>, <code>bucket_arn</code> &mdash; the function is told which bucket to read and its policy is scoped to that one ARN.</dd>
+      <dt>Build first</dt><dd><code>uv run scripts/package.py hr_data_fn</code> &rarr; <code>dist/hr_data_fn.zip</code>, hashed with <code>filebase64sha256()</code> at <strong>plan</strong> time. Built on Python 3.13 for <strong>arm64</strong>, which is what the function declares.</dd>
+      <dt>You decide</dt><dd class="none">Nothing. <code>package</code> defaults to <code>../../dist/hr_data_fn.zip</code>.</dd>
+      <dt>Unblocks</dt><dd><a href="#s03">03</a>, with <code>lambda_arn</code>.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">uv run scripts/package.py hr_data_fn           # dist/hr_data_fn.zip, read at PLAN time
+
+cd terraform/02_lambda &amp;&amp; terraform init &amp;&amp; terraform apply \
+  -var bucket=$(terraform -chdir=../01_s3_data output -raw bucket) \
+  -var bucket_arn=$(terraform -chdir=../01_s3_data output -raw bucket_arn)</code></pre>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Role created</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">hr-data-fn-role</td><td><code>lambda.amazonaws.com</code></td><td class="mono">s3:GetObject, s3:PutObject — the bucket only<br />managed: AWSLambdaBasicExecutionRole</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">📘 The split is enforced by IAM, not convention</div>
+      <p>This function is the <strong>only</strong> writer to <code>shortlists/</code>; the scoring runtime reads the same bucket read-only. A scoring engine that can edit the employee record is one nobody will trust.</p>
+    </div>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action key">iam:CreateRole</td><td><code>hr-data-fn-role</code>, trusted by <code>lambda.amazonaws.com</code>.</td></tr>
+        <tr><td class="action">iam:PutRolePolicy</td><td>The inline S3 policy &mdash; read anywhere in the bucket, write only under <code>shortlists/</code>.</td></tr>
+        <tr><td class="action">iam:AttachRolePolicy</td><td><code>AWSLambdaBasicExecutionRole</code>, so the function can create its own log group and stream.</td></tr>
+        <tr><td class="action key">iam:PassRole</td><td><code>CreateFunction</code> hands that role to Lambda. Creating a role and being allowed to give it away are two permissions, and without the second the role exists while the function cannot be made.</td></tr>
+        <tr><td class="action">lambda:CreateFunction</td><td><code>hr-data-fn</code> &mdash; <code>python3.13</code> on <code>arm64</code>, matching the architecture the wheels were built for.</td></tr>
+        <tr><td class="action">lambda:UpdateFunctionCode</td><td>Every rebuild: <code>source_code_hash</code> moves and the new zip is uploaded.</td></tr>
+        <tr><td class="action">lambda:UpdateFunctionConfiguration</td><td>The environment (<code>DATA_SOURCE</code>, <code>S3_BUCKET</code>), the 30-second timeout and 512&nbsp;MB.</td></tr>
+        <tr><td class="action key">lambda:AddPermission</td><td>The resource policy that lets <code>bedrock-agentcore.amazonaws.com</code> invoke it. Omit it and stage 03 still applies cleanly &mdash; the failure arrives later, as a 403 on the first tool call.</td></tr>
+        <tr><td class="action">lambda:GetFunction<br />iam:GetRole, iam:GetRolePolicy</td><td>Refresh.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s03"><span class="stage-no">03</span> · gateway</h2>
+    <p class="lead">Identity <em>and</em> the AgentCore Gateway with one target — the widest output surface in the stack.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd><a href="#s02">02</a>, applied.</dd>
+      <dt>Consumes</dt><dd><code>lambda_arn</code> &mdash; the single target the gateway role is allowed to invoke.</dd>
+      <dt>Providers</dt><dd><code>hashicorp/aws &gt;= 6.58</code> <em>and</em> <code>hashicorp/time &gt;= 0.9</code>. A fresh <code>terraform init</code> here downloads two, not one.</dd>
+      <dt>You supply</dt><dd><code>password</code> for the Cognito machine user &mdash; minimum 8 characters, in a <code>*.tfvars</code> named anything except <code>example.tfvars</code>, which the root <code>.gitignore</code> deliberately un-ignores.</dd>
+      <dt>You decide</dt><dd><code>gateway_authorizer_type</code>, before the first apply and permanently. Then <code>restrict_trust_to_gateway</code> (<code>false</code> on the first pass) and <code>iam_propagation_delay</code>.</dd>
+      <dt>Unblocks</dt><dd><a href="#s05">05</a>, <a href="#s06">06</a> and <a href="#s07">07</a> &mdash; the widest output surface in the stack.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">cd terraform/03_gateway &amp;&amp; terraform init &amp;&amp; terraform apply \
+  -var lambda_arn=$(terraform -chdir=../02_lambda output -raw lambda_arn) \
+  -var-file=dev.tfvars                        # holds `password` — never example.tfvars
+
+# then, once the gateway exists, harden the trust policy:
+terraform apply -var lambda_arn=... -var-file=dev.tfvars -var restrict_trust_to_gateway=true</code></pre>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">🛑 authorizer_type is immutable</div>
+      <p>It cannot be changed in place. Switching it <strong>replaces the gateway and every target under it</strong>, and the replacement has a new <code>gateway_url</code> — which then propagates into stage 05.</p>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Role created</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">&lt;gateway_name&gt;-role</td><td><code>bedrock-agentcore.amazonaws.com</code>, optionally conditioned on <code>aws:SourceAccount</code> / <code>aws:SourceArn</code></td><td class="mono">lambda:InvokeFunction — the one target</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Also created, and not roles: a Cognito <strong>user pool</strong>, an app <strong>client</strong> (<code>ALLOW_USER_PASSWORD_AUTH</code>, <code>ALLOW_REFRESH_TOKEN_AUTH</code>, no secret) and one <strong>user</strong> with a permanent password. Without the user, the stack deploys and nothing is callable.</p>
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Two things that need a second apply, or patience</div>
+      <p><code>restrict_trust_to_gateway = true</code> adds <code>aws:SourceArn</code> to the trust policy — but that ARN does not exist until the gateway does, so apply once with <code>false</code> and then flip it. Separately, a <code>time_sleep</code> sits between the role and the gateway because IAM is eventually consistent; <code>ValidationException: Gateway service is not authorized to perform AssumeRole</code> means the policy is correct and has not propagated. Raise <code>iam_propagation_delay</code>.</p>
+    </div>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action key">cognito-idp:CreateUserPool</td><td><code>hr-agents-&lt;env&gt;</code> &mdash; the identity provider for everything behind a JWT.</td></tr>
+        <tr><td class="action">cognito-idp:CreateUserPoolClient</td><td>The app client: <code>ALLOW_USER_PASSWORD_AUTH</code>, <code>ALLOW_REFRESH_TOKEN_AUTH</code>, no secret.</td></tr>
+        <tr><td class="action">cognito-idp:AdminCreateUser</td><td>The one machine user. Without it the stack deploys and nothing can mint a token, so nothing is callable.</td></tr>
+        <tr><td class="action">cognito-idp:AdminSetUserPassword</td><td>Makes the password permanent. A user left in <code>FORCE_CHANGE_PASSWORD</code> cannot authenticate non-interactively.</td></tr>
+        <tr><td class="action">iam:CreateRole<br />iam:PutRolePolicy</td><td><code>&lt;gateway_name&gt;-role</code>, allowed <code>lambda:InvokeFunction</code> on the one target &mdash; not on the account's functions.</td></tr>
+        <tr><td class="action key">iam:PassRole</td><td>Handing that role to <code>bedrock-agentcore.amazonaws.com</code>.</td></tr>
+        <tr><td class="action key">bedrock-agentcore:CreateGateway</td><td>The gateway itself. <code>authorizer_type</code> and <code>search_type</code> are both fixed at creation; neither can be changed afterwards.</td></tr>
+        <tr><td class="action">bedrock-agentcore:CreateGatewayTarget</td><td>The <code>hrdata</code> target and its inline tool schemas. <strong>This is the call that actually assumes the gateway role</strong>, which is why the <code>time_sleep</code> sits in front of it and not in front of the gateway.</td></tr>
+        <tr><td class="action">bedrock-agentcore:GetGateway<br />UpdateGateway, DeleteGateway<br />ListGatewayTargets</td><td>Refresh, re-apply and destroy.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s04"><span class="stage-no">04</span> · memory</h2>
+    <p class="lead">One Memory resource and three extraction strategies — facts, preferences, summaries.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd>Nothing. The second root &mdash; apply it as early as <a href="#s01">01</a>.</dd>
+      <dt>Consumes</dt><dd>No required variables. Both <code>region</code> and <code>env</code> default.</dd>
+      <dt>Build first</dt><dd class="none">Nothing.</dd>
+      <dt>You decide</dt><dd class="none">Nothing.</dd>
+      <dt>Unblocks</dt><dd><a href="#s05">05</a> with <code>memory_id</code>, which the supervisor reads as an environment variable, and <a href="#s06">06</a> with <code>memory_arn</code>.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">cd terraform/04_memory &amp;&amp; terraform init &amp;&amp; terraform apply</code></pre>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Role created</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">hr-memory-role</td><td><code>bedrock-agentcore.amazonaws.com</code></td><td class="mono">managed: AmazonBedrockAgentCoreMemory&#8203;BedrockModelInferenceExecutionRolePolicy</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Extraction runs a model over your conversation to derive facts, so the service needs inference permissions of its own — they are not borrowed from the runtime that wrote the event.</p>
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ Strategy names take no hyphens</div>
+      <p><code>Attribute name value must match '^[a-zA-Z][a-zA-Z0-9_]{0,47}$'</code> — so <code>candidate_facts</code>, never <code>candidate-facts</code>.</p>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ An account prerequisite this stage does not name</div>
+      <p>None of the three strategies names a model, so AgentCore uses its own default &mdash; an <strong>Anthropic</strong> one. In an account without that access the memory is created, events land, and extraction fails asynchronously with <code>ResourceNotFoundException: Model use case details have not been submitted</code>, from a component nobody is watching, long after the agent answered. Pinning a different model is not one line: <code>configuration.extraction</code> requires both <code>model_id</code> and <code>append_to_prompt</code>, so overriding it means replacing AWS's tuned extraction prompt with your own.</p>
+    </div>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action">iam:CreateRole</td><td><code>hr-memory-role</code>, trusted by <code>bedrock-agentcore.amazonaws.com</code>.</td></tr>
+        <tr><td class="action key">iam:AttachRolePolicy</td><td>The managed inference policy. Extraction is a model call the <strong>service</strong> makes on its own schedule, not one your runtime makes, so the permission has to live on this role &mdash; without it the memory exists, events land, and no memory record is ever produced.</td></tr>
+        <tr><td class="action">iam:PassRole</td><td><code>CreateMemory</code> takes the role as <code>memory_execution_role_arn</code>.</td></tr>
+        <tr><td class="action key">bedrock-agentcore:CreateMemory</td><td><code>hr_hiring_desk</code>, with a 90-day event expiry.</td></tr>
+        <tr><td class="action">bedrock-agentcore:UpdateMemory</td><td>The three strategies attach to the memory after it exists, so each one modifies that resource rather than creating one of its own.</td></tr>
+        <tr><td class="action">bedrock-agentcore:GetMemory<br />DeleteMemory</td><td>Refresh, and destroy.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s05"><span class="stage-no">05</span> · runtimes</h2>
+    <p class="lead">Five agent runtimes in three tiers, five execution roles, and the artifacts they run. The most required inputs in the stack.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd><a href="#s01">01</a>, <a href="#s03">03</a> and <a href="#s04">04</a> &mdash; all three applied, and their outputs readable.</dd>
+      <dt>From 01</dt><dd><code>bucket</code>, <code>bucket_arn</code></dd>
+      <dt>From 03</dt><dd><code>gateway_url</code>, <code>gateway_arn</code>, <code>cognito_discovery_url</code>, <code>cognito_client_id</code></dd>
+      <dt>From 04</dt><dd><code>memory_id</code></dd>
+      <dt>Build first</dt><dd><code>uv run scripts/package.py</code> &rarr; five zips in <code>dist/</code>, hashed with <code>filemd5()</code> at <strong>plan</strong> time. The hash goes into the S3 key, which is what makes a rebuild reach the container.</dd>
+      <dt>You supply</dt><dd><code>bedrock_model_id</code> &mdash; and the account must actually have access to that model in this region, which is a Bedrock setting rather than anything terraform can assert.</dd>
+      <dt>Unblocks</dt><dd><a href="#s07">07</a>, with <code>supervisor_arn</code>.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">uv run scripts/package.py                     # all five runtime zips
+
+cd terraform/05_runtimes &amp;&amp; terraform init &amp;&amp; terraform apply \
+  -var bucket=$(terraform -chdir=../01_s3_data output -raw bucket) \
+  -var bucket_arn=$(terraform -chdir=../01_s3_data output -raw bucket_arn) \
+  -var gateway_url=$(terraform -chdir=../03_gateway output -raw gateway_url) \
+  -var gateway_arn=$(terraform -chdir=../03_gateway output -raw gateway_arn) \
+  -var cognito_discovery_url=$(terraform -chdir=../03_gateway output -raw cognito_discovery_url) \
+  -var cognito_client_id=$(terraform -chdir=../03_gateway output -raw cognito_client_id) \
+  -var memory_id=$(terraform -chdir=../04_memory output -raw memory_id) \
+  -var bedrock_model_id=us.amazon.nova-lite-v1:0</code></pre>
+    </div>
+    <p>Five roles named <code>agentcore-&lt;name&gt;-role</code>, each trusted by <code>bedrock-agentcore.amazonaws.com</code>. Four statements are common to all; the rest are granted per agent.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Granted to</th><th>Actions</th><th>Scope</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">all five</td><td class="mono">s3:GetObject</td><td>its own artifact, plus <code>employees/</code>, <code>requisitions/</code>, <code>skills/</code> — <strong>read only</strong></td></tr>
+        <tr><td class="mono">all five</td><td class="mono">bedrock:InvokeModel<br />bedrock:InvokeModelWithResponseStream</td><td><code>*</code></td></tr>
+        <tr><td class="mono">all five</td><td class="mono">logs:CreateLogGroup, CreateLogStream, PutLogEvents, Describe*, PutResourcePolicy</td><td><code>*</code> — the group name contains a service-generated id</td></tr>
+        <tr><td class="mono">all five</td><td class="mono">xray:PutTraceSegments, PutTelemetryRecords, GetSamplingRules, GetSamplingTargets, cloudwatch:PutMetricData</td><td><code>*</code>; metrics bounded by a namespace condition</td></tr>
+        <tr><td class="mono">hiring_supervisor</td><td class="mono">bedrock-agentcore:InvokeAgentRuntime<br />bedrock-agentcore:GetAgentCard</td><td>its three specialists only</td></tr>
+        <tr><td class="mono">hiring_supervisor</td><td class="mono">bedrock-agentcore:CreateEvent, ListEvents, GetEvent, ListSessions, RetrieveMemoryRecords, ListMemoryRecords, GetMemoryRecord</td><td><code>*</code></td></tr>
+        <tr><td class="mono">talent_screening</td><td class="mono">bedrock-agentcore:InvokeAgentRuntime<br />bedrock-agentcore:GetAgentCard</td><td><code>hr_skills_mcp</code> only</td></tr>
+        <tr><td class="mono">talent_screening</td><td class="mono">bedrock-agentcore:InvokeGateway</td><td>the one gateway ARN</td></tr>
+        <tr><td class="mono">the three leaves</td><td class="mono">— no invoke grant at all —</td><td>they receive work and answer</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">🛑 Three separate actions, one conversation</div>
+      <p><code>InvokeAgentRuntime</code> sends the message. <strong><code>GetAgentCard</code> fetches the card, and runs first</strong> — grant only the former and every delegation dies at discovery with a 403 that reads like the remote agent is down. <code>InvokeGateway</code> is a third action again, and follows from neither.</p>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">📘 IAM is the entire check between services</div>
+      <p>Only the supervisor has an authorizer (<code>CUSTOM_JWT</code>, because a person is on the other side of its door). The other four take <strong>SigV4</strong> with their execution role, so there is no second lock behind the policy above.</p>
+    </div>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action key">s3:PutObject</td><td>Five artifacts at <code>artifacts/&lt;name&gt;-&lt;md5&gt;.zip</code>. The hash is in the key deliberately: new bytes mean a new key, and a new key is what makes the runtime take a new version.</td></tr>
+        <tr><td class="action">s3:GetObject<br />s3:ListBucket</td><td>Refresh of those five objects.</td></tr>
+        <tr><td class="action key">iam:CreateRole &times;5</td><td><code>agentcore-&lt;name&gt;-role</code>, one per runtime. One shared role would erase the call graph in the table above &mdash; the separation <em>is</em> the security model here.</td></tr>
+        <tr><td class="action">iam:PutRolePolicy</td><td>Each runtime's inline policy: S3 read, Bedrock invoke, logs, X-Ray, and only the edges that agent is allowed to traverse.</td></tr>
+        <tr><td class="action key">iam:PassRole</td><td><code>CreateAgentRuntime</code> hands each of the five roles to the service.</td></tr>
+        <tr><td class="action">bedrock-agentcore:CreateAgentRuntime</td><td>The five runtimes, in three dependency tiers terraform resolves within one apply.</td></tr>
+        <tr><td class="action">bedrock-agentcore:UpdateAgentRuntime</td><td>Every redeploy: a changed artifact prefix is a new runtime version.</td></tr>
+        <tr><td class="action">bedrock-agentcore:GetAgentRuntime<br />DeleteAgentRuntime</td><td>Refresh, and destroy.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">📘 What the deployer does <em>not</em> need</div>
+      <p><code>bedrock:InvokeModel</code> is all over this stage and appears nowhere on your own identity. It is granted to the five execution roles, and the model is called by the containers, never by terraform. Adding it to the principal running the apply does nothing for a runtime that lacks it &mdash; and removing it from yours breaks nothing at deploy time. The same holds for <code>bedrock-agentcore:InvokeAgentRuntime</code>: creating the runtimes and talking to them are different permissions on different principals.</p>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">📘 Two things this stage deliberately does not create</div>
+      <p><strong>No endpoint resources</strong> — <code>CreateAgentRuntime</code> makes <code>DEFAULT</code> itself, so declaring one is a <code>ConflictException</code> on every apply. <strong>No log groups</strong> — their names contain a service-generated runtime id, so they cannot exist before the runtime does; the container creates its own.</p>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s06"><span class="stage-no">06</span> · observability</h2>
+    <p class="lead">Vended log delivery for the Gateway and Memory, plus the account-level switch that makes traces possible.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd><a href="#s03">03</a> and <a href="#s04">04</a> &mdash; and <strong>not</strong> <a href="#s05">05</a>, despite the number.</dd>
+      <dt>Consumes</dt><dd><code>gateway_arn</code> from 03, <code>memory_arn</code> from 04. Both name a delivery source; neither is created here.</dd>
+      <dt>Providers</dt><dd><code>hashicorp/aws</code> and <code>hashicorp/time</code> &mdash; the same propagation wait as 03, for the same reason.</dd>
+      <dt>Build first</dt><dd class="none">Nothing.</dd>
+      <dt>You decide</dt><dd><code>enable_transaction_search</code> &mdash; account and region wide, and it bills. Then <code>retention_days</code> and <code>iam_propagation_delay</code>.</dd>
+      <dt>Unblocks</dt><dd>Nothing. A leaf &mdash; nothing downstream reads its outputs.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">cd terraform/06_observability &amp;&amp; terraform init &amp;&amp; terraform apply \
+  -var gateway_arn=$(terraform -chdir=../03_gateway output -raw gateway_arn) \
+  -var memory_arn=$(terraform -chdir=../04_memory output -raw memory_arn)
+
+# in an account you do not own:
+#   -var enable_transaction_search=false      # logs without traces, rather than a failed apply</code></pre>
+    </div>
+    <p><strong>Creates:</strong> <span class="mono">no IAM roles.</span> X-Ray's permission to write spans is a <strong>CloudWatch Logs resource policy</strong> on the <code>aws/spans</code> group, not an identity policy — which is why <code>AccessDeniedException: XRay does not have permission to call PutLogEvents</code> shows you nothing when you go looking through IAM.</p>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action">logs:CreateLogGroup</td><td>Two vended groups, one for the gateway and one for memory.</td></tr>
+        <tr><td class="action">logs:PutRetentionPolicy</td><td><code>retention_days</code> on both. Vended logs otherwise never expire, which is a bill rather than an error.</td></tr>
+        <tr><td class="action key">logs:PutDeliverySource</td><td>Registers the gateway and the memory as things that emit. This is the half that names <em>what</em>.</td></tr>
+        <tr><td class="action">logs:PutDeliveryDestination</td><td>The group each source's logs land in &mdash; the half that names <em>where</em>.</td></tr>
+        <tr><td class="action">logs:CreateDelivery</td><td>Joins the two. Until it exists both halves are configured and nothing is delivered.</td></tr>
+        <tr><td class="action key">logs:PutResourcePolicy</td><td><code>TransactionSearchXRayAccess</code>: lets <code>xray.amazonaws.com</code> write to <code>aws/spans</code>. A <strong>resource</strong> policy, so no role in the account carries it and no amount of searching IAM finds what is missing.</td></tr>
+        <tr><td class="action key">xray:UpdateTraceSegmentDestination</td><td>Points X-Ray at CloudWatch Logs for the whole account and region. Fails with the 403 above unless the resource policy landed first, and nothing in its arguments says so.</td></tr>
+        <tr><td class="action">logs:Describe*, logs:GetDelivery*<br />xray:GetTraceSegmentDestination</td><td>Refresh.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">🛑 Account-wide, and destroy turns it off</div>
+      <p><code>enable_transaction_search</code> is not scoped to this stack. Enabling it affects every trace in the account and region, and <code>terraform destroy</code> disables it again — including for anything else relying on it.</p>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s07"><span class="stage-no">07</span> · api</h2>
+    <p class="lead">The supervisor over HTTP — API Gateway REST with response streaming, a Cognito authorizer, and the Node proxy behind it. The largest stage, at 20 resources.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd><a href="#s03">03</a> and <a href="#s05">05</a>, applied.</dd>
+      <dt>From 03</dt><dd><code>cognito_user_pool_id</code>, <code>cognito_client_id</code> &mdash; the authorizer's pool, and the client the browser logs in against.</dd>
+      <dt>From 05</dt><dd><code>supervisor_arn</code> &mdash; the <strong>only</strong> runtime this proxy may address.</dd>
+      <dt>Build first</dt><dd><code>uv run scripts/package.py chat_proxy</code> &rarr; <code>dist/chat_proxy.zip</code>. This one needs <strong>node + npm</strong> rather than uv: Lambda response streaming exists on the managed Node runtimes only.</dd>
+      <dt>You decide</dt><dd><code>manage_apigw_account_logging</code> (see below), then <code>stage_name</code>, <code>proxy_timeout_seconds</code> and the two throttle values.</dd>
+      <dt>Unblocks</dt><dd><a href="#s08">08</a>, with <code>api_domain</code> and <code>api_stage</code>.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">uv run scripts/package.py chat_proxy          # dist/chat_proxy.zip — needs node + npm
+
+cd terraform/07_api &amp;&amp; terraform init &amp;&amp; terraform apply \
+  -var supervisor_arn=$(terraform -chdir=../05_runtimes output -raw supervisor_arn) \
+  -var cognito_user_pool_id=$(terraform -chdir=../03_gateway output -raw cognito_user_pool_id) \
+  -var cognito_client_id=$(terraform -chdir=../03_gateway output -raw cognito_client_id)</code></pre>
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Role created</th><th>Trusted by</th><th>Permissions</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">hr-chat-proxy-role-&lt;env&gt;</td><td><code>lambda.amazonaws.com</code></td><td class="mono">logs:CreateLogStream, logs:PutLogEvents — its own group</td></tr>
+        <tr><td class="mono">hr-apigw-cloudwatch-&lt;env&gt;</td><td><code>apigateway.amazonaws.com</code></td><td class="mono">managed: AmazonAPIGatewayPushToCloudWatchLogs</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The proxy holds <strong>no AWS credentials</strong>. It reaches the supervisor over plain HTTPS with the caller's own bearer token, because a <code>CUSTOM_JWT</code> agent cannot be invoked with the SDK — the SDK only signs SigV4. So its role grants logging and nothing else.</p>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <p>No <code>cognito-idp</code> entry here, and that is not an omission: the authorizer wants the pool <strong>ARN</strong>, which the module rebuilds locally from the id stage 03 exported. Nothing in this stage calls Cognito.</p>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action key">iam:CreateRole &times;2</td><td><code>hr-chat-proxy-role-&lt;env&gt;</code> for Lambda, <code>hr-apigw-cloudwatch-&lt;env&gt;</code> for API Gateway.</td></tr>
+        <tr><td class="action">iam:PutRolePolicy</td><td>The proxy's policy: <code>logs:CreateLogStream</code> and <code>logs:PutLogEvents</code> on its own group, and nothing else &mdash; it holds no AWS credentials at all.</td></tr>
+        <tr><td class="action">iam:AttachRolePolicy</td><td><code>AmazonAPIGatewayPushToCloudWatchLogs</code> on the account role.</td></tr>
+        <tr><td class="action key">iam:PassRole</td><td>Twice, to two different services: the proxy role to Lambda, the CloudWatch role to API Gateway.</td></tr>
+        <tr><td class="action">lambda:CreateFunction<br />lambda:UpdateFunctionCode</td><td>The Node proxy behind the API.</td></tr>
+        <tr><td class="action">lambda:AddPermission</td><td>Lets <code>apigateway.amazonaws.com</code> invoke it, scoped to this API's execution ARN and nothing else.</td></tr>
+        <tr><td class="action key">apigateway:POST</td><td>Creates the REST API, both resources, both methods, the Cognito authorizer, the streaming integration, the deployment and the stage.</td></tr>
+        <tr><td class="action">apigateway:PATCH</td><td>The method settings that carry the throttle, and the account-level CloudWatch role.</td></tr>
+        <tr><td class="action">apigateway:PUT</td><td>Replacing a method or integration in place on re-apply.</td></tr>
+        <tr><td class="action">apigateway:GET<br />apigateway:DELETE</td><td>Refresh, and destroy.</td></tr>
+        <tr><td class="action">logs:CreateLogGroup<br />logs:PutRetentionPolicy</td><td>The proxy's group and the API's access-log group.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout callout-danger">
+      <div class="callout-title">🛑 One CloudWatch role per account, per region</div>
+      <p><code>aws_api_gateway_account</code> is an <strong>account-level</strong> setting shared by every REST API in the region. If something else already manages it, set <code>manage_apigw_account_logging = false</code> — otherwise this stack takes it over. Leave it unset when nothing manages it and the stage fails with <code>BadRequestException: CloudWatch Logs role ARN must be set in account settings</code>, pointing at a resource nothing in your API refers to.</p>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="s08"><span class="stage-no">08</span> · ui</h2>
+    <p class="lead">The React build on CloudFront, with stage 07 as its <code>/api/*</code> origin — which is what removes CORS entirely.</p>
+    <dl class="needs">
+      <dt>Depends on</dt><dd><a href="#s07">07</a>, applied. The last stage.</dd>
+      <dt>Consumes</dt><dd><code>api_domain</code> &mdash; the bare execute-api host, no scheme and no path &mdash; and <code>api_stage</code>, which becomes CloudFront's <code>origin_path</code> so the browser never sees it.</dd>
+      <dt>Build first</dt><dd><code>make ui-build</code> &rarr; <code>ui/dist/</code>. <code>fileset()</code> and <code>filemd5()</code> run at <strong>plan</strong> time, and a missing directory fails with <code>call to function fileset failed</code> &mdash; which does not sound like &ldquo;you forgot to build the UI&rdquo;.</dd>
+      <dt>You decide</dt><dd><code>price_class</code>, and <code>origin_read_timeout</code> &mdash; 60 is the maximum without a quota increase, and the supervisor regularly goes quiet for longer than the 30-second default.</dd>
+      <dt>Unblocks</dt><dd>Nothing. The <code>chat_url</code> output is the thing you open.</dd>
+    </dl>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">make ui-build                                 # ui/dist — read at PLAN time
+
+cd terraform/08_ui &amp;&amp; terraform init &amp;&amp; terraform apply \
+  -var api_domain=$(terraform -chdir=../07_api output -raw api_domain) \
+  -var api_stage=$(terraform -chdir=../07_api output -raw api_stage)
+
+terraform output -raw chat_url</code></pre>
+    </div>
+    <p><strong>Creates:</strong> <span class="mono">no IAM roles</span> — but a bucket policy that does the same job, granting <code>s3:GetObject</code> to <code>cloudfront.amazonaws.com</code>, conditioned on this distribution alone.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">📘 Only S3 gets an origin access control</div>
+      <p>CloudFront OAC has no <code>apigateway</code> origin type, so <code>execute-api</code> stays publicly resolvable and <strong>the Cognito authorizer is the gate</strong> — not network placement. That is also why the stage carries a throttle.</p>
+    </div>
+    <h3>Permissions the deployer needs, and what each one is for</h3>
+    <div class="table-scroll">
+    <table class="perm">
+      <thead><tr><th>Action</th><th>What it does in this stage</th></tr></thead>
+      <tbody>
+        <tr><td class="action key">s3:CreateBucket</td><td><code>hr-chat-ui-&lt;env&gt;-&lt;account&gt;</code>, private. <code>force_destroy</code> is on because it holds a build output, not data.</td></tr>
+        <tr><td class="action">s3:PutBucketPublicAccessBlock</td><td>All four blocks. The site is public through CloudFront, never through S3.</td></tr>
+        <tr><td class="action key">s3:PutObject</td><td>One object per file under <code>ui/dist</code>, each with its content type and cache-control. A wrong content type does not error &mdash; the browser just declines to apply a stylesheet served as <code>text/plain</code>.</td></tr>
+        <tr><td class="action">s3:PutBucketPolicy</td><td>The origin access grant: <code>s3:GetObject</code> for <code>cloudfront.amazonaws.com</code>, conditioned on this distribution's ARN so no other distribution in any account can read it.</td></tr>
+        <tr><td class="action">cloudfront:CreateOriginAccessControl</td><td>The SigV4 signer CloudFront uses to reach the bucket.</td></tr>
+        <tr><td class="action key">cloudfront:CreateDistribution</td><td>Two origins: the bucket, and stage 07 at <code>/api/*</code> &mdash; same origin in the browser, which is what removes CORS.</td></tr>
+        <tr><td class="action">cloudfront:UpdateDistribution<br />GetDistribution, TagResource</td><td>Re-applies, and refresh.</td></tr>
+        <tr><td class="action">cloudfront:GetCachePolicy<br />cloudfront:GetOriginRequestPolicy</td><td>Three data sources look up AWS-managed policies by name. Without the read the plan cannot resolve their ids, and fails before it reaches the distribution.</td></tr>
+        <tr><td class="action">sts:GetCallerIdentity</td><td>The account id is part of the bucket name.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="deployer">The deploying principal, consolidated</h2>
+    <p>Everything above in one place. This is the identity that runs <code>terraform apply</code> — not any role the stack creates.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Service</th><th>Needed by</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">iam</td><td>02, 03, 04, 05, 07</td><td>Nine roles across the stack, and <code>PassRole</code> for every one handed to a service</td></tr>
+        <tr><td class="mono">s3</td><td>01, 05, 08</td><td>Three buckets' worth of create, policy and object writes</td></tr>
+        <tr><td class="mono">lambda</td><td>02, 07</td><td>Two functions, plus the resource policies that let Gateway and API Gateway call them</td></tr>
+        <tr><td class="mono">cognito-idp</td><td>03</td><td>Pool, client, and one user with a permanent password</td></tr>
+        <tr><td class="mono">bedrock-agentcore</td><td>03, 04, 05</td><td>Gateway, target, memory, memory strategies, five runtimes</td></tr>
+        <tr><td class="mono">logs</td><td>05, 06, 07</td><td>Groups, retention, deliveries, and a resource policy</td></tr>
+        <tr><td class="mono">xray</td><td>06</td><td>The account-level trace segment destination</td></tr>
+        <tr><td class="mono">apigateway</td><td>07</td><td>REST API, authorizer, methods, deployment, stage, account settings</td></tr>
+        <tr><td class="mono">cloudfront</td><td>08</td><td>Distribution and origin access control</td></tr>
+        <tr><td class="mono">sts</td><td>all</td><td><code>GetCallerIdentity</code> — the account id appears in ARNs and bucket names</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ The one people miss: iam:PassRole</div>
+      <p>Creating a role is not the same as being allowed to hand it to a service. Five stages create a role and immediately give it to Lambda, API Gateway or AgentCore, and without <code>PassRole</code> each fails at the second step with a message about the <em>service</em> rather than about you.</p>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">📘 How precise are these lists?</div>
+      <p>Everything about the roles the stack <strong>creates</strong> is exact &mdash; read straight from the policy documents in the terraform. The <strong>deployer</strong> tables, actions and purposes alike, are derived from the resource types and arguments each module declares: right in shape, and complete for the resources listed, but confirm against your own identity with the simulator below before assuming a gap is a bug in the stack. Tagging is the usual quiet extra &mdash; every resource here carries tags, so a permission boundary that allows <code>Create*</code> but not <code>TagResource</code> fails on resources you have already been allowed to make.</p>
+    </div>
+
+    <hr class="stage-rule" />
+    <h2 id="verify">Verifying, before and after</h2>
+
+    <h3>Does this principal have the action?</h3>
+    <p>The fastest way to settle any permission question, and it modifies nothing. It distinguishes <code>allowed</code> from <code>implicitDeny</code>, which is what a missing action looks like.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">aws iam simulate-principal-policy \
+  --policy-source-arn arn:aws:iam::&lt;account&gt;:role/agentcore-hiring_supervisor-role \
+  --action-names bedrock-agentcore:InvokeAgentRuntime bedrock-agentcore:GetAgentCard \
+  --resource-arns &lt;the callee's runtime arn&gt; \
+  --query 'EvaluationResults[].{action:EvalActionName,decision:EvalDecision}' --output table</code></pre>
+    </div>
+
+    <h3>Does the chain hold?</h3>
+    <p><code>terraform validate</code> checks one directory in isolation, so a stack where 06 needs <code>gateway_arn</code> and 03 never exports it validates cleanly and then cannot apply. This is that audit, plus the IAM and documentation invariants on this page.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">uv run scripts/check_terraform_chain.py</code></pre>
+    </div>
+
+    <h3>Is the Gateway reachable, with no agent in the way?</h3>
+    <p>Signs with your own credentials and lists what the Gateway publishes. Needs <code>bedrock-agentcore:InvokeGateway</code> on <em>your</em> identity — the grant in stage 05 belongs to the screening runtime, a different principal.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">make gateway                                        # list the tools
+make gateway CALL=hrdata___get_requisition ARGS='{"job_id":"J2001"}'</code></pre>
+    </div>
+    <div class="callout callout-warning">
+      <div class="callout-title">⚠️ MCP Inspector will not work here</div>
+      <p>It sends a bearer token and cannot sign SigV4, so it is usable only if you set <code>gateway_authorizer_type = "CUSTOM_JWT"</code>.</p>
+    </div>
+
+    <h3>Did the code actually ship?</h3>
+    <p>Artifact keys are content-addressed, so new bytes mean a new S3 key, a new object and a new runtime version. A version that never moves is the one symptom of a deploy that silently changed nothing.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">aws bedrock-agentcore-control get-agent-runtime \
+  --agent-runtime-id &lt;id&gt; \
+  --query '{version:agentRuntimeVersion,prefix:agentRuntimeArtifact.codeConfiguration.code.s3.prefix}'</code></pre>
+    </div>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>For what the stack <em>is</em> rather than what it needs, see the <a href="agentcore.html">AgentCore Tutorial</a> and the <a href="agentcore-qa.html">Q&amp;A</a>. The terraform patterns behind these modules — <code>for_each</code>, outputs, module composition — are in the <a href="terraform.html">Terraform Quick Start</a>.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

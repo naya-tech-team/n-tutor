@@ -1,0 +1,83 @@
+auth {
+  mode: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json, text/event-stream
+  MCP-Protocol-Version: {{protocolVersion}}
+}
+
+script:post-response {
+  // Streamable HTTP answers a JSON-RPC request with a *Server-Sent Event*, not JSON:
+  //
+  //     event: message
+  //     data: {"jsonrpc":"2.0","id":1,"result":{...}}
+  //
+  // Bruno hands that to us as a raw string, so unwrap the `data:` lines once here and
+  // every test below can read `res.getBody().result` like any other JSON API.
+  const raw = res.getBody();
+  if (typeof raw === "string" && raw.indexOf("data:") !== -1) {
+    const payload = raw
+      .split(/\r?\n/)
+      .filter(line => line.startsWith("data:"))
+      .map(line => line.slice(5).trim())
+      .join("");
+    if (payload) {
+      res.setBody(JSON.parse(payload));
+    }
+  }
+}
+
+tests {
+  // Runs after EVERY request in this collection.
+  test("the answer is a JSON-RPC 2.0 envelope", function() {
+    const body = res.getBody();
+    if (body && typeof body === "object") {      // 202 Accepted has no body at all
+      expect(body.jsonrpc).to.equal("2.0");
+    }
+  });
+}
+
+docs {
+  # HR Skills MCP Server
+
+  The same HR domain as [`fast-api/`](../../fast-api/README.md), published as **MCP tools**
+  instead of REST endpoints. Start the server first:
+
+      cd mcp-server
+      uv run app/main.py          # http://127.0.0.1:8000/mcp
+
+  Then pick the **Local** environment (top right) and run the collection **top to bottom**.
+
+  > If port 8000 is taken — most likely by `fast-api/` — start this one with
+  > `uv run fastmcp run app/main.py --transport http --port 8010` and change `baseUrl`.
+
+  ## Why this collection looks so unlike a REST one
+
+  Every request here is a `POST` to the **same URL**, `{{baseUrl}}/mcp`. There are no paths,
+  no verbs and no resources; the method name lives in the JSON body:
+
+      {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+       "params": {"name": "shortlist", "arguments": {"job_id": "J2001"}}}
+
+  Three things follow from that, and each one has a request in the **Errors** folder proving
+  it:
+
+  1. **The status code stops carrying meaning.** A tool that fails answers `200` with
+     `isError: true` in the body. `4xx` is reserved for the *transport* being used wrong.
+  2. **Responses arrive as Server-Sent Events**, not JSON — see the post-response script
+     above, which unwraps them so the tests can stay readable.
+  3. **The connection is stateful.** `initialize` mints a session id; every later request
+     must echo it back in `mcp-session-id` or the server answers `404`.
+
+  ## Order matters more than usual
+
+  **Handshake** must run first. It captures `mcpSessionId` into a runtime variable that every
+  other request sends as a header, so running *Tools › Shortlist the best candidates* on its
+  own in a fresh Bruno session gets a `404` — the literal text `{{mcpSessionId}}` is not a
+  session. That is not a quirk of Bruno; it is the protocol. Run the folder, or the whole
+  collection, and it resolves itself.
+
+  Nothing here mutates server state, so the collection is re-runnable as often as you like.
+}

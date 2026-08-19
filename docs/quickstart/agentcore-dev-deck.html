@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon Bedrock AgentCore — Developer Deep Dive (30 min)</title>
+<style>
+:root{
+  --bg:#0e1117; --bg-alt:#151b24; --bg-code:#0a0e14; --panel:#131a23;
+  --fg:#e6edf3; --fg-dim:#9aa7b4; --fg-faint:#6b7885;
+  --accent:#ff9900; --accent-2:#4d9fff; --green:#2ea043; --red:#f85149; --yellow:#d29922; --purple:#bc8cff;
+  --border:#232c38; --border-soft:#1c242f;
+  --r:#ff5f6d; --m:#8b5cf6; --g:#22c1a6; --i:#e0457b; --o:#31c48d; --p:#4d9fff;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#07090d;color:var(--fg);font-family:var(--sans)}
+body.overview{overflow:auto;height:auto}
+html.overview{height:auto;overflow:auto}
+
+/* ---------- viewport & scaling ---------- */
+#viewport{position:fixed;inset:0;display:grid;place-items:center}
+#stage{width:1280px;height:720px;position:relative;transform-origin:center center}
+
+.slide{
+  position:absolute;inset:0;background:var(--bg);border-radius:14px;overflow:hidden;
+  padding:56px 64px;display:none;flex-direction:column;
+  border:1px solid var(--border);
+}
+.slide.on{display:flex;animation:in .28s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- type ---------- */
+h1{font-size:56px;line-height:1.06;letter-spacing:-.03em;font-weight:700}
+h2{font-size:38px;line-height:1.12;letter-spacing:-.024em;font-weight:680;margin-bottom:6px}
+h3{font-size:20px;font-weight:620;letter-spacing:-.01em}
+.kicker{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);font-weight:650;margin-bottom:16px}
+.sub{font-size:21px;color:var(--fg-dim);line-height:1.5;max-width:60ch}
+.sub.lg{font-size:24px;color:var(--fg-dim);font-weight:400}
+p{font-size:18px;line-height:1.6;color:var(--fg-dim)}
+strong{color:var(--fg);font-weight:640}
+em{color:var(--fg);font-style:italic}
+.body{margin-top:22px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0;justify-content:center}
+.center{justify-content:center;align-items:flex-start}
+.slide.title .body,.slide.divider .body{margin-top:0}
+code{font-family:var(--mono);font-size:.88em;background:var(--bg-alt);border:1px solid var(--border-soft);
+  padding:1px 6px;border-radius:5px;color:var(--purple)}
+
+/* ---------- components ---------- */
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g6{grid-template-columns:repeat(3,1fr)}
+.card{border:1px solid var(--border);background:var(--panel);border-radius:11px;padding:16px 18px}
+.card h3{margin-bottom:6px;display:flex;align-items:center;font-size:17px}
+.card p{font-size:15px;line-height:1.5}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block;vertical-align:middle;margin-right:8px}
+.d-r{background:var(--r)}.d-m{background:var(--m)}.d-g{background:var(--g)}
+.d-i{background:var(--i)}.d-o{background:var(--o)}.d-p{background:var(--p)}
+
+.big{font-size:88px;font-weight:750;letter-spacing:-.04em;line-height:1;color:var(--accent)}
+.bignum{display:flex;gap:34px;margin-top:8px}
+.bignum .n{font-size:52px;font-weight:750;letter-spacing:-.03em;color:var(--accent);line-height:1}
+.bignum .l{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-faint);margin-top:6px}
+
+pre{background:var(--bg-code);border:1px solid var(--border);border-radius:11px;padding:18px 20px;overflow:hidden}
+pre code{background:none;border:0;padding:0;color:var(--fg);font-size:16px;line-height:1.62;display:block;white-space:pre}
+.diagram pre{background:var(--panel)}
+.diagram pre code{color:var(--fg-dim);font-size:14.5px;line-height:1.5}
+
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--border-soft);vertical-align:top}
+th{background:var(--bg-alt);font-size:13.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-dim);font-weight:640}
+tbody tr:last-child td{border-bottom:0}
+.tw{border:1px solid var(--border);border-radius:11px;overflow:hidden}
+td .hl{color:var(--accent);font-weight:640}
+td .no{color:var(--red)}
+td .ok{color:var(--green)}
+
+.callout{border:1px solid var(--border);border-left:3px solid var(--accent-2);background:var(--panel);
+  border-radius:9px;padding:14px 18px}
+.callout.warn{border-left-color:var(--yellow)}
+.callout.danger{border-left-color:var(--red)}
+.callout.good{border-left-color:var(--green)}
+.callout .lbl{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;font-weight:700;
+  color:var(--accent-2);margin-bottom:4px}
+.callout.warn .lbl{color:var(--yellow)}.callout.danger .lbl{color:var(--red)}.callout.good .lbl{color:var(--green)}
+.callout p{font-size:17px}
+
+ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+ul li{font-size:18px;line-height:1.5;color:var(--fg-dim);padding-left:26px;position:relative}
+ul li::before{content:"";position:absolute;left:4px;top:11px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+ol.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:12px}
+ol.steps li{counter-increment:s;position:relative;padding-left:42px;font-size:18px;line-height:1.5;color:var(--fg-dim)}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:-1px;width:27px;height:27px;border-radius:50%;
+  background:var(--bg-alt);border:1px solid var(--border);color:var(--accent);font-size:14px;font-weight:700;
+  display:grid;place-items:center}
+
+.tag{display:inline-block;font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:5px;
+  border:1px solid var(--border);color:var(--fg-dim);background:var(--bg-alt);margin:0 6px 6px 0}
+
+/* ---------- chrome ---------- */
+.foot{position:absolute;left:64px;right:64px;bottom:22px;display:flex;align-items:center;
+  font-size:12.5px;color:var(--fg-faint);letter-spacing:.04em}
+.foot .sp{flex:1}
+#bar{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);border-radius:0 3px 3px 0;transition:width .28s}
+#help{position:fixed;right:16px;bottom:14px;font-size:11.5px;color:#4b5663;font-family:var(--mono);z-index:20}
+
+/* ---------- title slide ---------- */
+.title{background:radial-gradient(1100px 560px at 22% 12%, #17202c 0%, var(--bg) 62%)}
+.rule{width:74px;height:4px;background:var(--accent);border-radius:2px;margin:26px 0 22px}
+.svcline{display:flex;gap:9px;flex-wrap:wrap;margin-top:30px}
+.svcline span{font-size:14px;color:var(--fg-dim);border:1px solid var(--border);border-radius:999px;
+  padding:5px 13px;display:flex;align-items:center;gap:8px;background:var(--panel)}
+
+/* ---------- section divider ---------- */
+.divider{background:linear-gradient(135deg,#111823,#0d131b);justify-content:center}
+.divider .kicker{color:var(--fg-faint)}
+.divider h2{font-size:48px}
+
+/* ---------- overview grid ---------- */
+/* zoom scales layout (not just paint), so thumbnails are true miniatures */
+body.overview #viewport{position:static;display:block;padding:26px 22px 40px}
+body.overview #stage{width:auto;height:auto;transform:none!important;
+  display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
+body.overview .slide{position:relative;inset:auto;display:flex!important;
+  width:1280px;height:720px;flex:none;
+  zoom:.25;animation:none;cursor:pointer;border-radius:56px;border-width:4px}
+body.overview .slide *{pointer-events:none}
+body.overview .slide.on{outline:8px solid var(--accent);outline-offset:10px}
+body.overview #help,body.overview #bar{display:none}
+
+@media print{
+  html,body{overflow:visible;background:#fff}
+  #viewport{position:static;display:block}
+  #stage{width:1280px;height:auto;transform:none!important}
+  .slide{display:flex!important;position:relative;inset:auto;height:720px;
+    page-break-after:always;break-after:page;border-radius:0;animation:none}
+  #help,#bar{display:none}
+}
+
+/* ---------- 30-min deck additions ---------- */
+.kicker .dot{margin-right:8px}
+.grid.g2>.diagram{border:1px solid var(--border);border-radius:11px;background:var(--panel);padding:16px 18px}
+.diagram{border:0}
+</style>
+</head>
+<body>
+
+<div id="viewport"><div id="stage">
+<!-- 1 ───────────────────────────────────────────── -->
+<section class="slide title on">
+  <div class="body center">
+    <div class="kicker">Developer deep dive · 30 minutes</div>
+    <h1>Amazon Bedrock<br>AgentCore</h1>
+    <div class="rule"></div>
+    <div class="sub lg">Six services for running agents in production —<br>what each one actually does, and the decisions you can't take back.</div>
+    <div class="svcline">
+      <span><i class="dot d-r"></i>Runtime</span>
+      <span><i class="dot d-m"></i>Memory</span>
+      <span><i class="dot d-g"></i>Gateway</span>
+      <span><i class="dot d-i"></i>Identity</span>
+      <span><i class="dot d-o"></i>Observability</span>
+      <span><i class="dot d-p"></i>Policy</span>
+    </div>
+  </div>
+  <div class="foot"><span>GA 13 Oct 2025</span><span class="sp"></span><span>Rev. Aug 2026</span></div>
+</section>
+
+<!-- 2 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Why this talk</div>
+  <h2>Your agent works. Now ship it.</h2>
+  <div class="body">
+    <p>The demo took a week. Production asks six questions that have nothing to do with prompt engineering:</p>
+    <div class="grid g3">
+      <div class="card"><h3>Where does it run?</h3><p>Lambda caps at 15 minutes. ECS means paying for idle and building isolation yourself.</p></div>
+      <div class="card"><h3>How does it remember?</h3><p>Extract facts, embed, dedupe, merge — per user, forever. The merging is the hard part.</p></div>
+      <div class="card"><h3>How does it reach tools?</h3><p>M agents × N tools. Write an MCP server per tool, or don't scale.</p></div>
+      <div class="card"><h3>Whose credentials?</h3><p>The agent's token is more powerful than the user it serves — and it's non-deterministic.</p></div>
+      <div class="card"><h3>Why did it do that?</h3><p>A 200 OK with a confidently wrong answer is invisible to every metric you have.</p></div>
+      <div class="card"><h3>What actually stops it?</h3><p>"Never refund over $1,000" in a system prompt is a suggestion, not a control.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>The problem</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 3 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Agenda</div>
+  <h2>Thirty minutes, three parts</h2>
+  <div class="body">
+    <ol class="steps">
+      <li><strong>The six services</strong> — what each one gives you, the one idea that explains it, and where it fits. <span style="color:var(--fg-faint)">~15 min</span></li>
+      <li><strong>Four things that will bite you</strong> — the cross-cutting failure modes that show up in every AgentCore deployment, regardless of which services you pick. <span style="color:var(--fg-faint)">~8 min</span></li>
+      <li><strong>Putting it together</strong> — a worked architecture, the code, and an adoption path that doesn't start with all six. <span style="color:var(--fg-faint)">~7 min</span></li>
+    </ol>
+    <div class="callout good"><span class="lbl">The thread running through all of it</span>
+      <p>Agents are <strong>long-running, stateful and non-deterministic</strong>. Nearly every design decision in AgentCore — and every gotcha in part two — falls out of one of those three properties.</p></div>
+  </div>
+  <div class="foot"><span>Agenda</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 4 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">The shape of it</div>
+  <h2>Six services, not one framework</h2>
+  <div class="body">
+    <div class="grid g3">
+      <div class="card"><h3><i class="dot d-r"></i>Runtime</h3><p>Serverless hosting. One microVM per session, 8-hour sessions, no CPU charge while waiting on the model.</p></div>
+      <div class="card"><h3><i class="dot d-m"></i>Memory</h3><p>Raw event log + asynchronously extracted long-term records, with managed consolidation.</p></div>
+      <div class="card"><h3><i class="dot d-g"></i>Gateway</h3><p>APIs, Lambdas, MCP servers and model providers as governed tools behind one endpoint.</p></div>
+      <div class="card"><h3><i class="dot d-i"></i>Identity</h3><p>Agent identity + credential vault. Every credential bound to <em>which agent</em> × <em>whose behalf</em>.</p></div>
+      <div class="card"><h3><i class="dot d-o"></i>Observability</h3><p>OTel sessions/traces/spans in CloudWatch, plus LLM-as-judge Evaluations.</p></div>
+      <div class="card"><h3><i class="dot d-p"></i>Policy</h3><p>Cedar authorization at the Gateway boundary. Rules the model can't argue with.</p></div>
+    </div>
+    <div class="callout good"><span class="lbl">Adopt à la carte</span>
+      <p>Every one is a plain AWS API — Memory works from a Lambda, Observability ingests from on-prem or another cloud. <strong>The only hard coupling: Policy requires Gateway.</strong></p></div>
+  </div>
+  <div class="foot"><span>The services</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 5 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">How they compose</div>
+  <h2>One request, end to end</h2>
+  <div class="body diagram">
+<pre><code>   user ──JWT──►  IDENTITY   validate iss/aud → workload access token
+                             = { which agent } × { on whose behalf }
+                                  │
+                                  ▼
+                  RUNTIME    one microVM per session — isolated CPU, memory, filesystem
+                  ┌──────────────────────────────────────────────────┐
+                  │  your agent: any framework, any model            │
+                  │    ├─ recent turns ──────────► MEMORY  events    │
+                  │    ├─ who is this ───────────► MEMORY  records   │
+                  │    └─ call a tool ──┐                            │
+                  └─────────────────────┼────────────────────────────┘
+                                        ▼
+                  GATEWAY    ├─ POLICY   Cedar · default deny · forbid wins
+                             ├─ IDENTITY outbound credential from the vault
+                             └─ translate MCP ⇄ Lambda · REST · Smithy · MCP
+                                        │
+                                        ▼
+                        Lambda · REST APIs · MCP servers · SaaS · models
+
+   ══ OBSERVABILITY spans all of it ═══════════════════════════════════════
+      metrics (free) → traces + spans (2 opt-ins) → Evaluations (is it correct?)</code></pre>
+  </div>
+  <div class="foot"><span>Architecture</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 6 ───────────────────────────────────────────── -->
+<section class="slide divider">
+  <div class="kicker">Part one · ~15 minutes</div>
+  <h2>What each service<br>actually gives you</h2>
+  <div class="foot"><span></span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 7 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-r"></i>Runtime · 1 of 3</div>
+  <h2>Agents aren't web services</h2>
+  <div class="body">
+    <div class="bignum">
+      <div><div class="n">8 h</div><div class="l">session lifetime</div></div>
+      <div><div class="n">1 : 1</div><div class="l">session : microVM</div></div>
+      <div><div class="n">100 MB</div><div class="l">payload</div></div>
+      <div><div class="n">$0</div><div class="l">CPU while waiting</div></div>
+    </div>
+    <p>Four facts about agents that no general-purpose compute service is designed around:</p>
+    <div class="grid g2">
+      <div class="card"><h3>They run for minutes or hours</h3><p>Not milliseconds. Lambda's 15-minute ceiling isn't a tuning problem, it's a wall.</p></div>
+      <div class="card"><h3>They mostly wait</h3><p>Blocked on model tokens and tool I/O. Paying for reserved CPU during that is pure waste.</p></div>
+      <div class="card"><h3>They accumulate mutable state</h3><p>Scratch files, installed packages, cached embeddings — which must never leak between users.</p></div>
+      <div class="card"><h3>They're non-deterministic</h3><p>So security can't depend on the agent behaving well. It has to be structural.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Runtime</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 8 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-r"></i>Runtime · 2 of 3</div>
+  <h2>Isolation is a platform property</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div class="diagram" style="margin:0">
+<pre><code>  ┌── session A ──┐ ┌── session B ──┐
+  │   microVM     │ │   microVM     │
+  │  own CPU      │ │  own CPU      │
+  │  own memory   │ │  own memory   │
+  │  own filesystem││  own filesystem│
+  └───────────────┘ └───────────────┘
+        ▲                  ▲
+        └── nothing shared ─┘
+
+  session ends → microVM destroyed,
+                 memory sanitised</code></pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="callout"><span class="lbl">Why it matters</span>
+          <p>Agent frameworks cache aggressively — embeddings, tool results, retrieved documents. In a shared-container model a caching bug becomes a <strong>cross-tenant disclosure</strong>. Here it's a one-session incident.</p></div>
+        <div class="callout danger"><span class="lbl">Your half of the deal</span>
+          <p>AgentCore does <strong>not</strong> enforce a session-to-user mapping. Generate session IDs server-side and bind them to your authenticated user — <em>never</em> accept one from the client.</p></div>
+      </div>
+    </div>
+    <div class="callout warn"><span class="lbl">Session lifecycle in one line</span>
+      <p><strong>Active</strong> (CPU + memory billed) → <strong>Idle</strong> (memory only, 15 min default) → <strong>Stopped</strong>. Reuse the session ID across turns or you pay a cold start every time.</p></div>
+  </div>
+  <div class="foot"><span>Runtime</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 9 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-r"></i>Runtime · 3 of 3</div>
+  <h2>The contract is three HTTP endpoints</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div>
+<pre><code>POST /invocations   your agent turn
+GET  /ping          health + "still working"
+GET  /ws            optional WebSocket
+                    (MCP servers: :8000 /mcp)
+
+# /ping returns:
+{ "status": "Healthy" }
+{ "status": "HealthyBusy" }   ← keeps the
+                                session alive</code></pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div class="callout danger"><span class="lbl">The two production bugs</span>
+          <p><strong>Never block in the entrypoint</strong> — a blocked event loop starves <code>/ping</code>, and your long job dies at ~15 minutes.</p></div>
+        <div class="callout danger">
+          <p><strong>Never refresh <code>time_of_last_update</code> on every ping</strong> — sessions then look permanently active, never get reaped, and you hit the quota.</p></div>
+      </div>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th></th><th>microVMs (default)</th><th>Instances (GA Aug 2026)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Session</strong></td><td>8 hours</td><td>14 days</td></tr>
+        <tr><td><strong>Hardware</strong></td><td>≤ 2 vCPU / 8 GB, ARM64 only</td><td>Your EC2 types, GPU, ARM64 + x86</td></tr>
+        <tr><td><strong>Agents per session</strong></td><td>1 : 1</td><td>1 : N — shared filesystem, multi-agent</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="foot"><span>Runtime</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 10 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-m"></i>Memory · 1 of 3</div>
+  <h2>Two stores wearing one name</h2>
+  <div class="body">
+    <div class="tw"><table>
+      <thead><tr><th></th><th>Short-term events</th><th>Long-term records</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Nature</strong></td><td>Write-ahead log — raw, immutable, dumb</td><td>LLM-derived materialised view — distilled</td></tr>
+        <tr><td><strong>Consistency</strong></td><td>Synchronous, instantly readable</td><td class="hl">Asynchronous — seconds to minutes</td></tr>
+        <tr><td><strong>Cost</strong></td><td>$0.25 / 1K events</td><td>$0.50 / 1K <em>retrievals</em></td></tr>
+        <tr><td><strong>Answers</strong></td><td>“What just happened in this conversation?”</td><td>“Who is this person and what do we know?”</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout"><span class="lbl">The rule that falls out</span>
+      <p><strong>Read events for recency, records for identity.</strong> Never write a fact and try to retrieve it as a record in the same turn — extraction is asynchronous and there's no wait-for-consistency API.</p></div>
+    <div class="callout good"><span class="lbl">What you're actually buying</span>
+      <p>Extraction is a prompt. Embeddings are a library call. Vector search is a managed index. <strong>Consolidation</strong> — deciding whether a new fact is novel, refines an existing record, or is redundant, forever, per user — is the part that's genuinely hard to build.</p></div>
+  </div>
+  <div class="foot"><span>Memory</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 11 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-m"></i>Memory · 2 of 3</div>
+  <h2>Strategies do the distilling</h2>
+  <div class="body">
+    <div class="diagram" style="margin:0">
+<pre><code>  CreateEvent ──► short-term store          synchronous, always fast
+       │
+       │ triggers, per strategy                    ASYNCHRONOUS
+       ▼
+   EXTRACTION      LLM proposes candidate records from new events
+       ▼
+   CONSOLIDATION   compares against existing records in the namespace
+                   → AddMemory · UpdateMemory · SkipMemory
+       ▼
+   REFLECTION      (episodic only) generalises across many episodes
+       ▼
+   long-term records ──► RetrieveMemoryRecords (semantic + metadata filters)</code></pre>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Conversational agents</h3><p><strong>Semantic</strong> (facts) · <strong>Summary</strong> (session narrative) · <strong>User preference</strong> (evolving profile). These read only <code>USER</code> / <code>ASSISTANT</code> turns.</p></div>
+      <div class="card"><h3>Acting agents</h3><p><strong>Episodic</strong> reads <code>TOOL</code> results and reconstructs what the agent <em>did</em> and whether it worked — then reflects across episodes. Without tool payloads, quality collapses.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Memory</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 12 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-m"></i>Memory · 3 of 3</div>
+  <h2>Namespaces are four things at once</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div class="card"><h3>Where records are filed</h3><p><code>/facts/{actorId}/</code>, <code>/summaries/{actorId}/{sessionId}/</code></p></div>
+        <div class="card"><h3>What retrieval searches</h3><p>Exact namespace, or prefix across a subtree</p></div>
+        <div class="card"><h3>What IAM conditions on</h3><p><code>bedrock-agentcore:namespace</code> as a policy condition</p></div>
+        <div class="card" style="border-color:var(--accent)"><h3>The consolidation boundary</h3><p><strong>Records only merge <em>within</em> a namespace.</strong></p></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div class="callout danger"><span class="lbl">Two traps</span>
+          <p><strong>Always end with <code>/</code>.</strong> <code>/users/1</code> is a prefix of <code>/users/10</code> — in multi-tenant that's a cross-tenant read, not a typo.<br><br><strong>Don't over-nest.</strong> Every level narrows the candidate set; five deep and semantic search has nothing left to search.</p></div>
+        <div class="callout good"><span class="lbl">The retrieval recipe</span>
+          <p><strong>1.</strong> Recent turns from events — instantly consistent.<br>
+             <strong>2.</strong> Preferences: <code>top_k=5</code>, score ≥ 0.7 — few and confident.<br>
+             <strong>3.</strong> Facts: <code>top_k=10</code>, score ≥ 0.3 — broader recall.<br>
+             Tune <em>per namespace</em>; one global threshold either floods the prompt or drops what the user told you.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Memory</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 13 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-g"></i>Gateway · 1 of 3</div>
+  <h2>M × N → M + N</h2>
+  <div class="body">
+    <p>Not a proxy. A proxy forwards bytes; Gateway <strong>translates protocols</strong>, <strong>exchanges credentials</strong>, <strong>indexes tools</strong> for discovery and <strong>enforces policy</strong>. Those four jobs are why it can't be an ALB.</p>
+    <div class="grid g3">
+      <div class="card"><h3>MCP targets</h3><p><em>Aggregation.</em> Many backends as one virtual MCP server — Lambda, OpenAPI, Smithy, MCP servers, SaaS connectors.</p></div>
+      <div class="card"><h3>HTTP targets</h3><p><em>Passthrough.</em> Front a Runtime agent or any HTTP service, untranslated, while keeping auth, policy and observability.</p></div>
+      <div class="card"><h3>Inference targets</h3><p><em>Routing.</em> LLM traffic by model ID across Bedrock, OpenAI, Anthropic. Their SDKs work unmodified.</p></div>
+    </div>
+    <div class="callout warn"><span class="lbl">They behave nothing alike</span>
+      <p>Only MCP targets get aggregation, <code>Target___tool</code> naming, semantic search and per-tool Cedar actions. Choosing HTTP passthrough because it configured faster quietly forfeits all four. <strong>Decide by the governance you need, not by what imports fastest.</strong></p></div>
+  </div>
+  <div class="foot"><span>Gateway</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 14 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-g"></i>Gateway · 2 of 3</div>
+  <h2>Tool names are an API contract</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div>
+<pre><code>${target_name}___${tool_name}
+                ▲
+                └ three underscores
+
+# every Lambda target needs this
+DELIM = "___"
+
+def lambda_handler(event, context):
+    raw = context.client_context.custom[
+        "bedrockAgentCoreToolName"]
+    tool = raw[raw.index(DELIM)+len(DELIM):]
+
+    if tool == "get_order":
+        return get_order(event["order_id"])</code></pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div class="callout danger"><span class="lbl">The #1 "why doesn't my tool fire"</span>
+          <p>Your router compares <code>"orders___get_order" == "get_order"</code>, never matches, and every call returns unknown tool. <strong>Strip the prefix first, before any business logic.</strong></p></div>
+        <div class="callout warn"><span class="lbl">The prefix leaks everywhere</span>
+          <p>Into agent prompts, Lambda routing, Cedar policy actions and rate-limit entries. There is <strong>no alias mechanism</strong> — renaming a target breaks all four at once.</p></div>
+        <div class="callout"><span class="lbl">OpenAPI targets</span>
+          <p><code>operationId</code> becomes the tool name and <code>description</code> is what the model reads to choose. Swagger 2.0, <code>oneOf</code>/<code>anyOf</code>/<code>allOf</code> unsupported — budget remediation time.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Gateway</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 15 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-g"></i>Gateway · 3 of 3</div>
+  <h2>Discovery, not dispatch</h2>
+  <div class="body">
+    <p>Gateway makes it trivial to expose a thousand tools. That's a trap — every tool in <code>tools/list</code> costs context and adds a wrong turn the model can take. Hence the built-in <code>x_amz_bedrock_agentcore_search</code>.</p>
+    <div class="grid g3">
+      <div class="card"><h3>Quota says so</h3><p>Search is capped at <strong>25 per minute</strong> — roughly 0.4 TPS — against <strong>200 TPS</strong> for ordinary tool calls.</p></div>
+      <div class="card"><h3>Price says so</h3><p><strong>5×</strong> a normal invocation: $0.025 vs $0.005 per 1,000, plus indexing per tool per month.</p></div>
+      <div class="card"><h3>Accuracy says so</h3><p>Tool overload degrades selection long before it hits any limit. Fewer, better-described tools win.</p></div>
+    </div>
+    <div class="callout danger"><span class="lbl">Enable it at creation — you cannot add it later</span>
+      <p><code>searchType</code> lives in <code>protocolConfiguration.mcpConfiguration</code> and is <strong>creation-time only</strong>. Retrofitting means a new gateway and repointing every client. If the catalogue might ever grow, turn it on day one.</p></div>
+    <div class="callout good"><span class="lbl">The pattern</span>
+      <p>Search <strong>once per task</strong> to narrow the toolset, cache the subset for the session, then call tools directly.</p></div>
+  </div>
+  <div class="foot"><span>Gateway</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 16 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-i"></i>Identity · 1 of 2</div>
+  <h2>The confused deputy, solved</h2>
+  <div class="body diagram">
+<pre><code>                    credential in the token vault
+                                │
+              ┌─────────────────┴──────────────────┐
+              │                                    │
+       workload identity                    end-user identity
+      "which agent is asking"                "on whose behalf"
+              │                                    │
+              └─────────────────┬──────────────────┘
+                                ▼
+              a token that is useless to any other agent,
+                  and useless for any other user</code></pre>
+    <div class="grid g2">
+      <div class="callout"><span class="lbl">Two independent gates</span>
+        <p>IAM decides <em>which providers a role may ask for</em>. The workload access token decides <em>whose credentials come back</em>. Agent A can't get user B's Google token even holding valid IAM permission.</p></div>
+      <div class="callout danger"><span class="lbl">Before you ship</span>
+        <p><code>GetWorkloadAccessTokenForUserId</code> takes an <strong>unverified string</strong>. Grant <code>...ForJWT</code> and explicitly <code>Deny</code> the UserId variant — the managed <code>BedrockAgentCoreFullAccess</code> policy includes it.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Identity</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 17 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-i"></i>Identity · 2 of 2</div>
+  <h2>Three flows — and a design problem</h2>
+  <div class="body">
+    <div class="tw"><table>
+      <thead><tr><th>Flow</th><th>What happens</th><th>Human in the loop?</th></tr></thead>
+      <tbody>
+        <tr><td><strong>M2M</strong> (2LO)</td><td>Agent uses its own client credentials</td><td class="ok">No — prefer it whenever per-user scoping isn't required</td></tr>
+        <tr><td><strong>USER_FEDERATION</strong> (3LO)</td><td>User consents; token scoped to that user and cached in the vault</td><td class="no">Yes — browser round trip, 10-minute URL expiry</td></tr>
+        <tr><td><strong>ON_BEHALF_OF</strong></td><td>Exchange the inbound JWT for a downstream token (RFC 8693 / 7523)</td><td class="ok">No consent flow at all</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout danger"><span class="lbl">The bit nobody budgets for</span>
+      <p>3LO puts <strong>a human in the middle of an autonomous process</strong>. You must build and host an HTTPS callback that validates the live session and calls <code>CompleteResourceTokenAuth</code> — even when the agent runs on Runtime.</p></div>
+    <div class="callout good"><span class="lbl">Three ways out</span>
+      <p>Warm consent at onboarding · treat "needs consent" as a first-class resumable agent state · or <strong>skip it entirely with OBO</strong> where your IdP supports token exchange. That last question is worth asking very early.</p></div>
+  </div>
+  <div class="foot"><span>Identity</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 18 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-o"></i>Observability · 1 of 2</div>
+  <h2>Is it up? What did it do? Was it right?</h2>
+  <div class="body">
+    <div class="grid g3">
+      <div class="card"><h3>1 · Metrics — is it up?</h3><p>Invocations, errors, latency, active sessions, CPU/GB-hours. <strong>Free and automatic — and completely blind to correctness.</strong></p></div>
+      <div class="card"><h3>2 · Traces — what did it do?</h3><p>The reasoning trajectory: tool calls, arguments, model turns, retries. Session → trace → span.</p></div>
+      <div class="card"><h3>3 · Evaluations — was it good?</h3><p>14 built-in LLM-judges over those traces: Goal Success Rate, correctness, tool-selection accuracy, harmfulness.</p></div>
+    </div>
+    <div class="callout danger"><span class="lbl">Layer 2 needs two opt-ins, and neither errors if you skip it</span>
+      <p><strong>Transaction Search</strong> enabled once per account, <em>and</em> <strong>ADOT instrumentation</strong> (<code>opentelemetry-instrument python main.py</code>). Metrics appear either way — so teams assume it works and discover during their first incident that they have counters without causality.</p></div>
+    <div class="callout"><span class="lbl">Why layer 3 exists</span>
+      <p>Agent failures are <strong>semantic, not operational</strong>. Latency fine, error rate zero, user got garbage. Evaluations is the only layer that sees that — and it reads the same OTel traces, so instrumentation quality gates it.</p></div>
+  </div>
+  <div class="foot"><span>Observability</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 19 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-o"></i>Observability · 2 of 2</div>
+  <h2>Debug top-down, alarm on five things</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div class="diagram" style="margin:0">
+<pre><code>  SESSION   the whole conversation
+   │
+   ├── TRACE   one request/response turn
+   │    ├── SPAN  "retrieve context"
+   │    ├── SPAN  "invoke model"
+   │    │    └── SPAN "tool: get_weather"
+   │    └── SPAN  "format output"
+   │
+   └── TRACE   the next turn …
+
+  user complains → find the SESSION
+                 → spot the odd TRACE
+                 → drill to the SPAN</code></pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="callout warn"><span class="lbl">Alarm on these</span>
+          <p><code>ActiveSessionCount</code> at ~70% of quota · <code>Throttles</code> · <code>NoDeterminingPolicies</code> · Identity token-fetch failures · Goal Success Rate trending down.</p></div>
+        <div class="callout danger"><span class="lbl">Two things to decide before go-live</span>
+          <p><strong>Sampling</strong> — 1% is free, and unsampled traffic is gone forever. <strong>Redaction</strong> — <code>request_payload</code> and <code>response_payload</code> are logged by default, which is exactly how PII reaches CloudWatch.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Observability</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 20 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-p"></i>Policy · 1 of 2</div>
+  <h2>You can't make an LLM refuse</h2>
+  <div class="body">
+    <div class="diagram" style="margin:0">
+<pre><code>   ┌─────────────────────────────────────────────────────────┐
+   │  the agent — non-deterministic, promptable, persuadable  │
+   │  "you must never issue a refund over $1,000"             │
+   │       ↑ a suggestion the model may or may not honour     │
+   └───────────────────────┬─────────────────────────────────┘
+                           │ tool call
+   ════════════════════════╪═══════ trust boundary ═══════════
+                           ▼
+   ┌─────────────────────────────────────────────────────────┐
+   │  GATEWAY + POLICY ENGINE — deterministic, unreachable    │
+   │  permit(...) when { context.input.amount &lt; 1000 };       │
+   └─────────────────────────────────────────────────────────┘</code></pre>
+    </div>
+    <div class="grid g3">
+      <div class="card"><h3>Default deny</h3><p>No matching <code>permit</code> means denied. Silence is never permission.</p></div>
+      <div class="card"><h3>Forbid wins</h3><p>Any matching <code>forbid</code> overrides every permit. Guardrails can't be out-voted.</p></div>
+      <div class="card"><h3>No ordering</h3><p>Policies are a set, not a sequence. Same request, same answer, always.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Policy</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 21 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker"><i class="dot d-p"></i>Policy · 2 of 2</div>
+  <h2>Roll it out in LOG_ONLY. Always.</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div>
+<pre><code>permit(
+  principal is AgentCore::OAuthUser,
+  action == AgentCore::Action::
+    "RefundAPI___process_refund",
+  resource == AgentCore::Gateway::"arn:…"
+)
+when {
+  context.input has amount &&     ← always
+  context.input.amount &lt; 1000        guard
+};</code></pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div class="callout danger"><span class="lbl">ENFORCE is default-deny</span>
+          <p>An engine with 3 policies on a gateway exposing 40 tools <strong>denies 37 of them</strong>. Start in <code>LOG_ONLY</code>, watch <code>NoDeterminingPolicies</code> fall to zero, then switch.</p></div>
+        <div class="callout warn"><span class="lbl">The control-plane risk</span>
+          <p>Enforcement mode lives on the <em>gateway</em>. Anyone with <code>UpdateGateway</code> can flip it to <code>LOG_ONLY</code> — <strong>no separate IAM action protects it.</strong></p></div>
+      </div>
+    </div>
+    <div class="callout good"><span class="lbl">The feature that changes agent design</span>
+      <p><strong>Partial evaluation</strong> prunes always-denied tools out of <code>tools/list</code>. The model never learns they exist — security, accuracy <em>and</em> context-window win at once. Only possible because Cedar is formally analysable.</p></div>
+  </div>
+  <div class="foot"><span>Policy</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 22 ───────────────────────────────────────────── -->
+<section class="slide divider">
+  <div class="kicker">Part two · ~8 minutes</div>
+  <h2>Four things that<br>will bite you</h2>
+  <div class="foot"><span></span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 23 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Gotcha 1</div>
+  <h2>Identifiers are one-way doors</h2>
+  <div class="body">
+    <p>Every service has <strong>one identifier chosen early that can't be changed later</strong> without abandoning data or breaking references.</p>
+    <div class="grid g3">
+      <div class="card"><h3><i class="dot d-r"></i>Session ID</h3><p>Drives isolation <em>and</em> microVM affinity. New ID per turn = cold start every turn.</p></div>
+      <div class="card"><h3><i class="dot d-m"></i><code>actorId</code></h3><p>Defines what can ever be recalled together. Changing it orphans everything written.</p></div>
+      <div class="card"><h3><i class="dot d-i"></i>User-ID namespace</h3><p>The vault key. Federate a 2nd IdP without a prefix → two humans, one entry.</p></div>
+      <div class="card"><h3><i class="dot d-g"></i>Target name</h3><p>Becomes <code>Target___tool</code> — in prompts, Lambda routing and Cedar actions.</p></div>
+      <div class="card"><h3><i class="dot d-p"></i>Action strings</h3><p>Embed that target name. Rename → policies stop matching → <em>denied</em>.</p></div>
+      <div class="card"><h3><i class="dot d-o"></i>Session ID again</h3><p>No sessions view, no cross-turn debugging, no session-level evaluators.</p></div>
+    </div>
+    <div class="callout warn"><span class="lbl">Do this first</span><p>Spend an hour on naming before you ship anything. None of it is recoverable afterwards — and <code>cognito+user123</code> beats <code>user123</code> the day you add a second IdP.</p></div>
+  </div>
+  <div class="foot"><span>Gotcha 1 · identifiers</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 24 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Gotcha 2</div>
+  <h2>The quota that binds is never the headline</h2>
+  <div class="body">
+    <div class="tw"><table>
+      <thead><tr><th>Service</th><th>What the docs lead with</th><th>What you'll actually hit</th></tr></thead>
+      <tbody>
+        <tr><td><i class="dot d-r"></i> Runtime</td><td>1,000 TPS data plane</td><td class="hl">5,000 active sessions — set by idle timeout, not traffic</td></tr>
+        <tr><td><i class="dot d-m"></i> Memory</td><td>200 TPS <code>CreateEvent</code></td><td class="hl">5 TPS per actor per session — not adjustable</td></tr>
+        <tr><td><i class="dot d-g"></i> Gateway</td><td>200 TPS tool calls</td><td class="hl">25 semantic searches per <em>minute</em> (~0.4 TPS)</td></tr>
+        <tr><td><i class="dot d-i"></i> Identity</td><td>200 TPS token retrieval</td><td class="hl">50 credential providers per type</td></tr>
+        <tr><td><i class="dot d-p"></i> Policy</td><td>1,000 policies per engine</td><td class="hl">400 KB Cedar schema — grows with tool count</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout"><span class="lbl">Two fixes cover most of it</span>
+      <p><strong>Batch turns into one event</strong> (up to 100 messages) instead of one event per message — cuts throttling <em>and</em> cost. <strong>Search once per task</strong>, then call tools directly.</p></div>
+  </div>
+  <div class="foot"><span>Gotcha 2 · quotas</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 25 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Gotcha 3</div>
+  <h2>Costs are shaped opposite to intuition</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div class="card"><h3><i class="dot d-m"></i>Memory: reading, not storing</h3><p>Retrieval $0.50/1K beats storage $0.75/1K-<em>per month</em>. Two retrievals per turn ≈ <strong>8× the storage bill</strong>. Fetch preferences once per session.</p></div>
+      <div class="card"><h3><i class="dot d-g"></i>Gateway: search, not calls</h3><p>Tool calls $0.005/1K — noise. Search is <strong>5×</strong>. Web Search is <strong>1,400×</strong> at $7 per 1,000 queries.</p></div>
+      <div class="card"><h3><i class="dot d-r"></i>Runtime: idle memory, not CPU</h3><p>No CPU charge while blocked — but memory accrues through idle too. Leaked sessions are the classic surprise line item.</p></div>
+      <div class="card"><h3><i class="dot d-o"></i>Observability: free feature, real bill</h3><p>$0 from AgentCore; you pay CloudWatch ingestion on dozens of payload-bearing spans per turn.</p></div>
+    </div>
+<pre style="padding:14px 18px"><code>10 M tool calls/month:  Gateway $50 · Policy $250 · Memory retrieval $2,000
+                        … and model tokens dominate all of it.
+one Web Search per task × 1 M tasks:                          $7,000  ← 20×</code></pre>
+  </div>
+  <div class="foot"><span>Gotcha 3 · cost</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 26 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Gotcha 4</div>
+  <h2>Two things are never automatic</h2>
+  <div class="body">
+    <div class="callout danger"><span class="lbl">Neither errors if you skip it</span>
+      <p style="margin-bottom:10px"><strong>Traces need two opt-ins</strong> — Transaction Search enabled once per account, <em>and</em> ADOT instrumentation. Metrics appear regardless, so it looks like it's working right up until you need it.</p>
+      <p><strong>Policy in <code>ENFORCE</code> is default-deny.</strong> Attaching an engine with an incomplete policy set is an outage, not a warning.</p></div>
+    <div class="grid g2">
+      <div class="card"><h3>Verify traces before you need them</h3>
+<pre style="padding:12px 14px;margin-top:8px"><code>aws xray get-trace-segment-destination
+aws logs tail "/aws/bedrock-agentcore/runtimes/\
+$AGENT_ID-DEFAULT" \
+  --log-stream-name-prefix spans --follow</code></pre></div>
+      <div class="card"><h3>Watch the deny stream</h3><p style="margin-bottom:8px">In <code>LOG_ONLY</code>, two CloudWatch metrics tell you everything:</p><p><code>NoDeterminingPolicies</code> — legitimate traffic falling to default deny.<br><code>LogOnlyDecisionFlips</code> — what would change if you enforced.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Gotcha 4 · silent defaults</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 27 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">The pattern behind the gotchas</div>
+  <h2>Small and scoped beats big and shared</h2>
+  <div class="body">
+    <p>Four services arrive at the same architecture from completely different directions:</p>
+    <ul>
+      <li><strong><i class="dot d-g"></i>Gateway</strong> — tool overload degrades model accuracy long before it hits any quota.</li>
+      <li><strong><i class="dot d-p"></i>Policy</strong> — the 400 KB Cedar schema grows with tool count; AWS's own remedy is splitting engines per gateway.</li>
+      <li><strong><i class="dot d-i"></i>Identity</strong> — scope-down policies are only as fine-grained as your workload identities.</li>
+      <li><strong><i class="dot d-m"></i>Memory</strong> — over-nested namespaces destroy retrieval precision.</li>
+    </ul>
+    <div class="callout good"><span class="lbl">The synthesis</span>
+      <p>Prefer <strong>several purpose-scoped gateways, engines and identities</strong> over one large shared everything. A support agent shouldn't see the deployment tools — and its policy engine shouldn't have to carry their schema.</p></div>
+  </div>
+  <div class="foot"><span>The pattern</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 28 ───────────────────────────────────────────── -->
+<section class="slide divider">
+  <div class="kicker">Part three · ~7 minutes</div>
+  <h2>Putting it together</h2>
+  <div class="foot"><span></span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 29 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Worked example</div>
+  <h2>A support agent, wired up</h2>
+  <div class="body">
+    <div class="tw"><table>
+      <thead><tr><th>Requirement</th><th>Service</th><th>The specific decision</th></tr></thead>
+      <tbody>
+        <tr><td>Customer logs in with Cognito</td><td><i class="dot d-i"></i>Identity</td><td>JWT authorizer; <code>sub</code> becomes the verified user identity</td></tr>
+        <tr><td>Agent hosted, isolated per customer</td><td><i class="dot d-r"></i>Runtime</td><td>Session ID = <code>{userId}-{conversationId}</code>, generated server-side</td></tr>
+        <tr><td>Remembers the customer's history</td><td><i class="dot d-m"></i>Memory</td><td><code>actorId</code> from the JWT <code>sub</code>; facts + preferences + summaries</td></tr>
+        <tr><td>Reads Salesforce and Zendesk</td><td><i class="dot d-g"></i>Gateway</td><td>OpenAPI targets; OAuth credentials in the vault, never in agent code</td></tr>
+        <tr><td>Can issue refunds — carefully</td><td><i class="dot d-p"></i>Policy</td><td><code>amount &lt; 1000</code>, plus a <code>forbid</code> for read-only agents</td></tr>
+        <tr><td>Provably behaving</td><td><i class="dot d-o"></i>Observability</td><td>Transaction Search on; Goal Success Rate tracked weekly</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout good"><span class="lbl">The composition that carries the most weight</span>
+      <p><strong>Identity → Memory.</strong> Memory files records under a user identity, and Identity is the only component that <em>verifies</em> it. Wiring <code>actorId</code> from an unverified string is the most common way a multi-tenant agent leaks one customer's memory to another.</p></div>
+  </div>
+  <div class="foot"><span>Worked example</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 30 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">What it looks like</div>
+  <h2>Four lines and a deploy</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div>
+<pre><code># main.py
+from bedrock_agentcore.runtime import (
+    BedrockAgentCoreApp)
+from strands import Agent
+
+app = BedrockAgentCoreApp()
+agent = Agent()
+
+@app.entrypoint
+def invoke(payload):
+    return {"result":
+        agent(payload["prompt"]).message}
+
+if __name__ == "__main__":
+    app.run()</code></pre>
+      </div>
+      <div>
+<pre><code># the CLI does the infrastructure
+npm install -g @aws/agentcore
+
+agentcore create --name MyAgent
+agentcore dev              # localhost:8080
+agentcore deploy           # IAM, ECR, runtime
+
+agentcore add memory  --strategies SEMANTIC
+agentcore add gateway --name MyGateway
+agentcore add policy-engine --name Guard \
+  --attach-mode LOG_ONLY
+
+agentcore logs --follow
+agentcore traces list</code></pre>
+      </div>
+    </div>
+    <div class="callout warn"><span class="lbl">Tooling note</span>
+      <p>The Python <code>bedrock-agentcore-starter-toolkit</code> is <strong>legacy</strong>. Use the npm-distributed <code>@aws/agentcore</code> CLI — both claim the <code>agentcore</code> command, so uninstall the old one first. The runtime SDK <code>bedrock-agentcore</code> is unaffected.</p></div>
+  </div>
+  <div class="foot"><span>Code</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 31 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Where to start</div>
+  <h2>Pick two, not six</h2>
+  <div class="body">
+    <div class="tw"><table>
+      <thead><tr><th>If your situation is…</th><th>Start with</th><th>Add next</th></tr></thead>
+      <tbody>
+        <tr><td>Prototype, want it hosted and observable</td><td class="hl">Runtime + Observability</td><td>Memory, when turns need continuity</td></tr>
+        <tr><td>Agent must remember users across sessions</td><td class="hl">Memory</td><td>Identity, to make <code>actorId</code> trustworthy</td></tr>
+        <tr><td>Several agents need the same tools</td><td class="hl">Gateway</td><td>Identity for credentials, Policy for limits</td></tr>
+        <tr><td>Agent acts on a user's own SaaS data</td><td class="hl">Identity + Gateway</td><td>Policy, before anything irreversible</td></tr>
+        <tr><td>Agent can spend money or delete things</td><td class="hl">Policy in <code>LOG_ONLY</code></td><td>Evaluations, to prove it behaves</td></tr>
+        <tr><td>Agent already runs elsewhere</td><td class="hl">Observability</td><td>Memory and Identity — both standalone</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout"><span class="lbl">You don't adopt the platform</span>
+      <p>Six tools, not a framework. Most teams run two happily for months before adding a third.</p></div>
+  </div>
+  <div class="foot"><span>Getting started</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 32 ───────────────────────────────────────────── -->
+<section class="slide">
+  <div class="kicker">Before you go to production</div>
+  <h2>The checklist</h2>
+  <div class="body">
+    <div class="grid g2">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card"><h3>Naming</h3><p>Session IDs, <code>actorId</code>, user-ID namespacing, target names, provider names — decided and frozen.</p></div>
+        <div class="card"><h3>Runtime</h3><p>ARM64 · numeric <code>USER</code> · idle timeout tuned · <code>StopRuntimeSession</code> on conversation end · async tasks completed in <code>finally</code>.</p></div>
+        <div class="card"><h3>Memory &amp; Gateway</h3><p>Namespaces end with <code>/</code> · turns batched · Lambda strips <code>___</code> · backends accept gateway-only traffic.</p></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card"><h3>Identity &amp; Policy</h3><p><code>...ForUserId</code> denied · callback URLs registered · <code>LOG_ONLY</code> first · <code>UpdateGateway</code> restricted and alarmed.</p></div>
+        <div class="card"><h3>Observability</h3><p>Transaction Search on and spans <em>confirmed arriving</em> · sampling chosen · retention set · redaction decided.</p></div>
+        <div class="callout good"><span class="lbl">If you only do three things</span>
+          <p><strong>1.</strong> Get session IDs and <code>actorId</code> right — unrecoverable later. <strong>2.</strong> Confirm spans arrive before you need them. <strong>3.</strong> Put anything irreversible behind Policy, in <code>LOG_ONLY</code> first.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Checklist</span><span class="sp"></span><span class="n"></span></div>
+</section>
+
+<!-- 33 ───────────────────────────────────────────── -->
+<section class="slide title">
+  <div class="body center">
+    <div class="kicker">Thanks</div>
+    <h1 style="font-size:46px">Questions?</h1>
+    <div class="rule"></div>
+    <div class="sub">Full reference — six services, architect's briefs, API detail,<br>quotas, pricing and troubleshooting — in the companion document.</div>
+    <div style="margin-top:26px">
+      <span class="tag">docs.aws.amazon.com/bedrock-agentcore</span>
+      <span class="tag">github.com/aws/agentcore-cli</span>
+      <span class="tag">github.com/awslabs/agentcore-samples</span>
+    </div>
+    <p style="margin-top:22px;font-size:15px;color:var(--fg-faint)">
+      Press <strong>O</strong> for slide overview &nbsp;·&nbsp; <strong>F</strong> fullscreen &nbsp;·&nbsp; <strong>P</strong> to print / save as PDF
+    </p>
+  </div>
+  <div class="foot"><span>Amazon Bedrock AgentCore · developer deep dive</span><span class="sp"></span><span>Aug 2026</span></div>
+</section>
+
+</div></div>
+
+<div id="bar"></div>
+<div id="help">← → navigate · O overview · F fullscreen · P print</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage  = document.getElementById('stage');
+  var bar    = document.getElementById('bar');
+  var i = 0, overview = false;
+
+  slides.forEach(function(s, n){
+    var num = s.querySelector('.foot .n');
+    if(num) num.textContent = (n + 1) + ' / ' + slides.length;
+    s.addEventListener('click', function(){
+      if(overview){ go(n); toggleOverview(); }
+    });
+  });
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    bar.style.width = ((i) / (slides.length - 1) * 100) + '%';
+    if(history.replaceState) history.replaceState(null, '', '#' + (i + 1));
+    if(overview) slides[i].scrollIntoView({block:'nearest'});
+  }
+
+  function fit(){
+    if(overview) return;
+    var pad = 34;
+    var k = Math.min((window.innerWidth - pad) / 1280, (window.innerHeight - pad) / 720);
+    stage.style.transform = 'scale(' + k + ')';
+  }
+
+  function toggleOverview(){
+    overview = !overview;
+    document.body.classList.toggle('overview', overview);
+    document.documentElement.classList.toggle('overview', overview);
+    if(!overview){ fit(); window.scrollTo(0,0); }
+    else { stage.style.transform = 'none'; slides[i].scrollIntoView({block:'center'}); }
+  }
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if(k === 'ArrowRight' || k === 'PageDown' || k === ' ' || k === 'Enter'){ e.preventDefault(); go(i + 1); }
+    else if(k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); go(i - 1); }
+    else if(k === 'Home'){ e.preventDefault(); go(0); }
+    else if(k === 'End'){ e.preventDefault(); go(slides.length - 1); }
+    else if(k === 'o' || k === 'O' || k === 'Escape'){ e.preventDefault(); toggleOverview(); }
+    else if(k === 'f' || k === 'F'){
+      e.preventDefault();
+      if(document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+    else if(k === 'p' || k === 'P'){ e.preventDefault(); window.print(); }
+  });
+
+  // swipe on touch devices
+  var x0 = null;
+  document.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if(x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if(Math.abs(dx) > 55) go(i + (dx < 0 ? 1 : -1));
+    x0 = null;
+  }, {passive:true});
+
+  window.addEventListener('resize', fit);
+  var start = parseInt((location.hash || '').replace('#',''), 10);
+  fit();
+  go(isFinite(start) && start > 0 ? start - 1 : 0);
+})();
+</script>
+</body>
+</html>

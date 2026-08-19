@@ -1,0 +1,44 @@
+meta {
+  name: Read the shortlist
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{jobId}}/shortlist
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Priya is on it", function() {
+    const ids = res.getBody().map(e => e.employee_id);
+    expect(ids).to.include("E1002");
+  });
+
+  test("she is on it exactly once, however often this has run", function() {
+    const ids = res.getBody().map(e => e.employee_id);
+    expect(ids.filter(id => id === "E1002")).to.have.lengthOf(1);
+  });
+
+  test("the refused candidate never made it in", function() {
+    const ids = res.getBody().map(e => e.employee_id);
+    expect(ids).to.not.include("E1005");
+  });
+}
+
+docs {
+  The state the previous three requests left behind: one entry, added once, and no trace of
+  the candidate the API refused.
+
+  The last test is the one that matters — a `409` that still wrote a row would be worse than
+  no gate at all, and only reading the collection back proves it did not.
+
+  The other shortlist, `GET /requisitions/J2002/shortlist`, is empty and answers `200` with
+  `[]`. An empty collection is not a 404: the requisition exists, nobody is on its shortlist
+  yet.
+}

@@ -1,0 +1,74 @@
+meta {
+  name: Find people by skill
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 10,
+    "method": "tools/call",
+    "params": {
+      "name": "find_by_skill",
+      "arguments": { "skill": "Python", "min_level": 4 }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("the call succeeded", function() {
+    expect(res.getBody().result.isError).to.be.false;
+  });
+
+  test("the answer arrives twice, in two different shapes", function() {
+    const r = res.getBody().result;
+    expect(r.content[0].type).to.equal("text");
+    expect(r.structuredContent.result).to.be.an("array");
+    expect(JSON.parse(r.content[0].text)).to.eql(r.structuredContent.result);
+  });
+
+  test("the default filter kept everyone on the bench", function() {
+    res.getBody().result.structuredContent.result.forEach(e => {
+      expect(e.availability).to.equal("bench");
+    });
+  });
+
+  test("Priya is in there", function() {
+    const ids = res.getBody().result.structuredContent.result.map(e => e.employee_id);
+    expect(ids).to.include("E1002");
+  });
+}
+
+docs {
+  The first actual tool call, and the place to learn the shape of every result.
+
+  A `tools/call` result carries the answer **twice**:
+
+  | Field | For | Why |
+  |---|---|---|
+  | `content` | the model | a list of blocks — here one `text` block holding JSON as a string |
+  | `structuredContent` | the program | the real object, already parsed and schema-checked |
+
+  The second test proves they agree. A client written against `content` has to `JSON.parse`
+  a string the server serialised for a reader; one written against `structuredContent` does
+  not. Prefer the latter wherever the server publishes an `outputSchema`, which this one
+  does.
+
+  `available_only` was never sent, and the server applied its default of `true` anyway —
+  compare with *Tool defaults belong to the server*.
+}

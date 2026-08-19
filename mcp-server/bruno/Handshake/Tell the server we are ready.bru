@@ -1,0 +1,49 @@
+meta {
+  name: Tell the server we are ready
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "method": "notifications/initialized"
+  }
+}
+
+assert {
+  res.status: eq 202
+}
+
+tests {
+  test("202 Accepted, and nothing comes back", function() {
+    expect(res.getStatus()).to.equal(202);
+    expect(res.getBody()).to.be.empty;
+  });
+
+  test("the session id is echoed, confirming the server recognised us", function() {
+    expect(res.getHeader("mcp-session-id")).to.equal(bru.getVar("mcpSessionId"));
+  });
+}
+
+docs {
+  The half of the handshake that is easy to forget. This is a **notification**, not a
+  request: look at the body — there is no `id` field. JSON-RPC uses that absence to mean
+  *"do not answer me"*, which is why the reply is `202 Accepted` with an empty body rather
+  than `200` with a result.
+
+  It is also the first request to carry `mcp-session-id`. Open the **Headers** tab: every
+  request from here on sends `{{mcpSessionId}}`, captured by *Initialize*. Skip the header
+  and the server answers `400 Missing session ID`; send one it has never issued and it
+  answers `404`. Both are in the **Errors** folder.
+}

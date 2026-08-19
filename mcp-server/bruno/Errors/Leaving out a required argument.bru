@@ -1,0 +1,54 @@
+meta {
+  name: Leaving out a required argument
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 23,
+    "method": "tools/call",
+    "params": {
+      "name": "find_by_skill",
+      "arguments": {}
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("rejected before find_by_skill ran", function() {
+    expect(res.getBody().result.isError).to.be.true;
+  });
+
+  test("the message names the argument that was missing", function() {
+    const text = res.getBody().result.content[0].text;
+    expect(text).to.contain("skill");
+    expect(text).to.contain("Missing required argument");
+  });
+}
+
+docs {
+  `skill` has no default, so `tools/list` advertises it as `required` — and FastMCP enforces
+  that with Pydantic before the function is entered. The tool body never sees a half-formed
+  call.
+
+  This is the MCP counterpart of the REST project's `422`, with one difference worth
+  noticing: there, validation failure is a **4xx** the client must handle; here it is a
+  `200` with `isError: true`, phrased for a model that will read it and retry with the
+  argument filled in. Same guarantee, aimed at a different reader.
+}

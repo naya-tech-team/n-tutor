@@ -65,4 +65,4 @@ def shortlist(job_id: str, limit: int = 3) -> list[dict]:
 if __name__ == "__main__":
     # Port 8000 is also FastAPI's default — do not run both projects at once
     # without changing one, or the second gets "address already in use".
-    mcp.run(transport="http", show_banner=False, port=8000)  # serves /mcp/
+    mcp.run(transport="http", show_banner=False, port=8000, log_level="error")  # serves /mcp/

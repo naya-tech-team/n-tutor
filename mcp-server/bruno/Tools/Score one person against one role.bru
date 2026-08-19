@@ -1,0 +1,74 @@
+meta {
+  name: Score one person against one role
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 13,
+    "method": "tools/call",
+    "params": {
+      "name": "score_match",
+      "arguments": { "employee_id": "{{blockedEmployeeId}}", "job_id": "{{jobId}}" }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("Vikram scores 50 and is blocked", function() {
+    const m = res.getBody().result.structuredContent;
+    expect(m.name).to.equal("Vikram Iyer");
+    expect(m.score).to.equal(50);
+    expect(m.verdict).to.equal("blocked");
+    expect(m.blockers).to.eql(["Python", "SQL"]);
+  });
+
+  test("seniority does not buy past a mandatory skill", function() {
+    expect(res.getBody().result.structuredContent.meets_experience).to.be.true;
+  });
+
+  test("every blocker is also a gap, with the numbers behind it", function() {
+    const m = res.getBody().result.structuredContent;
+    expect(m.gaps.filter(g => g.mandatory).map(g => g.skill)).to.eql(m.blockers);
+    expect(m.gaps.find(g => g.skill === "Python"))
+      .to.eql({ skill: "Python", required: 4, actual: 3, mandatory: true });
+  });
+
+  test("what he does have is listed too, not just what he lacks", function() {
+    const matched = res.getBody().result.structuredContent.matched_skills.map(s => s.skill);
+    expect(matched).to.include.members(["Apache Spark", "AWS"]);
+  });
+}
+
+docs {
+  One person, one role, and the reasoning laid out rather than summarised.
+
+  **The score came from arithmetic, not from a model.** `match()` in `_shared/hr_data.py`
+  computed it, and this server holds no model at all — an MCP server is not an AI, it is the
+  hands. A match score you cannot reproduce by hand is a score nobody will defend in a
+  hiring review, so the model's job is to decide *who* to score and explain the result,
+  never to invent the number.
+
+  The tool returns `matched_skills` alongside `gaps` for the same reason. A model handed
+  only the failures will write *"Vikram is unsuitable"*; one handed both can write the
+  sentence a recruiter actually needs — *strong on Spark and AWS, no SQL on record*.
+
+  `meets_experience: true` and still blocked. Two independent judgements, deliberately not
+  averaged into one number.
+}

@@ -1,0 +1,47 @@
+meta {
+  name: List employees
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Directory {
+    employees {
+      employeeId
+      name
+      location
+      availability
+      experienceYears
+      skills {
+        skill
+        level
+      }
+    }
+  }
+}
+
+tests {
+  test("the four seeded people are all there", function() {
+    const ids = res.getBody().data.employees.map(e => e.employeeId);
+    expect(ids).to.include.members(["E1002", "E1003", "E1005", "E1007"]);
+  });
+
+  test("skills come back nested, not as a second request", function() {
+    const priya = res.getBody().data.employees.find(e => e.employeeId === "E1002");
+    expect(priya.skills.map(s => s.skill)).to.include("Apache Spark");
+  });
+}
+
+docs {
+  `employees` is a root field on `Query`. Note that `skills` arrives nested in the same
+  response — REST would have needed a second call, or a fatter default payload.
+
+  The test asserts the seeded ids are *included* rather than counting them: the Mutations
+  folder adds a person, so a re-run against the same server sees five.
+}

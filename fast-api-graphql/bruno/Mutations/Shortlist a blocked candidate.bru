@@ -1,0 +1,63 @@
+meta {
+  name: Shortlist a blocked candidate
+  type: graphql
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation Shortlist($jobId: ID!, $employeeId: ID!) {
+    shortlistCandidate(jobId: $jobId, employeeId: $employeeId) {
+      __typename
+      ... on ShortlistEntry {
+        employeeId
+        name
+        score
+        verdict
+        addedAt
+      }
+      ... on CandidateBlocked {
+        message
+        blockers
+        score
+      }
+      ... on NotFound {
+        message
+        kind
+        id
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "jobId": "{{jobId}}",
+    "employeeId": "{{blockedEmployeeId}}"
+  }
+}
+
+tests {
+  test("refused — and it is data, not an error", function() {
+    expect(res.getBody().errors).to.be.undefined;
+    const result = res.getBody().data.shortlistCandidate;
+    expect(result.__typename).to.equal("CandidateBlocked");
+    expect(result.message).to.contain("missing mandatory");
+    expect(result.blockers.sort()).to.eql(["Python", "SQL"]);
+  });
+}
+
+docs {
+  **The request this whole collection exists to show.** In the REST version this was a
+  `409 Conflict`. Here it is HTTP 200, no `errors` key, and a `CandidateBlocked` object
+  inside `data`.
+
+  That is not the server being lax — it is the refusal being *typed*. `CandidateBlocked`
+  carries the blocking skills, a status code never could, and a client cannot forget to
+  handle it because the query had to name the type to read anything at all.
+}

@@ -1,0 +1,51 @@
+meta {
+  name: Every way a mutation can end
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query UnionMembers {
+    shortlistResult: __type(name: "ShortlistResult") {
+      kind
+      possibleTypes {
+        name
+      }
+    }
+    addEmployeeResult: __type(name: "AddEmployeeResult") {
+      kind
+      possibleTypes {
+        name
+      }
+    }
+  }
+}
+
+tests {
+  test("ShortlistResult publishes all three outcomes", function() {
+    const union = res.getBody().data.shortlistResult;
+    expect(union.kind).to.equal("UNION");
+    expect(union.possibleTypes.map(t => t.name)).to.eql(
+      ["ShortlistEntry", "NotFound", "CandidateBlocked"]);
+  });
+
+  test("AddEmployeeResult publishes both", function() {
+    expect(res.getBody().data.addEmployeeResult.possibleTypes.map(t => t.name)).to.eql(
+      ["Employee", "ValidationFailed"]);
+  });
+}
+
+docs {
+  **Introspection** — the server describing itself. This is where "errors as types" pays
+  off: a client (or a codegen tool) can enumerate every outcome of a mutation *before
+  calling it*, and turn it into an exhaustive `switch`. No amount of reading HTTP status
+  codes gives you that.
+
+  Pin this test in CI and removing a union member becomes a deliberate, visible act.
+}

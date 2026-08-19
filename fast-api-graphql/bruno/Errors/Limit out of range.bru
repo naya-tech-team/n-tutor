@@ -1,0 +1,48 @@
+meta {
+  name: Limit out of range
+  type: graphql
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query TooMany($jobId: ID!, $limit: Int!) {
+    requisition(jobId: $jobId) {
+      title
+      candidates(limit: $limit) {
+        name
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "jobId": "{{jobId}}",
+    "limit": 0
+  }
+}
+
+tests {
+  test("the resolver enforces the bound the schema cannot", function() {
+    expect(res.getBody().errors[0].message).to.contain("limit must be between 1 and 20");
+  });
+
+  test("the error names the exact field that failed", function() {
+    expect(res.getBody().errors[0].path).to.eql(["requisition", "candidates"]);
+  });
+}
+
+docs {
+  REST got this free from `Query(3, ge=1, le=20)`. GraphQL types the argument as `Int!` and
+  stops there, so the bound lives in the resolver — and because an out-of-range `limit` is
+  a client bug rather than a domain outcome, it belongs in `errors`, not in a union.
+
+  Note the `path`. With a deeply nested query, that is the difference between a five-minute
+  fix and an afternoon.
+}

@@ -1,0 +1,69 @@
+meta {
+  name: Ranked candidates
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{jobId}}/candidates?limit=3
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 3
+}
+
+vars:post-response {
+  rankedIds: res.body.map(c => c.employee_id).join(",")
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("limit is respected", function() {
+    expect(res.getBody()).to.have.lengthOf(3);
+  });
+
+  test("best first", function() {
+    const scores = res.getBody().map(c => c.score);
+    expect(scores).to.eql([...scores].sort((a, b) => b - a));
+  });
+
+  test("Priya is a perfect, unblocked fit", function() {
+    const top = res.getBody()[0];
+    expect(top.name).to.equal("Priya Raman");
+    expect(top.score).to.equal(100);
+    expect(top.verdict).to.equal("strong");
+    expect(top.blockers).to.eql([]);
+    expect(top.gaps).to.eql([]);
+  });
+
+  test("a high score does not survive a missing mandatory skill", function() {
+    const rahul = res.getBody().find(c => c.name === "Rahul Menon");
+    expect(rahul.score).to.equal(79);
+    expect(rahul.verdict).to.equal("blocked");
+    expect(rahul.blockers).to.eql(["Apache Spark"]);
+  });
+
+  test("a blocked candidate is still ranked, not hidden", function() {
+    const blocked = res.getBody().filter(c => c.verdict === "blocked");
+    expect(blocked).to.have.length.above(0);
+  });
+}
+
+docs {
+  Every available employee scored against J2001, best first.
+
+  **Rahul is the row to read.** 79% and still `blocked`, because Apache Spark 3 is below a
+  mandatory 4. The score and the verdict answer different questions: *how close is this
+  person* and *can they do the job at all*. He also fails `meets_experience` at 5 years
+  against a 6-year floor — which on its own would have capped him at `possible`, never
+  `strong`.
+
+  He is returned anyway. Ranking is by score; the **decision** is the verdict. A client that
+  renders the percentage and drops `blockers` has told the truth and caused the wrong phone
+  call.
+}

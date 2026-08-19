@@ -1,0 +1,27 @@
+meta {
+  name: Health (GraphQL)
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Health {
+    health
+  }
+}
+
+assert {
+  res.body.data.health: eq ok
+  res.body.errors: isUndefined
+}
+
+docs {
+  The same check through the whole GraphQL path — router, context, schema, resolver.
+  If this passes and a query below fails, the failure is in the schema, not the wiring.
+}

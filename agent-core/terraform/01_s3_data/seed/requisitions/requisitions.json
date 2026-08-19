@@ -1,0 +1,260 @@
+[
+  {
+    "job_id": "J2001",
+    "title": "Senior Data Engineer",
+    "department": "Data & Analytics",
+    "location": "Bengaluru",
+    "status": "open",
+    "openings": 2,
+    "min_experience_years": 6,
+    "description": "Own batch and streaming pipelines on the lakehouse: quality, orchestration, cost.",
+    "required_skills": [
+      {
+        "skill": "Python",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Apache Spark",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "SQL",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Apache Airflow",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "Databricks",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "AWS",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      }
+    ]
+  },
+  {
+    "job_id": "J2002",
+    "title": "Streaming Platform Engineer",
+    "department": "Data & Analytics",
+    "location": "Chennai",
+    "status": "open",
+    "openings": 1,
+    "min_experience_years": 7,
+    "description": "Design event-driven data products on Kafka: topic design, exactly-once, Spark consumers.",
+    "required_skills": [
+      {
+        "skill": "Apache Kafka",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Apache Spark",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Scala",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "Java",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "AWS",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      }
+    ]
+  },
+  {
+    "job_id": "J2003",
+    "title": "Analytics Engineer",
+    "department": "Data & Analytics",
+    "location": "Pune",
+    "status": "open",
+    "openings": 2,
+    "min_experience_years": 3,
+    "description": "Model the warehouse in dbt. Own semantics, tests and documentation for the retail domain.",
+    "required_skills": [
+      {
+        "skill": "SQL",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "dbt",
+        "min_level": 3,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Snowflake",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "Data Modeling",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "Python",
+        "min_level": 2,
+        "mandatory": false,
+        "weight": 1
+      }
+    ]
+  },
+  {
+    "job_id": "J2004",
+    "title": "ML Engineer",
+    "department": "AI & ML",
+    "location": "Bengaluru",
+    "status": "open",
+    "openings": 1,
+    "min_experience_years": 5,
+    "description": "Take models from notebook to production: training pipelines, serving, monitoring.",
+    "required_skills": [
+      {
+        "skill": "Python",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Machine Learning",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "PyTorch",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "MLOps",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "AWS",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      }
+    ]
+  },
+  {
+    "job_id": "J2005",
+    "title": "Cloud Platform Engineer",
+    "department": "Platform",
+    "location": "Hyderabad",
+    "status": "open",
+    "openings": 1,
+    "min_experience_years": 5,
+    "description": "Run the landing zone: Terraform modules, EKS, golden pipelines for product teams.",
+    "required_skills": [
+      {
+        "skill": "AWS",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Terraform",
+        "min_level": 3,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Kubernetes",
+        "min_level": 3,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "Docker",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "CI/CD",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      }
+    ]
+  },
+  {
+    "job_id": "J2006",
+    "title": "Backend Engineer, Payments",
+    "department": "Payments",
+    "location": "Chennai",
+    "status": "open",
+    "openings": 3,
+    "min_experience_years": 4,
+    "description": "Build idempotent payment APIs and the event stream behind refunds and settlements.",
+    "required_skills": [
+      {
+        "skill": "Java",
+        "min_level": 4,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "SQL",
+        "min_level": 3,
+        "mandatory": true,
+        "weight": 2
+      },
+      {
+        "skill": "REST API",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "Apache Kafka",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      },
+      {
+        "skill": "Kubernetes",
+        "min_level": 3,
+        "mandatory": false,
+        "weight": 1
+      }
+    ]
+  }
+]

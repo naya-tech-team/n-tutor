@@ -1,0 +1,35 @@
+meta {
+  name: Unknown field
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Nonexistent {
+    employees {
+      salary
+    }
+  }
+}
+
+tests {
+  test("nothing executed at all", function() {
+    expect(res.getBody().data).to.be.null;
+  });
+
+  test("the schema rejected it before any resolver ran", function() {
+    expect(res.getBody().errors[0].message).to.contain("Cannot query field 'salary'");
+  });
+}
+
+docs {
+  The other error channel: `errors` with `data: null` means the request was never valid —
+  a bug in the *client*. The query was checked against the schema before a single resolver
+  ran, which is what a typed schema buys you.
+}

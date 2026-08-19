@@ -1,0 +1,12 @@
+{
+    "name": "hr-chat-proxy",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Streaming chat proxy: Cognito login, JWT verification, InvokeAgentRuntime. Deployed by terraform/07_ui.",
+    "scripts": {
+        "test": "node --test index.test.js"
+    },
+    "comment": "No dependencies, deliberately. The AWS SDK cannot invoke a CUSTOM_JWT runtime — that needs plain HTTPS with a bearer token — and everything else here is node:crypto and fetch.",
+    "dependencies": {}
+}

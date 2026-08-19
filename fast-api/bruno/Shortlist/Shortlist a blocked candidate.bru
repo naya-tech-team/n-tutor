@@ -1,0 +1,49 @@
+meta {
+  name: Shortlist a blocked candidate
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/requisitions/{{jobId}}/shortlist
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employee_id": "{{blockedEmployeeId}}"
+  }
+}
+
+assert {
+  res.status: eq 409
+}
+
+tests {
+  test("409 Conflict — not 400, not 422", function() {
+    expect(res.getStatus()).to.equal(409);
+  });
+
+  test("the reason names the skills that did it", function() {
+    expect(res.getBody().detail).to.equal("Vikram Iyer is missing mandatory Python, SQL");
+  });
+}
+
+docs {
+  **The request this collection exists to show.** The payload is well-formed, the
+  requisition exists, the employee exists — and the API still refuses, because Vikram is
+  below the bar on two mandatory skills.
+
+  `409` rather than `400` is a deliberate choice, and the source says why:
+
+  > *the request is well-formed, it conflicts with the state of the requisition. That
+  > distinction is what lets a client tell "you sent me nonsense" apart from "this person
+  > genuinely cannot do the job".*
+
+  Compare with the GraphQL version of this same call in
+  [`fast-api-graphql/bruno`](../../fast-api-graphql/bruno), which answers **200** with a
+  typed `CandidateBlocked` object. Same refusal, carried by the schema instead of the
+  status line — and there, unlike here, the blocking skills arrive as a list a client can
+  branch on rather than a sentence it has to parse.
+}

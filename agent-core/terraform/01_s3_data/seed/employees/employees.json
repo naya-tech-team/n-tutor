@@ -1,0 +1,448 @@
+[
+  {
+    "employee_id": "E1001",
+    "name": "Anjali Deshpande",
+    "email": "anjali.deshpande@example.com",
+    "designation": "Director, Data & Analytics",
+    "department": "Data & Analytics",
+    "location": "Bengaluru",
+    "availability": "allocated",
+    "bench_since": null,
+    "experience_years": 17.0,
+    "skills": [
+      {
+        "skill": "Data Modeling",
+        "level": 5,
+        "years": 14
+      },
+      {
+        "skill": "Stakeholder Management",
+        "level": 5,
+        "years": 12
+      },
+      {
+        "skill": "Snowflake",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "SQL",
+        "level": 5,
+        "years": 16
+      }
+    ]
+  },
+  {
+    "employee_id": "E1002",
+    "name": "Priya Raman",
+    "email": "priya.raman@example.com",
+    "designation": "Senior Data Engineer",
+    "department": "Data & Analytics",
+    "location": "Bengaluru",
+    "availability": "bench",
+    "bench_since": "2026-05-18",
+    "experience_years": 8.5,
+    "skills": [
+      {
+        "skill": "Python",
+        "level": 4,
+        "years": 7
+      },
+      {
+        "skill": "Apache Spark",
+        "level": 5,
+        "years": 6
+      },
+      {
+        "skill": "Apache Airflow",
+        "level": 4,
+        "years": 4
+      },
+      {
+        "skill": "SQL",
+        "level": 5,
+        "years": 8
+      },
+      {
+        "skill": "Databricks",
+        "level": 4,
+        "years": 3
+      },
+      {
+        "skill": "AWS",
+        "level": 3,
+        "years": 4
+      }
+    ]
+  },
+  {
+    "employee_id": "E1003",
+    "name": "Rahul Menon",
+    "email": "rahul.menon@example.com",
+    "designation": "Data Engineer",
+    "department": "Data & Analytics",
+    "location": "Hyderabad",
+    "availability": "bench",
+    "bench_since": "2026-06-30",
+    "experience_years": 5.0,
+    "skills": [
+      {
+        "skill": "Python",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "Apache Spark",
+        "level": 3,
+        "years": 3
+      },
+      {
+        "skill": "SQL",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "dbt",
+        "level": 3,
+        "years": 2
+      },
+      {
+        "skill": "Snowflake",
+        "level": 3,
+        "years": 2
+      }
+    ]
+  },
+  {
+    "employee_id": "E1004",
+    "name": "Meera Krishnan",
+    "email": "meera.krishnan@example.com",
+    "designation": "Principal Engineer, Streaming",
+    "department": "Data & Analytics",
+    "location": "Chennai",
+    "availability": "allocated",
+    "bench_since": null,
+    "experience_years": 12.0,
+    "skills": [
+      {
+        "skill": "Apache Kafka",
+        "level": 5,
+        "years": 8
+      },
+      {
+        "skill": "Apache Spark",
+        "level": 4,
+        "years": 7
+      },
+      {
+        "skill": "Scala",
+        "level": 4,
+        "years": 6
+      },
+      {
+        "skill": "Java",
+        "level": 4,
+        "years": 10
+      },
+      {
+        "skill": "Mentoring",
+        "level": 4,
+        "years": 5
+      }
+    ]
+  },
+  {
+    "employee_id": "E1005",
+    "name": "Vikram Iyer",
+    "email": "vikram.iyer@example.com",
+    "designation": "Streaming Engineer",
+    "department": "Data & Analytics",
+    "location": "Chennai",
+    "availability": "bench",
+    "bench_since": "2026-07-02",
+    "experience_years": 7.5,
+    "skills": [
+      {
+        "skill": "Apache Kafka",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "Apache Spark",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "Java",
+        "level": 3,
+        "years": 7
+      },
+      {
+        "skill": "AWS",
+        "level": 3,
+        "years": 4
+      },
+      {
+        "skill": "Python",
+        "level": 3,
+        "years": 3
+      }
+    ]
+  },
+  {
+    "employee_id": "E1006",
+    "name": "Sneha Kapoor",
+    "email": "sneha.kapoor@example.com",
+    "designation": "Analytics Engineer",
+    "department": "Data & Analytics",
+    "location": "Pune",
+    "availability": "bench",
+    "bench_since": "2026-06-11",
+    "experience_years": 4.0,
+    "skills": [
+      {
+        "skill": "SQL",
+        "level": 4,
+        "years": 4
+      },
+      {
+        "skill": "dbt",
+        "level": 4,
+        "years": 3
+      },
+      {
+        "skill": "Snowflake",
+        "level": 3,
+        "years": 3
+      },
+      {
+        "skill": "Data Modeling",
+        "level": 3,
+        "years": 2
+      },
+      {
+        "skill": "Python",
+        "level": 3,
+        "years": 3
+      }
+    ]
+  },
+  {
+    "employee_id": "E1007",
+    "name": "Arjun Nair",
+    "email": "arjun.nair@example.com",
+    "designation": "ML Engineer",
+    "department": "AI & ML",
+    "location": "Bengaluru",
+    "availability": "allocated",
+    "bench_since": null,
+    "experience_years": 6.0,
+    "skills": [
+      {
+        "skill": "Python",
+        "level": 5,
+        "years": 6
+      },
+      {
+        "skill": "Machine Learning",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "PyTorch",
+        "level": 4,
+        "years": 3
+      },
+      {
+        "skill": "MLOps",
+        "level": 3,
+        "years": 2
+      },
+      {
+        "skill": "AWS",
+        "level": 3,
+        "years": 3
+      }
+    ]
+  },
+  {
+    "employee_id": "E1008",
+    "name": "Fatima Sheikh",
+    "email": "fatima.sheikh@example.com",
+    "designation": "Cloud Platform Engineer",
+    "department": "Platform",
+    "location": "Hyderabad",
+    "availability": "bench",
+    "bench_since": "2026-07-21",
+    "experience_years": 6.5,
+    "skills": [
+      {
+        "skill": "AWS",
+        "level": 5,
+        "years": 6
+      },
+      {
+        "skill": "Terraform",
+        "level": 4,
+        "years": 4
+      },
+      {
+        "skill": "Kubernetes",
+        "level": 4,
+        "years": 4
+      },
+      {
+        "skill": "Docker",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "CI/CD",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "Python",
+        "level": 3,
+        "years": 4
+      }
+    ]
+  },
+  {
+    "employee_id": "E1009",
+    "name": "Karthik Subramanian",
+    "email": "karthik.s@example.com",
+    "designation": "Backend Engineer",
+    "department": "Payments",
+    "location": "Chennai",
+    "availability": "bench",
+    "bench_since": "2026-06-02",
+    "experience_years": 5.5,
+    "skills": [
+      {
+        "skill": "Java",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "SQL",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "REST API",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "Apache Kafka",
+        "level": 3,
+        "years": 2
+      },
+      {
+        "skill": "Kubernetes",
+        "level": 2,
+        "years": 1
+      }
+    ]
+  },
+  {
+    "employee_id": "E1010",
+    "name": "Divya Pillai",
+    "email": "divya.pillai@example.com",
+    "designation": "Data Analyst",
+    "department": "Data & Analytics",
+    "location": "Kochi",
+    "availability": "bench",
+    "bench_since": "2026-05-05",
+    "experience_years": 3.0,
+    "skills": [
+      {
+        "skill": "SQL",
+        "level": 4,
+        "years": 3
+      },
+      {
+        "skill": "Data Modeling",
+        "level": 2,
+        "years": 1
+      },
+      {
+        "skill": "Python",
+        "level": 2,
+        "years": 2
+      }
+    ]
+  },
+  {
+    "employee_id": "E1011",
+    "name": "Rohan Gupta",
+    "email": "rohan.gupta@example.com",
+    "designation": "SRE",
+    "department": "Platform",
+    "location": "Pune",
+    "availability": "allocated",
+    "bench_since": null,
+    "experience_years": 9.0,
+    "skills": [
+      {
+        "skill": "Kubernetes",
+        "level": 5,
+        "years": 6
+      },
+      {
+        "skill": "Terraform",
+        "level": 4,
+        "years": 5
+      },
+      {
+        "skill": "AWS",
+        "level": 4,
+        "years": 7
+      },
+      {
+        "skill": "CI/CD",
+        "level": 5,
+        "years": 8
+      },
+      {
+        "skill": "Docker",
+        "level": 4,
+        "years": 6
+      }
+    ]
+  },
+  {
+    "employee_id": "E1012",
+    "name": "Aisha Khan",
+    "email": "aisha.khan@example.com",
+    "designation": "Full-stack Engineer",
+    "department": "Digital",
+    "location": "Bengaluru",
+    "availability": "bench",
+    "bench_since": "2026-07-15",
+    "experience_years": 4.5,
+    "skills": [
+      {
+        "skill": "TypeScript",
+        "level": 4,
+        "years": 4
+      },
+      {
+        "skill": "React",
+        "level": 4,
+        "years": 4
+      },
+      {
+        "skill": "REST API",
+        "level": 3,
+        "years": 3
+      },
+      {
+        "skill": "Python",
+        "level": 3,
+        "years": 2
+      }
+    ]
+  }
+]

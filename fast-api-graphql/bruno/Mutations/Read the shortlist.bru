@@ -1,0 +1,52 @@
+meta {
+  name: Read the shortlist
+  type: graphql
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Shortlisted($jobId: ID!) {
+    requisition(jobId: $jobId) {
+      title
+      shortlist {
+        employeeId
+        name
+        score
+        verdict
+        employee {
+          location
+          availability
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "jobId": "{{jobId}}"
+  }
+}
+
+tests {
+  test("exactly one person is shortlisted for J2001", function() {
+    const shortlist = res.getBody().data.requisition.shortlist;
+    expect(shortlist.length).to.equal(1);
+    expect(shortlist[0].employeeId).to.equal("E1002");
+  });
+
+  test("each entry can resolve its full employee record", function() {
+    expect(res.getBody().data.requisition.shortlist[0].employee.location).to.equal("Bengaluru");
+  });
+}
+
+docs {
+  Proof that the two requests above created one entry between them. The nested
+  `employee { … }` is the DataLoader field — with thirty entries this is still one lookup.
+}

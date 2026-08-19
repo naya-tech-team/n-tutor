@@ -1,0 +1,59 @@
+meta {
+  name: Get one requisition
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 12,
+    "method": "tools/call",
+    "params": {
+      "name": "get_requisition",
+      "arguments": { "job_id": "{{jobId}}" }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("J2001 is the Senior Data Engineer role", function() {
+    const job = res.getBody().result.structuredContent;
+    expect(job.title).to.equal("Senior Data Engineer");
+    expect(job.location).to.equal("Bengaluru");
+    expect(job.min_experience_years).to.equal(6);
+    expect(job.status).to.equal("open");
+  });
+
+  test("six required skills, three of them mandatory", function() {
+    const skills = res.getBody().result.structuredContent.required_skills;
+    expect(skills).to.have.lengthOf(6);
+    expect(skills.filter(s => s.mandatory).map(s => s.skill))
+      .to.eql(["Python", "Apache Spark", "SQL"]);
+  });
+}
+
+docs {
+  The input to every score below. Read it first and none of the numbers in this folder are
+  magic: **weight** is how much of the percentage a skill carries, **min_level** is the bar,
+  **mandatory** decides whether missing it is a gap or a blocker.
+
+  > **Six skills here, four in the REST project.** [`fast-api/`](../../fast-api/README.md)
+  > carries a deliberately trimmed dataset, so the *same* algorithm gives Rahul 79% there
+  > and 61% here. Same rules, smaller world — worth knowing before you compare the two
+  > collections side by side.
+}

@@ -1,0 +1,51 @@
+meta {
+  name: Fetch the employee we just added
+  type: graphql
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query JustAdded($employeeId: ID!) {
+    employee(employeeId: $employeeId) {
+      employeeId
+      name
+      location
+      experienceYears
+      match(jobId: "J2001") {
+        score
+        verdict
+        blockers
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "employeeId": "{{newEmployeeId}}"
+  }
+}
+
+tests {
+  test("the person created by the previous request is readable", function() {
+    expect(res.getBody().data.employee.name).to.equal("Bruno Tester");
+  });
+
+  test("and is immediately scoreable against an open role", function() {
+    const match = res.getBody().data.employee.match;
+    expect(match.verdict).to.equal("blocked");        // no Python, no Spark
+    expect(match.blockers).to.include("Python");
+  });
+}
+
+docs {
+  `{{newEmployeeId}}` was captured from the previous response (see its **Vars** tab). This
+  is the chaining pattern for any create-then-read flow — and it doubles as proof that the
+  scoring engine picks up new people with no extra wiring.
+}

@@ -1,0 +1,55 @@
+meta {
+  name: Forgetting the SSE Accept header
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+  Accept: application/json
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 24,
+    "method": "tools/list"
+  }
+}
+
+assert {
+  res.status: eq 406
+}
+
+tests {
+  test("406 Not Acceptable — the transport, not the tool", function() {
+    expect(res.getStatus()).to.equal(406);
+  });
+
+  test("this one IS a top-level JSON-RPC error", function() {
+    expect(res.getBody().result).to.be.undefined;
+    expect(res.getBody().error.code).to.equal(-32600);
+    expect(res.getBody().error.message).to.contain("must accept both");
+  });
+}
+
+docs {
+  The single most common way a hand-rolled MCP client fails, and it looks like nothing else
+  in this collection: an ordinary, correct-looking `Accept: application/json`.
+
+  Streamable HTTP lets the server answer either way — plain JSON for a quick reply, or an
+  event stream when it wants to send progress notifications during a long call — and it
+  chooses **per response**. So the client has to declare it can handle both up front:
+
+      Accept: application/json, text/event-stream
+
+  That is why the header sits in **collection.bru** rather than in each request. This
+  request overrides it to show the failure; note also that the error arrives as plain JSON,
+  since the server cannot reply with a stream to a client that just said it will not read one.
+}

@@ -1,0 +1,52 @@
+meta {
+  name: No resources, no prompts
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "resources/list"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("the server exposes no resources — and says so properly", function() {
+    expect(res.getBody().result.resources).to.eql([]);
+  });
+
+  test("an empty list is a result, never an error", function() {
+    expect(res.getBody().error).to.be.undefined;
+  });
+}
+
+docs {
+  Tools are one of three things an MCP server can publish. The other two are **resources**
+  (readable content the client pulls in, addressed by URI) and **prompts** (authored
+  templates a user can invoke). This server offers neither — `hr-skills` is four verbs and
+  nothing else.
+
+  It still has to answer `resources/list`, and answer it with an empty array rather than an
+  error, because a client discovering the server has no way to know in advance. The richer
+  server in
+  [`strands-ai/app/00_tutorial/hr_mcp_server.py`](../../strands-ai/app/00_tutorial/hr_mcp_server.py)
+  adds `hr://` resources and authored prompts if you want to see the other two in use.
+
+  `prompts/list` behaves identically — swap the method name in the body to check.
+}

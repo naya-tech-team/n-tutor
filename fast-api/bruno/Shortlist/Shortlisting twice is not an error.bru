@@ -1,0 +1,45 @@
+meta {
+  name: Shortlisting twice is not an error
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/requisitions/{{jobId}}/shortlist
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employee_id": "{{strongEmployeeId}}"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
+
+tests {
+  test("the second POST is accepted, not rejected", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("and it returns the original entry rather than a new one", function() {
+    expect(res.getBody().added_at).to.equal(bru.getVar("firstAddedAt"));
+  });
+}
+
+docs {
+  Exactly the same request as the one before it. `add_to_shortlist()` looks for the employee
+  first and returns the existing entry if it finds one, so a retry after a dropped
+  connection cannot shortlist someone twice.
+
+  The `added_at` comparison is the real assertion — a `201` alone would not prove anything,
+  since a duplicate entry would return `201` too. The **timestamp is the identity check**:
+  it is unchanged, so this is the original record, not a second one.
+
+  Worth being honest about the trade: this is idempotent, but it answers `201 Created` for a
+  request that created nothing. `200 OK` on the duplicate would be more truthful, at the
+  cost of a client having to handle two success codes.
+}

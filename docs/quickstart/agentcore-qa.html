@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AgentCore, Question by Question — AI Engineering</title>
+<meta name="description" content="The questions developers actually ask about Amazon Bedrock AgentCore, answered as a dialogue: how it differs from Bedrock Agents, what the six components do, what you would have to build without them, what adoption really costs, and how to start." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+<style>
+  .qa { margin: 22px 0 26px; }
+  .qa-q, .qa-a { display: flex; gap: 12px; align-items: flex-start; }
+  .qa-q { margin-bottom: 12px; }
+  .qa-who {
+    flex: 0 0 auto; min-width: 74px; text-align: center;
+    font-size: .66rem; letter-spacing: .09em; text-transform: uppercase; font-weight: 700;
+    padding: 4px 8px; border-radius: 999px; margin-top: 3px;
+  }
+  .qa-q .qa-who {
+    color: var(--accent-dark, var(--accent));
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+  .qa-a .qa-who {
+    color: var(--info, #0891b2);
+    background: color-mix(in srgb, var(--info, #0891b2) 16%, transparent);
+  }
+  .qa-q .qa-text {
+    font-size: var(--fs-md, 1.125rem); font-weight: 650; color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .qa-a .qa-body {
+    border-left: 2px solid var(--border); padding-left: 16px;
+  }
+  .qa-a .qa-body > :first-child { margin-top: 0; }
+  .qa-a .qa-body > :last-child { margin-bottom: 0; }
+
+  .verdict {
+    border-left: 3px solid var(--success, #16a34a);
+    background: color-mix(in srgb, var(--success, #16a34a) 8%, transparent);
+    border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0 0;
+  }
+  .verdict .verdict-label {
+    display: block; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+    font-weight: 700; opacity: .8; margin-bottom: 5px;
+  }
+  .verdict p { margin: 0; }
+  .verdict.caution { border-left-color: var(--warning, #d97706); background: color-mix(in srgb, var(--warning, #d97706) 9%, transparent); }
+
+  .source-note { font-size: .9rem; color: var(--text-muted); }
+  .tight td:first-child { white-space: nowrap; font-weight: 600; }
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="graphql.html"><span class="badge-dot"></span> GraphQL: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands-course.html"><span class="badge-dot"></span> Strands: Full Course Guide</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+      <a class="sidebar-link" href="agentcore.html"><span class="badge-dot"></span> AWS AgentCore: Tutorial</a>
+      <a class="sidebar-link" href="agentcore-qa.html"><span class="badge-dot"></span> AgentCore: Q&amp;A</a>
+      <a class="sidebar-link" href="agentcore-deploy.html"><span class="badge-dot"></span> AgentCore: Deploy Prerequisites</a>
+      <a class="sidebar-link" href="agentcore-complete-reference.html"><span class="badge-dot"></span> AgentCore: Complete Reference</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Slide Decks <span class="qs-count">3</span></div>
+      <a class="sidebar-link" href="agentcore-capabilities.html"><span class="badge-dot"></span> AgentCore: Capabilities &amp; Trade-offs</a>
+      <a class="sidebar-link" href="agentcore-slides.html"><span class="badge-dot"></span> AgentCore: Capabilities (slides)</a>
+      <a class="sidebar-link" href="agentcore-dev-deck.html"><span class="badge-dot"></span> AgentCore: Developer Deep Dive</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>AgentCore Q&amp;A</span>
+    </nav>
+
+    <h1>AgentCore, Question by Question</h1>
+    <div class="meta-row">
+      <span class="badge badge-intermediate">Q&amp;A tutorial</span>
+      <span class="badge badge-info">decision-level</span>
+      <span class="badge badge-info">no code required</span>
+      <span class="badge badge-info">~35 min</span>
+    </div>
+
+    <p>The <a href="agentcore.html">AgentCore Tutorial</a> answers <em>how</em>. This one answers the questions that come <strong>before</strong> anyone writes a line of it: how is this different from Bedrock Agents, what would I have to build myself without it, what does adopting it actually cost me, and how do I explain the decision to the person who signs off on it.</p>
+
+    <p>It is written as a dialogue between a <strong>developer</strong> with prototypes that work and a production deadline that does not, and an <strong>architect</strong> who has done this before.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">📎 Where this comes from</div>
+      <p>This tutorial follows the shape and question list of <a href="https://medium.com/@DataTechBridge/mastering-amazon-bedrock-agentcore-an-expert-to-developer-dialogue-700a9a1157bb" target="_blank" rel="noopener">“Mastering Amazon Bedrock AgentCore: An Expert-to-Developer Dialogue”</a> by DataTechBridge on Medium. <strong>The questions are theirs.</strong> The answers here are rewritten in this course's voice, illustrated with the HR recruiting system the rest of the course uses, and cross-checked against the working implementation in <code>agent-core/</code>. Where the original makes a claim that is directional rather than measurable — timelines, cost savings, roadmap — it is <strong>labelled as the source's claim</strong> rather than repeated as fact.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">The example behind every answer</div>
+      <p>Whenever an answer needs something concrete, it uses the course's HR recruiting desk: <strong>employees have skills rated 1–5, requisitions require skills at a minimum level, and some of those are mandatory.</strong> A candidate below a mandatory bar is <em>blocked</em> — no score saves them. Four agents fill requisition <strong>J2001</strong>: a supervisor, a screener, an outreach writer and a compliance reviewer. It runs on a laptop and it runs on AgentCore; <a href="agentcore.html">the tutorial</a> is the deployed version.</p>
+    </div>
+
+    <h2 id="what">1. What is it, and why does it exist?</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">What is Amazon Bedrock AgentCore, in one sentence?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>A suite of services for <strong>running</strong> AI agents in production — not for building them. It gives an agent you already wrote a place to run, a way to reach tools, memory, an identity story and traces.</p>
+        <p>The single most important word is <strong>agnostic</strong>: it does not care which framework you used or which model you call. Strands, LangChain, LangGraph, CrewAI, plain Python — and a model from Bedrock, or one that is not on Bedrock at all.</p>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Bedrock already lets me build agents. Why would I need this as well?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Because they answer different questions. <strong>Bedrock Agents</strong> is a managed way to <em>define</em> an agent inside the Bedrock ecosystem — you describe it and AWS runs the loop. <strong>AgentCore</strong> assumes the agent already exists, written however you like, and takes over everything around it.</p>
+        <p>The test is simple: if the framework and the model are decisions you want to keep making yourself, you want AgentCore.</p>
+        <div class="verdict"><span class="verdict-label">The line between them</span><p>Bedrock Agents: <strong>AWS defines how the agent thinks.</strong> AgentCore: <strong>you do, and AWS runs it.</strong></p></div>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">I have a LangChain agent calling a non-Bedrock model. Can I deploy that?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Not as a Bedrock Agent — that path expects you to work inside its ecosystem. <strong>Yes with AgentCore Runtime</strong>, which takes your code as a container image in Amazon ECR (or, for a plain Python service, a zip in S3) and runs it as-is.</p>
+        <p>Runtime's contract is not "use our framework". It is much smaller than that: <em>listen on the right port at the right path</em>. What happens inside the process is entirely yours.</p>
+      </div></div>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    subgraph you ["What stays yours"]
+      F["framework<br/>Strands · LangChain · CrewAI"]
+      M["model choice<br/>Bedrock or not"]
+      P["prompts, tools,<br/>the reasoning loop"]
+    end
+    subgraph aws ["What AgentCore takes over"]
+      H["hosting + scaling"]
+      T["tool access"]
+      ME["memory"]
+      I["auth"]
+      O["traces"]
+    end
+    you -->|"a container or a zip"| aws
+      </pre>
+      <div class="caption">The division of labour, and the whole pitch in one picture: nothing on the left changes when you adopt what is on the right.</div>
+    </div>
+
+    <h2 id="components">2. What are the components?</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Break it down for me. What am I actually buying?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Six services, and you adopt them one at a time rather than all at once:</p>
+      </div></div>
+    </div>
+
+    <table class="tight">
+      <thead><tr><th>Component</th><th>What it does</th><th>The question it answers</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime</td><td>Serverless host for your agent, whatever it is written in</td><td>“Where does this run when it is not my laptop?”</td></tr>
+        <tr><td>Gateway</td><td>Turns APIs and Lambda functions into MCP-compatible tools</td><td>“How does my agent reach the systems we already have?”</td></tr>
+        <tr><td>Memory</td><td>Managed short-term and long-term conversation context</td><td>“Why does it forget everything between sessions?”</td></tr>
+        <tr><td>Identity</td><td>Auth in both directions, with Okta / Entra / Cognito</td><td>“Who is allowed to ask, and what may it reach?”</td></tr>
+        <tr><td>Tools</td><td>Code Interpreter and Browser, both sandboxed</td><td>“How does it run code or use a website safely?”</td></tr>
+        <tr><td>Observability</td><td>Dashboards and traces, OpenTelemetry-compatible</td><td>“What did it actually do at 2am?”</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note">
+      <div class="callout-title">Six or seven? Both counts are right</div>
+      <p>The source article counts <strong>six</strong>, grouping Code Interpreter and Browser together as “Tools”. <a href="agentcore.html">Our tutorial</a> counts <strong>seven</strong> by listing them separately, because they have very different risk profiles — one runs your code, the other drives someone else's website. Same platform, different bracketing. Do not let a count in a slide deck confuse you.</p>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TB
+    A["<b>your agent</b><br/>any framework, any model"]
+    subgraph core ["AgentCore"]
+      direction LR
+      RT["<b>Runtime</b>"]
+      GW["<b>Gateway</b>"]
+      MEM["<b>Memory</b>"]
+      ID["<b>Identity</b>"]
+      TL["<b>Tools</b><br/>code interpreter<br/>browser"]
+      OB["<b>Observability</b>"]
+    end
+    EX[("your existing estate<br/>APIs · Lambdas · databases")]
+    A --> RT
+    RT --> MEM
+    RT --> TL
+    RT --> GW
+    GW --> EX
+    ID -.->|"guards both ends"| RT
+    ID -.-> GW
+    OB -.->|"watches all of it"| core
+      </pre>
+      <div class="caption">Gateway is the edge that faces the systems you already own — which is why, for most teams, it is the component that gets adopted first.</div>
+    </div>
+
+    <h2 id="runtime">3. Runtime</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">How does Runtime actually work? What do I hand it?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>You package the agent as a container, push it to ECR, and point a runtime at it. AWS handles scaling, networking and the security boundary. You get an ARN and an endpoint back.</p>
+        <p>Two details people miss on day one:</p>
+        <ul class="checklist">
+          <li><strong>You do not need Docker for a plain Python agent.</strong> A zip in S3 with an entry point works too, and it removes a registry, an image-scanning story and a build step from the project. Move to a container image when you need a system package.</li>
+          <li><strong>The protocol decides the port.</strong> An HTTP agent listens on 8080 at <code>/invocations</code>, an MCP tool server on 8000 at <code>/mcp</code>, an A2A agent on 9000 at <code>/</code>. Bind the wrong one and the deploy succeeds, the health check fails, and what you see is a timeout.</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">My prototype serves a handful of users. How hard is it to get to thousands?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>From Runtime's side, nothing: it scales out on demand and back down when the demand goes away, with no code change.</p>
+        <p>What actually breaks at a thousand users is rarely the compute. It is <strong>model throughput quotas</strong>, the downstream systems your tools call, and cost per conversation. Runtime removes one of those four problems, and it is the easiest one.</p>
+        <div class="verdict caution"><span class="verdict-label">Worth saying out loud</span><p>“Serverless scaling” is not the same as “this will work at scale”. Load-test the <em>tools</em>, not the agent.</p></div>
+      </div></div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">One thing per session, and it is not free</div>
+      <p>Runtime isolates each session — its own microVM, its own memory and file system, so two conversations cannot leak into each other. The cost of that isolation is a cold start per new session id, so <strong>key the session to a business object</strong> (a requisition, a ticket, a chat thread) rather than minting a new one per request. In our HR system the session id <em>is</em> the requisition id, which is also what makes five runtimes produce one trace.</p>
+    </div>
+
+    <h2 id="memory">4. Memory</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">My agent forgets everything. Does Memory just fix that?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>It fixes two different problems that are usually confused with each other:</p>
+        <ul class="checklist">
+          <li><strong>Short-term</strong> is the event log for the conversation in progress — what makes a chat survive a restart.</li>
+          <li><strong>Long-term</strong> is what gets extracted from those events afterwards and retrieved later by relevance: facts, preferences, summaries.</li>
+        </ul>
+        <p>The part that saves you real work is the retrieval: it pulls back what is relevant rather than everything, so you are not hand-rolling a context-window budget and a truncation strategy for the fourth time.</p>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">How much work is it to put into an agent that already has its own memory?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Small — a session manager and a config object, and your existing memory code comes out. The hard part is not the API.</p>
+        <p><strong>The hard part is choosing the two keys</strong>, and getting them wrong looks like a model problem for weeks:</p>
+        <div class="code-block">
+          <div class="code-block-header"><span>the decision, not the code</span><button class="copy-btn">Copy</button></div>
+          <pre><code class="language-python">actor_id   = "recruiter-nk"   # WHO is working
+session_id = "J2001"          # WHAT they are working on</code></pre>
+        </div>
+        <p>Use a fresh UUID per conversation and the system forgets J2001 between Tuesday and Thursday. Use <code>actor_id="agent"</code> and the whole recruiting team shares one preference profile. <strong>The session id is a business key, not plumbing.</strong></p>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Our security team will ask about the data. What do I tell them?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Encrypted at rest and in transit, you keep control of where it lives, access is governed by the same identity layer as everything else, and the access events are logged — which is the part a GDPR or HIPAA conversation actually turns on.</p>
+        <p>Then tell them the thing the platform cannot help with: <strong>a conversation log is now a data retention decision.</strong> Someone has to own the expiry period, and it should not be the person who wrote the agent.</p>
+      </div></div>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    T["<b>a turn</b><br/>recruiter asks, agent answers"] -->|"written now"| S[("<b>short-term</b><br/>the event log")]
+    S -.->|"extracted later"| L[("<b>long-term</b><br/>facts · preferences · summaries")]
+    L -->|"retrieved by relevance"| N["<b>next week's</b><br/>conversation about J2001"]
+      </pre>
+      <div class="caption">Extraction is asynchronous — which is why a demo that writes a memory and immediately reads it back looks broken.</div>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">The failure mode nobody warns you about</div>
+      <p>A summarisation strategy will happily turn <em>“blocked on Apache Spark”</em> into <em>“some gaps”</em>. Next week that sentence is what your agent reads, and a warm note goes to a candidate who cannot do the job. <strong>Read memory for context; re-derive verdicts from the source of truth.</strong> Never the other way round.</p>
+    </div>
+
+    <h2 id="gateway">5. Gateway and MCP</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">What is MCP and why does everyone keep mentioning it?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>An open standard for how models, agents and tools talk to each other. Its value is boring and enormous: <strong>one interface instead of one integration per pair.</strong> A tool that speaks MCP can be consumed by any client that speaks MCP, including ones you did not write.</p>
+        <p>New to it? The <a href="fastmcp.html">FastMCP Quick Start</a> builds a four-tool server for this exact HR domain in about twenty minutes.</p>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">So what does Gateway do that I cannot do myself?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>It makes things that are <em>not</em> MCP servers behave like one: a Lambda function, an OpenAPI service, a Smithy model, an API Gateway stage. You register a target and its operations show up as tools, namespaced so two targets can export the same name without colliding.</p>
+        <p>Could you write that adapter yourself? Yes, and you would then own it forever.</p>
+        <div class="verdict"><span class="verdict-label">The rule that keeps this clean</span><p><strong>Put a thing behind the Gateway when it cannot speak MCP on its own.</strong> Anything that already speaks MCP should be called directly — otherwise you are paying an extra network hop on every call and maintaining its tool schema in two places.</p></div>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Do I have to rewrite my LangChain agent for MCP?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Mostly no. Frameworks are adding native MCP support, and where they have it the change is at the <em>tool discovery and tool calling</em> layer — an MCP client instead of a hand-written tool list. Your prompts, your routing logic and your business tools are untouched.</p>
+        <p>One thing does change, and it is worth planning for: <strong>tool names.</strong> Gateway-provided tools arrive prefixed by their target. If your system prompt names tools as strings, it will need editing — so name <em>capabilities</em> in prompts, not tool identifiers, and the prompt survives moving a tool from one side of the boundary to the other.</p>
+      </div></div>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    AG["<b>your agent</b><br/>one flat tool list"]
+    MS["<b>an MCP server</b><br/>you already run"]
+    GW["<b>Gateway</b><br/>the adapter"]
+    L["Lambda"]
+    API["OpenAPI service"]
+    SM["Smithy / API Gateway"]
+    AG -->|"direct · 1 hop"| MS
+    AG -->|"MCP"| GW
+    GW --> L
+    GW --> API
+    GW --> SM
+      </pre>
+      <div class="caption">From the model's point of view there is no difference between the two paths — which is exactly why the choice is yours to make on cost and ownership grounds.</div>
+    </div>
+
+    <h2 id="tools">6. Code Interpreter and Browser</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">What is Code Interpreter for, and what should I not use it for?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>A sandbox where the agent runs code it wrote: isolated, resource-limited, state kept between executions, a file system it can read and write, and a large set of libraries already installed — pandas, matplotlib, requests and friends.</p>
+        <p>It earns its place on <strong>open-ended</strong> work: analysis, charts, format conversion, awkward calculations, throwaway scripts. <em>“Plot the skill gap across all six open requisitions”</em> is a good use — there is no fixed function to call, and writing one for every such question is how you end up with two hundred tools.</p>
+        <div class="verdict caution"><span class="verdict-label">What it must never own</span><p>The arithmetic your business has to defend. In our system <code>match()</code> is forty lines of weighted scoring, and it stays a plain function in a tool server. <strong>A score you cannot reproduce by hand is a score nobody will defend in a hiring review.</strong></p></div>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">And the Browser tool — is that just scraping with extra steps?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>It is a managed browser session the agent drives like a person would: navigate, click, fill a form, scroll, keep cookies and session state, take a screenshot, and reason about what is on screen rather than about raw HTML.</p>
+        <p>It exists because a large amount of enterprise software has a UI and no API you are allowed to use — half of HR tooling, most benefits portals, plenty of applicant tracking systems.</p>
+        <div class="verdict caution"><span class="verdict-label">Reach for it last</span><p>It is the slowest, most brittle and most expensive way to read a fact, and it is the integration that breaks because <em>someone else</em> shipped a redesign. If an API exists, put it behind the Gateway and get typed tools instead.</p></div>
+      </div></div>
+    </div>
+
+    <table>
+      <thead><tr><th>What you need</th><th>Where it belongs</th></tr></thead>
+      <tbody>
+        <tr><td>Arithmetic your business must defend</td><td>a plain function in a tool server</td></tr>
+        <tr><td>An existing Lambda, API or OpenAPI service</td><td>a Gateway target</td></tr>
+        <tr><td>Open-ended analysis over data you just fetched</td><td>Code Interpreter</td></tr>
+        <tr><td>A system with a UI and no API</td><td>Browser — and a note in the risk register</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="identity">7. Identity</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">We already use Okta. Do we have to build a second login for the agent?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>No — and if you find yourself doing that, stop. Identity handles both directions:</p>
+        <ul class="checklist">
+          <li><strong>Inbound</strong> — who is talking to the agent, verified against the provider you already run: Okta, Microsoft Entra, Amazon Cognito.</li>
+          <li><strong>Outbound</strong> — how the agent authenticates to everything it calls: OAuth, API keys, service accounts.</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Different people should be able to do different things. Is that modelled anywhere?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Yes — fine-grained policy on identity and role, and it applies to the agent <em>and to every tool it can reach</em>, which is the part that matters. A recruiter can screen candidates; a hiring manager can approve a shortlist; only HR ops sees compensation bands. The agent inherits those distinctions instead of re-inventing them.</p>
+        <div class="verdict"><span class="verdict-label">The design rule underneath</span><p><strong>Humans authenticate with your identity provider. Machines authenticate with IAM.</strong> An agent cannot carry a user's token inward forever — the platform consumes the inbound credential at its edge — so plan for service-to-service calls to be signed by execution roles, not by borrowed tokens.</p></div>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Audit says “show me who did what”. What do I have?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Identity and access events are logged with the detail an auditor asks for — identity, resource, action, timestamp, method — and they can be fed into the SIEM you already have. That is what makes SOC 2 / HIPAA / GDPR conversations tractable rather than theoretical.</p>
+        <p>Add one thing yourself: <strong>log the decision, not just the access.</strong> “Read employee record E1003” is an access event; “shortlisted E1003 for J2001 at 61%, blocked on Apache Spark” is what the review board will ask about.</p>
+      </div></div>
+    </div>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+    U(["a person"]) -->|"inbound<br/>Okta · Entra · Cognito"| AG["<b>your agent</b>"]
+    AG -->|"outbound<br/>OAuth · API key · IAM role"| T1["CRM"]
+    AG -->|"outbound"| T2["HR system"]
+    AG -->|"outbound"| T3["ticketing"]
+    AG -.->|"every event"| LOG[("audit log → SIEM")]
+      </pre>
+      <div class="caption">Two directions, two problems. Most home-grown agent platforms solve the first and forget the second until an auditor asks.</div>
+    </div>
+
+    <h2 id="observability">8. Observability</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">What do I actually get to see?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <ul class="checklist">
+          <li>Dashboards: volume, latency, error rate, satisfaction signals.</li>
+          <li><strong>Trace visualisation</strong> — the whole flow of one request: every tool call, every memory read, every step of the agent's reasoning.</li>
+          <li>Model metrics: token usage and cost, per interaction.</li>
+          <li>Error analysis grouped into categories rather than a wall of stack traces.</li>
+        </ul>
+        <p>It is OpenTelemetry-compatible, so it lands in the tooling you already own rather than becoming a second place to look.</p>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">How does that make the agent better, rather than just monitored?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Because the traces tell you which of your assumptions were wrong. Concretely, from a real run of our hiring pipeline: <strong>the supervisor called the screening agent four times for one requisition.</strong> Nothing failed and no user complained — the answer was fine. The trace showed it, the token count priced it, and one prompt change removed three of the four calls.</p>
+        <p>You cannot make that fix from logs, because nothing in that story was an error.</p>
+      </div></div>
+    </div>
+
+    <h2 id="without">9. What would I build without it?</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Suppose we do not adopt it. Where would I deploy an MCP server on AWS today?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>EC2, ECS or EKS — and then the list nobody puts in the estimate: auto-scaling, load balancers, TLS, health checks, patching, multi-AZ, and a monitoring story. None of it is hard. All of it is yours forever.</p>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">And for the LangChain agents themselves?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Three usual options, each with a catch that shows up late:</p>
+      </div></div>
+    </div>
+
+    <table class="tight">
+      <thead><tr><th>Option</th><th>Fine for</th><th>Where it hurts</th></tr></thead>
+      <tbody>
+        <tr><td>Lambda + API Gateway</td><td>short, stateless calls</td><td>execution-time ceiling, memory limits, cold starts — and an agent turn is neither short nor stateless</td></tr>
+        <tr><td>ECS / EKS</td><td>teams who already run containers</td><td>orchestration expertise and operational overhead you now need on the AI team</td></tr>
+        <tr><td>EC2</td><td>full control</td><td>you own patching, scaling and availability for a workload whose traffic you cannot predict</td></tr>
+      </tbody>
+    </table>
+
+    <p>And whichever you pick, the same five things still have to be built on top: memory, authentication, observability, scaling policy, and the security controls that let it near production data.</p>
+
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart TB
+    subgraph diy ["Build it yourself"]
+      D1["compute + scaling"]
+      D2["vector store<br/>for memory"]
+      D3["auth + token handling"]
+      D4["logging + tracing"]
+      D5["per-system integrations"]
+      D6["security review<br/>for each of the above"]
+    end
+    subgraph ac ["With AgentCore"]
+      A1["Runtime"]
+      A2["Memory"]
+      A3["Identity"]
+      A4["Observability"]
+      A5["Gateway"]
+      A6["your agent code"]
+    end
+    diy -->|"the same system, two bills of materials"| ac
+      </pre>
+      <div class="caption">The point is not that the left column is impossible — it is that none of it is differentiating. Nobody has ever won a customer with their agent's log shipper.</div>
+    </div>
+
+    <h2 id="cost">10. What does it cost, and what does it save?</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Give me the number I can put in a slide.</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Here is the source article's estimate, and I want to be explicit that it is an estimate rather than a measurement:</p>
+      </div></div>
+    </div>
+
+    <table class="tight">
+      <thead><tr><th>Piece of work</th><th>Build it yourself</th><th>On AgentCore</th></tr></thead>
+      <tbody>
+        <tr><td>Deployment pipeline</td><td>1–2 weeks</td><td>package + deploy: ~2 days</td></tr>
+        <tr><td>Vector store / memory</td><td>2–3 weeks</td><td>~1 day</td></tr>
+        <tr><td>Authentication</td><td>3–4 weeks</td><td>1–2 days</td></tr>
+        <tr><td>Monitoring and tracing</td><td>2–3 weeks</td><td>configuration</td></tr>
+        <tr><td>Each system integration</td><td>2–4 weeks each</td><td>1–2 days per system</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>3–4 months</strong></td><td><strong>1–2 weeks</strong></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+      <div class="callout-title">Read that table with your own project in mind</div>
+      <p>These are the source's figures and they are directional, not benchmarked — and they measure the part of the work that AgentCore replaces. In practice the schedule of an agent project is usually set by the things <strong>no platform removes</strong>: getting access to the data, agreeing what a correct answer is, evaluation, and the review that has to happen before it touches customers. Use the table to argue “do not build a log shipper”, not to promise a date.</p>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Is it cost-effective for something small?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>It is pay-for-use, so a handful of requests a day costs very little and there is no upfront commitment — which is the honest advantage for a small team: you are not buying a cluster to find out whether the idea works.</p>
+        <p>The comparison that matters at any size is not "AgentCore versus nothing" — it is <strong>AgentCore versus the fully loaded cost of the equivalent you would run yourself</strong>, including the engineer who gets paged for it.</p>
+        <div class="verdict caution"><span class="verdict-label">Do not budget from a blog post</span><p>Including this one. Pricing changes; check the current AWS pricing page for the components you intend to use, and model your own token spend separately — the model bill is usually the bigger line.</p></div>
+      </div></div>
+    </div>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">We already built some of this. Is it all-or-nothing?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>No, and this is the most useful property of the whole platform: <strong>it is modular.</strong> Keep your own memory layer and adopt Gateway. Keep your own hosting and adopt Identity. Nothing requires you to move everything.</p>
+        <p>The usual first step for a team with existing infrastructure is Gateway, because it deletes the most hand-written glue for the least disruption.</p>
+      </div></div>
+    </div>
+
+    <h2 id="usecases">11. What do people build with it?</h2>
+
+    <p>Four shapes, and note that each one is a different <em>combination</em> — the components are rarely adopted alone:</p>
+
+    <div class="grid-2" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:18px 0;">
+      <div class="callout callout-note" style="margin:0;">
+        <div class="callout-title">Customer support</div>
+        <p>Memory for history across contacts · Gateway for the CRM · Browser to walk a customer through a page. The model can be whatever answers best.</p>
+      </div>
+      <div class="callout callout-note" style="margin:0;">
+        <div class="callout-title">Healthcare scheduling</div>
+        <p>Identity carries the access rules for patient data · Gateway reaches the scheduling system · Memory holds preferences. Identity is load-bearing, not decoration.</p>
+      </div>
+      <div class="callout callout-note" style="margin:0;">
+        <div class="callout-title">SRE assistant</div>
+        <p>Code Interpreter over logs and metrics · Gateway into monitoring tools · Observability to watch the watcher.</p>
+      </div>
+      <div class="callout callout-note" style="margin:0;">
+        <div class="callout-title">Self-service analytics</div>
+        <p>Code Interpreter for ad-hoc analysis · Memory for what was already asked · Identity so people only query what they may see.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">And the one this course builds end to end</div>
+      <p><strong>Hiring.</strong> Four agents fill requisition J2001: a supervisor takes the request, a screener ranks candidates against the record, an outreach agent drafts the note, a compliance reviewer checks it before it goes out. Runtime hosts all four · Gateway fronts the Lambda over the employee data · a direct MCP connection carries the scoring engine · Memory keys on the requisition · Identity puts Cognito at the door and IAM everywhere inside · one trace covers the lot. <a href="agentcore.html">The tutorial builds it</a>; the code is in <code>agent-core/</code>.</p>
+    </div>
+
+    <h2 id="start">12. How do I start?</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Monday morning. What do I do first?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>Not "read all the docs". Pick one thing that already half-works and put it somewhere real:</p>
+      </div></div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Pick a use case you already have</h4><p>An existing prototype beats a new idea — you want to learn the platform, not the domain, this week.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Start with Runtime alone</h4><p>Get the thing you have running behind an endpoint. Change nothing else. This is the step that proves the "agnostic" claim to your own satisfaction.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Add Gateway next</h4><p>One target, one real internal system. This is where the value shows up fastest for teams with an existing estate.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Then Memory</h4><p>And spend the thinking time on <code>actor_id</code> and <code>session_id</code>, not on the API.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Turn on Observability before you need it</h4><p>Traces you did not enable are not available retroactively for the incident you are currently having.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><h4>Only then Identity, tools and the rest</h4><p>Adopt in the order your risk requires, not the order the docs list them.</p></div></div>
+    </div>
+
+    <div class="callout callout-note">
+      <div class="callout-title">The cheaper version of every one of those steps</div>
+      <p>Every failure you will hit in AWS has a version on <code>127.0.0.1</code> that costs nothing to reproduce. This course's <code>agent-core/</code> project runs the whole four-agent system locally on a local model, with the same code that deploys — so debug the pipeline in five terminals first, then move it. Steps 1–6 of <a href="agentcore.html#order">the tutorial's verification ladder</a> do not need an agent at all: prove the tools with a client that has no model in it.</p>
+    </div>
+
+    <h2 id="future">13. Where is it going?</h2>
+
+    <div class="qa">
+      <div class="qa-q"><span class="qa-who">Developer</span><span class="qa-text">Am I betting on something that will still be here in two years?</span></div>
+      <div class="qa-a"><span class="qa-who">Architect</span><div class="qa-body">
+        <p>The direction the source article expects — more built-in tools, better multi-agent collaboration, deeper integration with the rest of AWS, richer observability, broader framework support, and enterprise governance features for running a lot of agents at once.</p>
+        <p>Treat all of that as expectation rather than commitment. <strong>The stronger argument for adopting it is structural, not roadmap-based:</strong> because it is framework- and model-agnostic, the parts you would be most upset to rewrite — your prompts, your tools, your agent logic — are exactly the parts it does not touch.</p>
+      </div></div>
+    </div>
+
+    <h2 id="remember">14. The answers worth keeping</h2>
+
+    <table class="tight">
+      <thead><tr><th>Question</th><th>The short answer</th></tr></thead>
+      <tbody>
+        <tr><td>What is it?</td><td>Production infrastructure for agents you already wrote — not a framework.</td></tr>
+        <tr><td>Why not Bedrock Agents?</td><td>Bedrock Agents defines how the agent thinks. AgentCore lets you keep that decision.</td></tr>
+        <tr><td>Do I have to move everything?</td><td>No. It is modular. Most teams start with Gateway or Runtime alone.</td></tr>
+        <tr><td>What changes in my code?</td><td>The tool discovery layer, and the port you listen on. Not your prompts.</td></tr>
+        <tr><td>What is the hardest decision?</td><td><code>actor_id</code> and <code>session_id</code>. A session id is a business key, not plumbing.</td></tr>
+        <tr><td>What should never move to an LLM?</td><td>Arithmetic your business must defend. Keep it a function, in a tool.</td></tr>
+        <tr><td>What breaks at scale?</td><td>Model quotas and downstream systems — not the compute AgentCore manages.</td></tr>
+        <tr><td>What do I turn on first?</td><td>Observability. You cannot enable a trace retroactively.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="check">15. Check yourself</h2>
+
+    <div class="quiz-card">
+      <div class="quiz-question">Your team has a working CrewAI agent calling a non-Bedrock model. Which is true?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">It must be rewritten as a Bedrock Agent first</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">AgentCore Runtime can host it as-is — framework and model stay your choice</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">Only Bedrock-hosted models can run on AgentCore</button></li>
+      </ul>
+      <div class="quiz-explanation">Framework- and model-agnostic is the defining property. Runtime's contract is that your process listens on the right port at the right path; what happens inside is yours. That is also the strongest structural argument for adopting it: the parts you would hate to rewrite are the parts it does not touch.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">You already run an MCP server for your internal tools. Should it go behind Gateway?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">Yes — one gateway should front everything, for a single tool list</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">No — it already speaks MCP, so call it directly and save the hop</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">It does not matter either way</button></li>
+      </ul>
+      <div class="quiz-explanation">Gateway is a protocol adapter, not a router: put a thing behind it when it cannot speak MCP on its own. Routing an existing MCP server through it adds a permanent network hop to every call and a second copy of its tool schema to maintain — in exchange for merging two tool lists that your client merges for free.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-question">The article estimates 3–4 months of build-your-own work becoming 1–2 weeks. How should you use that?</div>
+      <ul class="quiz-options">
+        <li><button class="quiz-option-btn" data-correct="false">As the delivery date for the project</button></li>
+        <li><button class="quiz-option-btn" data-correct="true">As an argument about which work is undifferentiated — the schedule is usually set by data access, evaluation and review</button></li>
+        <li><button class="quiz-option-btn" data-correct="false">As a benchmark, since it comes from AWS</button></li>
+      </ul>
+      <div class="quiz-explanation">The figures are directional and they measure only the part a platform can replace. What actually sets an agent project's schedule is getting access to the data, agreeing what a correct answer looks like, evaluating it, and passing review. Use the table to stop someone building a log shipper — not to promise a date.</div>
+      <button class="quiz-reset">Try again</button>
+    </div>
+
+    <div class="callout callout-tip" style="margin-top:28px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>Now that the decisions make sense, go and make them: <a href="agentcore.html">the AgentCore Tutorial</a> is the same platform capability by capability, with the runnable HR system, the Terraform, and the gotchas that cost a day each. <a href="agentcore-slides.html">The slide deck</a> is this material for presenting to a room. And if any of the words above were new — <a href="fastmcp.html">MCP</a>, <a href="a2a.html">agent-to-agent delegation</a>, <a href="strands-course.html">the agent loop itself</a> — each has its own track here.</p>
+      <p class="source-note">Question list adapted from <a href="https://medium.com/@DataTechBridge/mastering-amazon-bedrock-agentcore-an-expert-to-developer-dialogue-700a9a1157bb" target="_blank" rel="noopener">DataTechBridge, “Mastering Amazon Bedrock AgentCore: An Expert-to-Developer Dialogue”</a>. Answers, examples and caveats are this course's own.</p>
+    </div>
+  </main>
+
+  <aside class="toc" aria-label="On this page">
+    <div class="toc-title">On This Page</div>
+    <ul id="toc-list"></ul>
+  </aside>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

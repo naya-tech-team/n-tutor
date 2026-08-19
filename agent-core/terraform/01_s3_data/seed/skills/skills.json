@@ -1,0 +1,181 @@
+[
+  {
+    "skill": "Python",
+    "category": "Programming",
+    "aliases": [
+      "py",
+      "python3"
+    ]
+  },
+  {
+    "skill": "Java",
+    "category": "Programming",
+    "aliases": [
+      "core java",
+      "java se"
+    ]
+  },
+  {
+    "skill": "Scala",
+    "category": "Programming",
+    "aliases": []
+  },
+  {
+    "skill": "SQL",
+    "category": "Programming",
+    "aliases": [
+      "ansi sql",
+      "t-sql",
+      "plsql"
+    ]
+  },
+  {
+    "skill": "TypeScript",
+    "category": "Programming",
+    "aliases": [
+      "ts"
+    ]
+  },
+  {
+    "skill": "Apache Spark",
+    "category": "Data Engineering",
+    "aliases": [
+      "spark",
+      "pyspark",
+      "spark sql"
+    ]
+  },
+  {
+    "skill": "Apache Kafka",
+    "category": "Data Engineering",
+    "aliases": [
+      "kafka",
+      "msk"
+    ]
+  },
+  {
+    "skill": "Apache Airflow",
+    "category": "Data Engineering",
+    "aliases": [
+      "airflow",
+      "mwaa"
+    ]
+  },
+  {
+    "skill": "dbt",
+    "category": "Data Engineering",
+    "aliases": [
+      "data build tool"
+    ]
+  },
+  {
+    "skill": "Snowflake",
+    "category": "Data Engineering",
+    "aliases": []
+  },
+  {
+    "skill": "Databricks",
+    "category": "Data Engineering",
+    "aliases": []
+  },
+  {
+    "skill": "Data Modeling",
+    "category": "Data Engineering",
+    "aliases": [
+      "dimensional modeling",
+      "star schema"
+    ]
+  },
+  {
+    "skill": "Machine Learning",
+    "category": "ML",
+    "aliases": [
+      "ml",
+      "classical ml"
+    ]
+  },
+  {
+    "skill": "PyTorch",
+    "category": "ML",
+    "aliases": [
+      "torch"
+    ]
+  },
+  {
+    "skill": "MLOps",
+    "category": "ML",
+    "aliases": [
+      "ml ops",
+      "model ops"
+    ]
+  },
+  {
+    "skill": "AWS",
+    "category": "Cloud",
+    "aliases": [
+      "amazon web services",
+      "aws cloud"
+    ]
+  },
+  {
+    "skill": "Terraform",
+    "category": "Cloud",
+    "aliases": [
+      "tf",
+      "iac"
+    ]
+  },
+  {
+    "skill": "Kubernetes",
+    "category": "Cloud",
+    "aliases": [
+      "k8s",
+      "eks"
+    ]
+  },
+  {
+    "skill": "Docker",
+    "category": "Cloud",
+    "aliases": [
+      "containers"
+    ]
+  },
+  {
+    "skill": "CI/CD",
+    "category": "Cloud",
+    "aliases": [
+      "jenkins",
+      "github actions",
+      "pipelines"
+    ]
+  },
+  {
+    "skill": "REST API",
+    "category": "Application",
+    "aliases": [
+      "rest",
+      "api design"
+    ]
+  },
+  {
+    "skill": "React",
+    "category": "Application",
+    "aliases": [
+      "reactjs"
+    ]
+  },
+  {
+    "skill": "Stakeholder Management",
+    "category": "Human",
+    "aliases": [
+      "stakeholder mgmt"
+    ]
+  },
+  {
+    "skill": "Mentoring",
+    "category": "Human",
+    "aliases": [
+      "coaching"
+    ]
+  }
+]

@@ -1,0 +1,76 @@
+meta {
+  name: Shortlist the best candidates
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 14,
+    "method": "tools/call",
+    "params": {
+      "name": "shortlist",
+      "arguments": { "job_id": "{{jobId}}", "limit": 3 }
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("three candidates, best first", function() {
+    const scores = res.getBody().result.structuredContent.result.map(c => c.score);
+    expect(scores).to.have.lengthOf(3);
+    expect(scores).to.eql([...scores].sort((a, b) => b - a));
+  });
+
+  test("Priya is a perfect, unblocked fit", function() {
+    const top = res.getBody().result.structuredContent.result[0];
+    expect(top.name).to.equal("Priya Raman");
+    expect(top.score).to.equal(100);
+    expect(top.verdict).to.equal("strong");
+    expect(top.blockers).to.eql([]);
+  });
+
+  test("a blocked candidate is ranked, not hidden", function() {
+    const rows = res.getBody().result.structuredContent.result;
+    const vikram = rows.find(c => c.name === "Vikram Iyer");
+    expect(vikram.score).to.equal(50);
+    expect(vikram.verdict).to.equal("blocked");
+    expect(rows.indexOf(vikram)).to.equal(2);
+  });
+
+  test("everyone offered is actually available", function() {
+    res.getBody().result.structuredContent.result.forEach(c => {
+      expect(c.availability).to.equal("bench");
+    });
+  });
+}
+
+docs {
+  The tool an agent reaches for when asked *"who could fill J2001?"* — and the one whose
+  result is easiest to render wrongly.
+
+  **Vikram is third with 50% and `blocked`.** He is returned anyway, because ranking is by
+  score while the *decision* is the verdict. A client that shows the percentage and drops
+  `blockers` has told the truth and caused the wrong phone call. That is why the tool
+  returns both on every row instead of pre-filtering: the server reports, the caller
+  decides, and the caller cannot claim it did not know.
+
+  `shortlist` is a read. Despite the name it writes nothing, which is why this collection is
+  safe to re-run — unlike the REST project's `POST /requisitions/{job_id}/shortlist`, which
+  really does record a decision.
+}

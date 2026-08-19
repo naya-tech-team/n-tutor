@@ -1,0 +1,54 @@
+meta {
+  name: Shortlist for a role that does not exist
+  type: graphql
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation Shortlist($jobId: ID!, $employeeId: ID!) {
+    shortlistCandidate(jobId: $jobId, employeeId: $employeeId) {
+      __typename
+      ... on ShortlistEntry {
+        employeeId
+        name
+        score
+        verdict
+        addedAt
+      }
+      ... on CandidateBlocked {
+        message
+        blockers
+        score
+      }
+      ... on NotFound {
+        message
+        kind
+        id
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "jobId": "J9999",
+    "employeeId": "{{strongEmployeeId}}"
+  }
+}
+
+assert {
+  res.body.data.shortlistCandidate.__typename: eq NotFound
+  res.body.data.shortlistCandidate.kind: eq requisition
+  res.body.errors: isUndefined
+}
+
+docs {
+  The third arm of the union — the REST 404. `kind` tells the client *which* lookup missed,
+  so one error type serves both the employee and the requisition case without guesswork.
+}

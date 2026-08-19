@@ -1,0 +1,61 @@
+meta {
+  name: Shortlist a strong candidate
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation Shortlist($jobId: ID!, $employeeId: ID!) {
+    shortlistCandidate(jobId: $jobId, employeeId: $employeeId) {
+      __typename
+      ... on ShortlistEntry {
+        employeeId
+        name
+        score
+        verdict
+        addedAt
+      }
+      ... on CandidateBlocked {
+        message
+        blockers
+        score
+      }
+      ... on NotFound {
+        message
+        kind
+        id
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "jobId": "{{jobId}}",
+    "employeeId": "{{strongEmployeeId}}"
+  }
+}
+
+vars:post-response {
+  firstAddedAt: res.body.data.shortlistCandidate.addedAt
+}
+
+assert {
+  res.body.data.shortlistCandidate.__typename: eq ShortlistEntry
+  res.body.data.shortlistCandidate.name: eq Priya Raman
+  res.body.errors: isUndefined
+}
+
+docs {
+  The happy path of a union return. Note the query shape: `... on ShortlistEntry { … }` is
+  an **inline fragment**, and it is not optional — a union forces the client to name every
+  outcome it wants to read. Delete the fragments and you get back nothing but `__typename`.
+
+  This request stashes `addedAt` in a runtime variable for the next one.
+}

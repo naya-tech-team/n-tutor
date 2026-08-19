@@ -1,0 +1,21 @@
+{
+    "name": "hr-chat-ui",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "React chat UI for the hiring supervisor. Built to dist/, uploaded to S3 and served by CloudFront.",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "node --test src/*.test.js"
+    },
+    "dependencies": {
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-react": "^6.0.5",
+        "vite": "^8.2.1"
+    }
+}

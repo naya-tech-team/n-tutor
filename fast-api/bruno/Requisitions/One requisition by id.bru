@@ -1,0 +1,45 @@
+meta {
+  name: One requisition by id
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{jobId}}
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("J2001 is the Senior Data Engineer role", function() {
+    expect(res.getBody().title).to.equal("Senior Data Engineer");
+    expect(res.getBody().location).to.equal("Bengaluru");
+    expect(res.getBody().min_experience_years).to.equal(6);
+  });
+
+  test("three of the four skills are mandatory", function() {
+    const mandatory = res.getBody().required_skills.filter(s => s.mandatory).map(s => s.skill);
+    expect(mandatory).to.eql(["Python", "Apache Spark", "SQL"]);
+  });
+
+  test("mandatory skills also carry the heavier weight", function() {
+    res.getBody().required_skills.forEach(s => {
+      expect(s.weight).to.equal(s.mandatory ? 2 : 1);
+    });
+  });
+}
+
+docs {
+  This is the input to every score in the *Matching* folder. Read it before them and the
+  numbers stop being magic: **weight** decides how much of the percentage a skill is worth,
+  **min_level** is the bar, and **mandatory** decides whether falling short is a gap or a
+  blocker.
+
+  Weight and mandatory are independent flags that happen to line up here. Airflow at
+  `min_level: 3, mandatory: false, weight: 1` is the one that can be missing entirely and
+  still leave a candidate hireable.
+}

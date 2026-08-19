@@ -1,0 +1,63 @@
+auth {
+  mode: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  // Runs after EVERY request in this collection.
+  test("the custom middleware timed the request", function() {
+    expect(res.getHeader("x-process-time-ms")).to.be.a("string");
+    expect(Number(res.getHeader("x-process-time-ms"))).to.be.a("number");
+  });
+}
+
+docs {
+  # HR Skills REST API
+
+  Eight endpoints over one in-memory store: a directory of employees, a set of open
+  requisitions, and a scoring engine that decides who fits. Start the server first:
+
+      cd fast-api
+      uv run app/main.py          # port 8100 — what the Local environment expects
+
+  Then pick the **Local** environment (top right) and run the collection top to bottom.
+
+  > Running `uv run uvicorn app.main:app --reload` instead serves port **8000**. Both are
+  > in the README; the Local environment tracks `app/main.py` because that is what the
+  > repo's VS Code launch config starts. Change `baseUrl` if you use the other command.
+
+  ## What separates this from the GraphQL collection
+
+  Its sibling in [`fast-api-graphql/bruno`](../../fast-api-graphql/bruno) answers **200** to
+  everything and puts the outcome in the body. Here the **status line carries the meaning**,
+  and each code means something different:
+
+  | Code | Means |
+  |---|---|
+  | `201` | created — a new employee, or a new shortlist entry |
+  | `404` | you named something that does not exist |
+  | `409` | your request was fine; the *state* refuses it — a blocked candidate |
+  | `422` | the payload never got past Pydantic |
+
+  The `409` is the one worth reading twice. It is deliberately not a `400`: that distinction
+  is what lets a client tell *"you sent me nonsense"* apart from *"this person genuinely
+  cannot do the job"*.
+
+  The only test that runs everywhere is the middleware assertion above — every response,
+  success or failure, carries `X-Process-Time-ms`, because the middleware wraps the whole
+  stack rather than the happy path.
+
+  ## Order matters
+
+  Folders run in the `seq` recorded in each `folder.bru`: **Meta → Employees →
+  Requisitions → Matching → Shortlist → Errors**. *Employees* creates a person that
+  *Matching* then has to tolerate in the rankings, and *Shortlist* adds an entry before
+  *Read the shortlist* checks it.
+
+  The collection is **re-runnable against a long-lived server**. Shortlisting is idempotent,
+  the employee it creates is deliberately too weak to displace anyone in a top-3, and every
+  membership assertion uses `include` rather than an exact count.
+}

@@ -42,14 +42,25 @@
       <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-section-title">Quick Starts <span class="qs-count">7</span></div>
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">12</span></div>
       <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
       <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="graphql.html"><span class="badge-dot"></span> GraphQL: Quick Start</a>
       <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
       <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
-      <a class="sidebar-link" href="strands.html"><span class="badge-dot"></span> Strands: Quick Start</a>
+      <a class="sidebar-link" href="strands-course.html"><span class="badge-dot"></span> Strands: Full Course Guide</a>
       <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
       <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+      <a class="sidebar-link" href="agentcore.html"><span class="badge-dot"></span> AWS AgentCore: Tutorial</a>
+      <a class="sidebar-link" href="agentcore-qa.html"><span class="badge-dot"></span> AgentCore: Q&amp;A</a>
+      <a class="sidebar-link" href="agentcore-deploy.html"><span class="badge-dot"></span> AgentCore: Deploy Prerequisites</a>
+      <a class="sidebar-link" href="agentcore-complete-reference.html"><span class="badge-dot"></span> AgentCore: Complete Reference</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Slide Decks <span class="qs-count">3</span></div>
+      <a class="sidebar-link" href="agentcore-capabilities.html"><span class="badge-dot"></span> AgentCore: Capabilities &amp; Trade-offs</a>
+      <a class="sidebar-link" href="agentcore-slides.html"><span class="badge-dot"></span> AgentCore: Capabilities (slides)</a>
+      <a class="sidebar-link" href="agentcore-dev-deck.html"><span class="badge-dot"></span> AgentCore: Developer Deep Dive</a>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
@@ -65,15 +76,6 @@
       <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
       <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
       <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-title">Coming soon</div>
-      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> FastAPI (full track)</span>
-      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> MCP (full track)</span>
-      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> A2A (full track)</span>
-      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Strands Agents</span>
-      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> Terraform</span>
-      <span class="sidebar-link" style="opacity:.5;cursor:default;" aria-disabled="true"><span class="badge-dot"></span> AWS AgentCore</span>
     </div>
   </nav>
 
@@ -92,7 +94,7 @@
     <p><strong>A2A</strong> (Agent2Agent) is an open protocol — started by Google, now under the Linux Foundation — that lets <em>independently built</em> AI agents discover each other and delegate work, even across different teams, frameworks, or companies. If MCP gives one agent tools, A2A lets one agent hand a task to <em>another agent</em>. New to MCP? See the <a href="fastmcp.html">FastMCP Quick Start</a> — the two are complementary.</p>
     <div class="callout callout-note">
       <div class="callout-title">⬇️ Get the runnable code</div>
-      <p>A ready-to-run project ships with the course in <code>a2a-strands/</code>: <strong>three agents on three ports</strong> — an orchestrator that discovers two specialists and delegates real hiring work to them, built with <a href="strands.html">Strands Agents</a> and running entirely on a local model via Ollama. No API keys, nothing leaves your machine. Sections 1–7 below are the raw protocol; <a href="#strands">section 8</a> is that project.</p>
+      <p>A ready-to-run project ships with the course in <code>a2a-strands/</code>: <strong>three agents on three ports</strong> — an orchestrator that discovers two specialists and delegates real hiring work to them, built with <a href="strands-course.html">Strands Agents</a> and running entirely on a local model via Ollama. No API keys, nothing leaves your machine. Sections 1–7 below are the raw protocol; <a href="#strands">section 8</a> is that project.</p>
     </div>
 
     <div class="callout callout-tip">
@@ -295,7 +297,7 @@ sequenceDiagram
 
     <h2 id="strands">8. Real agents: Strands on a local llama</h2>
     <p>Everything above is the protocol by hand. The agent's "brain" in <a href="#agent">§4</a> was a single <code>.upper()</code> call — deliberately, to keep the protocol in focus. Now put a real agent inside that envelope.</p>
-    <p><a href="strands.html">Strands Agents</a> does two things for you here: it <em>is</em> the brain (a model, a system prompt, tools, a reasoning loop), and it ships an <code>A2AServer</code> that publishes that brain over A2A — <strong>no <code>AgentExecutor</code>, no card built by hand</strong>. And because the model is a swappable object, all of this runs on <code>llama3.2</code> on your own laptop.</p>
+    <p><a href="strands-course.html">Strands Agents</a> does two things for you here: it <em>is</em> the brain (a model, a system prompt, tools, a reasoning loop), and it ships an <code>A2AServer</code> that publishes that brain over A2A — <strong>no <code>AgentExecutor</code>, no card built by hand</strong>. And because the model is a swappable object, all of this runs on <code>llama3.2</code> on your own laptop.</p>
 
     <h3 id="strands-picture">The system you'll build</h3>
     <p>Three agents in three terminals. One asks; two answer.</p>
@@ -624,7 +626,7 @@ flowchart TB
 
     <div class="callout callout-note" style="margin-top:28px;">
       <div class="callout-title">Where this goes next</div>
-      <p>A2A is how a multi-agent system cooperates: an orchestrator delegates to specialists, each of which may use <a href="fastmcp.html">MCP</a> tools of its own. Build the agents that go inside with the <a href="strands.html">Strands Quick Start</a>, then run the whole thing yourself from <code>a2a-strands/</code>. For the in-process alternatives — agent-as-tool, Swarm and Graph, and when each beats a network hop — see <a href="strands-course.html">lesson 07 of the Strands course</a>. The full, from-zero A2A track (auth, streaming, orchestration, observability) is coming soon.</p>
+      <p>A2A is how a multi-agent system cooperates: an orchestrator delegates to specialists, each of which may use <a href="fastmcp.html">MCP</a> tools of its own. Build the agents that go inside with the <a href="strands-course.html">Strands course</a>, then run the whole thing yourself from <code>a2a-strands/</code>. For the in-process alternatives — agent-as-tool, Swarm and Graph, and when each beats a network hop — see <a href="strands-course.html">lesson 07 of the Strands course</a>.</p>
     </div>
   </main>
 </div>

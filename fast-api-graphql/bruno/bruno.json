@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "HR Skills GraphQL API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

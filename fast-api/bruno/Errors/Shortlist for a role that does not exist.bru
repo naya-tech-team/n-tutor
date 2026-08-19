@@ -1,0 +1,37 @@
+meta {
+  name: Shortlist for a role that does not exist
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/requisitions/{{missingJobId}}/shortlist
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employee_id": "{{strongEmployeeId}}"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("the requisition is checked before the employee", function() {
+    expect(res.getStatus()).to.equal(404);
+    expect(res.getBody().detail).to.equal("requisition not found");
+  });
+}
+
+docs {
+  The mirror image of the previous request: this time the employee is real and the
+  requisition is not.
+
+  Both arms are worth having in the collection because the order is a decision. If both are
+  missing you are told about the requisition, since that is the resource the URL is *about*
+  — the employee is only a detail of the body.
+}

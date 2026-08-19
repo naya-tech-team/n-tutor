@@ -1,0 +1,46 @@
+meta {
+  name: An allocated employee never ranks
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/requisitions/{{jobId}}/candidates/{{allocatedEmployeeId}}
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("scored on request, Arjun is a strong fit", function() {
+    const m = res.getBody();
+    expect(m.name).to.equal("Arjun Nair");
+    expect(m.score).to.equal(86);
+    expect(m.verdict).to.equal("strong");
+    expect(m.blockers).to.eql([]);
+  });
+
+  test("yet he is absent from the ranked candidate list", function() {
+    // captured by 'Ranked candidates', which runs first in this folder
+    const ranked = bru.getVar("rankedIds").split(",");
+    expect(ranked).to.not.include("E1007");
+    expect(ranked).to.include("E1005");   // scores 50, and still outranks him by being free
+  });
+}
+
+docs {
+  Arjun Nair scores **86 and `strong`** against J2001 — better than everyone except Priya.
+  He is also `allocated`, and `store.rank()` only ever scores the bench, so he never appears
+  in *Ranked candidates* no matter how good he looks.
+
+  Two endpoints, two different questions:
+
+  - `/candidates` — *who could we put forward?* Filtered by availability.
+  - `/candidates/{employee_id}` — *how would this specific person score?* No filter at all.
+
+  Collapsing them into one endpoint is how a system ends up either hiding a strong internal
+  candidate or offering someone who is already on a project.
+}

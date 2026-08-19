@@ -1,0 +1,77 @@
+meta {
+  name: Add an employee
+  type: graphql
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation AddEmployee($employee: EmployeeInput!) {
+    addEmployee(employee: $employee) {
+      __typename
+      ... on Employee {
+        employeeId
+        name
+        location
+        availability
+        createdAt
+        skills {
+          skill
+          level
+        }
+      }
+      ... on ValidationFailed {
+        message
+        invalidFields {
+          field
+          message
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "employee": {
+      "name": "Bruno Tester",
+      "location": "Pune",
+      "experienceYears": 2,
+      "skills": [
+        { "skill": "SQL", "level": 3 }
+      ]
+    }
+  }
+}
+
+vars:post-response {
+  newEmployeeId: res.body.data.addEmployee.employeeId
+}
+
+tests {
+  test("the server assigned the id — the client cannot", function() {
+    const created = res.getBody().data.addEmployee;
+    expect(created.__typename).to.equal("Employee");
+    expect(created.employeeId).to.match(/^E\d+$/);
+  });
+
+  test("fields the input never mentioned came back with server defaults", function() {
+    const created = res.getBody().data.addEmployee;
+    expect(created.availability).to.equal("bench");
+    expect(created.createdAt).to.be.a("string");
+  });
+}
+
+docs {
+  `EmployeeInput` is an **input type**, separate from the `Employee` output type on
+  purpose: `employeeId` and `createdAt` exist only on the way out, so a client cannot
+  invent them.
+
+  Deliberately weak skills, so this person never displaces Priya at the top of the
+  candidate rankings when the collection is re-run.
+}

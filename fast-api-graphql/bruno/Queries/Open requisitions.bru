@@ -1,0 +1,46 @@
+meta {
+  name: Open requisitions
+  type: graphql
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query OpenRoles {
+    requisitions {
+      jobId
+      title
+      location
+      minExperienceYears
+      requiredSkills {
+        skill
+        minLevel
+        mandatory
+        weight
+      }
+    }
+  }
+}
+
+tests {
+  test("both open roles come back", function() {
+    const jobs = res.getBody().data.requisitions.map(r => r.jobId);
+    expect(jobs).to.eql(["J2001", "J2002"]);
+  });
+
+  test("J2001 marks three skills mandatory", function() {
+    const j2001 = res.getBody().data.requisitions.find(r => r.jobId === "J2001");
+    const mandatory = j2001.requiredSkills.filter(s => s.mandatory).map(s => s.skill);
+    expect(mandatory).to.eql(["Python", "Apache Spark", "SQL"]);
+  });
+}
+
+docs {
+  `mandatory` is the field that drives every `blocked` verdict further down: a candidate
+  below a mandatory bar cannot be shortlisted, whatever their score.
+}

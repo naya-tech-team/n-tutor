@@ -1,0 +1,37 @@
+meta {
+  name: Bench only
+  type: graphql
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query Bench {
+    employees(availableOnly: true) {
+      employeeId
+      name
+      availability
+    }
+  }
+}
+
+tests {
+  test("nobody on a project is in the list", function() {
+    const ids = res.getBody().data.employees.map(e => e.employeeId);
+    expect(ids).to.not.include(bru.getEnvVar("allocatedEmployeeId"));   // Arjun Nair
+  });
+
+  test("everyone returned is on the bench", function() {
+    res.getBody().data.employees.forEach(e => expect(e.availability).to.equal("bench"));
+  });
+}
+
+docs {
+  A resolver argument with a default (`available_only: bool = False`), published as
+  `availableOnly: Boolean! = false`. Arjun Nair (E1007) is allocated, so he drops out.
+}

@@ -1,0 +1,49 @@
+meta {
+  name: Ping
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "ping"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("an empty result is the whole point", function() {
+    expect(res.getBody().result).to.eql({});
+  });
+
+  test("the id from the request comes back on the response", function() {
+    expect(res.getBody().id).to.equal(2);
+  });
+}
+
+docs {
+  MCP's health check, and the closest thing this protocol has to `GET /health`.
+
+  An empty `result` is a success — the *envelope* is the answer. `{"result": {}}` and
+  `{"error": {...}}` are the only two shapes a JSON-RPC response can take, so a result key
+  at all means the session is alive.
+
+  The second test is worth more than it looks. `id` is how a client pairs responses with
+  requests on a connection that may be delivering them out of order, or interleaving server
+  notifications between them. Matching it is not optional bookkeeping for a real client.
+}

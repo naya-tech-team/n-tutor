@@ -1,0 +1,62 @@
+meta {
+  name: Calling a tool that does not exist
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 22,
+    "method": "tools/call",
+    "params": {
+      "name": "hire_everyone",
+      "arguments": {}
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("200 at the transport, isError true in the result", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().result.isError).to.be.true;
+  });
+
+  test("the failure is still a result, never a JSON-RPC error", function() {
+    expect(res.getBody().error).to.be.undefined;
+    expect(res.getBody().result.content[0].text).to.contain("Unknown tool");
+  });
+}
+
+docs {
+  **The distinction this folder exists to make.** There are two ways a call can fail, and
+  MCP keeps them apart:
+
+  | | Where | Means |
+  |---|---|---|
+  | `result.isError: true` | inside `result` | the *tool* failed. The model should read it and try something else. |
+  | top-level `error` | replaces `result` | the *protocol* was misused. The model cannot fix that. |
+
+  A hallucinated tool name is the first kind, which looks backwards until you consider who
+  is reading. The model invented `hire_everyone`; handing it a protocol-level error would
+  end the turn, while `isError` puts *"Unknown tool: 'hire_everyone'"* in front of it and it
+  calls `tools/list` instead.
+
+  Top-level `error` responses do exist — the last two requests in this folder produce them.
+  Both are the *client's* transport being wrong, and no amount of model reasoning recovers
+  from either.
+}

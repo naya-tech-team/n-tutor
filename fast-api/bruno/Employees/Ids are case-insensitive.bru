@@ -1,0 +1,34 @@
+meta {
+  name: Ids are case-insensitive
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/employees/e1002
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("a lowercase id finds the same person", function() {
+    expect(res.getBody().employee_id).to.equal("E1002");
+    expect(res.getBody().name).to.equal("Priya Raman");
+  });
+
+  test("the canonical id comes back, not the one that was sent", function() {
+    expect(res.getBody().employee_id).to.not.equal("e1002");
+  });
+}
+
+docs {
+  `store.get_employee()` calls `employee_id.upper()` before the lookup, so `e1002` and
+  `E1002` are the same person — and the response always carries the canonical form.
+
+  This is a *store* decision, not a route decision, which is why it holds for
+  `/requisitions/{job_id}` too and could not be forgotten on one endpoint.
+}

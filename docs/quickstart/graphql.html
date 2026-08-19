@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GraphQL: Quick Start — AI Engineering</title>
+<meta name="description" content="One endpoint, and the client picks the fields — code-first GraphQL with Strawberry and FastAPI: schema, nested resolvers, mutations, unions as errors, DataLoader, testing." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "../";
+</script>
+<link rel="stylesheet" href="../assets/css/theme.css" />
+<link rel="stylesheet" href="../assets/css/layout.css" />
+<link rel="stylesheet" href="../assets/css/components.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell no-toc">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="../index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="graphql.html"><span class="badge-dot"></span> GraphQL: Quick Start</a>
+      <a class="sidebar-link" href="fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="strands-course.html"><span class="badge-dot"></span> Strands: Full Course Guide</a>
+      <a class="sidebar-link" href="terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+      <a class="sidebar-link" href="agentcore.html"><span class="badge-dot"></span> AWS AgentCore: Tutorial</a>
+      <a class="sidebar-link" href="agentcore-qa.html"><span class="badge-dot"></span> AgentCore: Q&amp;A</a>
+      <a class="sidebar-link" href="agentcore-deploy.html"><span class="badge-dot"></span> AgentCore: Deploy Prerequisites</a>
+      <a class="sidebar-link" href="agentcore-complete-reference.html"><span class="badge-dot"></span> AgentCore: Complete Reference</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Slide Decks <span class="qs-count">3</span></div>
+      <a class="sidebar-link" href="agentcore-capabilities.html"><span class="badge-dot"></span> AgentCore: Capabilities &amp; Trade-offs</a>
+      <a class="sidebar-link" href="agentcore-slides.html"><span class="badge-dot"></span> AgentCore: Capabilities (slides)</a>
+      <a class="sidebar-link" href="agentcore-dev-deck.html"><span class="badge-dot"></span> AgentCore: Developer Deep Dive</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Python — from zero <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="../python/first-program.html"><span class="badge-dot"></span> 1 · Your First Program</a>
+      <a class="sidebar-link" href="../python/numbers-and-text.html"><span class="badge-dot"></span> 2 · Numbers &amp; Text</a>
+      <a class="sidebar-link" href="../python/making-decisions.html"><span class="badge-dot"></span> 3 · Making Decisions</a>
+      <a class="sidebar-link" href="../python/repeating.html"><span class="badge-dot"></span> 4 · Repeating Things</a>
+      <a class="sidebar-link" href="../python/lists.html"><span class="badge-dot"></span> 5 · Lists</a>
+      <a class="sidebar-link" href="../python/dictionaries.html"><span class="badge-dot"></span> 6 · Dictionaries</a>
+      <a class="sidebar-link" href="../python/functions.html"><span class="badge-dot"></span> 7 · Functions</a>
+      <a class="sidebar-link" href="../python/mini-project.html"><span class="badge-dot"></span> 8 · Put It Together</a>
+      <a class="sidebar-link" href="../python/classes.html"><span class="badge-dot"></span> 9 · Objects &amp; Classes</a>
+      <a class="sidebar-link" href="../python/generators.html"><span class="badge-dot"></span> 10 · Generators</a>
+      <a class="sidebar-link" href="../python/decorators.html"><span class="badge-dot"></span> 11 · Decorators</a>
+      <a class="sidebar-link" href="../python/error-handling.html"><span class="badge-dot"></span> 12 · Handling Errors</a>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="../index.html">Home</a><span class="sep">/</span><span>Quick Starts</span><span class="sep">/</span><span>GraphQL</span>
+    </nav>
+
+    <h1>GraphQL Quick Start</h1>
+    <div class="meta-row">
+      <span class="badge badge-intermediate">Quick Start</span>
+      <span class="badge badge-info">code-first</span>
+      <span class="badge badge-info">~20 min</span>
+    </div>
+    <p><strong>GraphQL</strong> replaces a wall of URLs with <em>one</em> endpoint and a typed schema. The client sends a query naming exactly the fields it wants; the server returns exactly those, in the same shape. You still write ordinary Python functions — <a href="https://strawberry.rocks/">Strawberry</a> turns them into a schema, and FastAPI keeps serving the HTTP. New to APIs? Read the <a href="fastapi.html">FastAPI Quick Start</a> first: this page is the same HR API, converted.</p>
+
+    <div class="callout callout-note">
+      <div class="callout-title">⬇️ Get the runnable code</div>
+      <p>Every snippet below is lifted from a working project that ships with the course — the <strong>HR Skills GraphQL API</strong>, the REST project from the FastAPI page converted field for field. It lives in <code>fast-api-graphql/</code>:</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">cd fast-api-graphql
+uv run uvicorn app.main:app --reload
+# then open http://127.0.0.1:8000/graphql   ← GraphiQL, the in-browser explorer
+uv run pytest -q                            # 31 passing tests</code></pre>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">The domain, in one line</div>
+      <p><strong>Employees have skills rated 1–5; requisitions require skills at a minimum level; some of those are mandatory.</strong> A candidate below a mandatory bar is <em>blocked</em> — no score saves them. In REST that was eight URLs. Here it is one endpoint and this schema:</p>
+      <table>
+        <thead><tr><th>Ask for…</th><th>You get</th></tr></thead>
+        <tbody>
+          <tr><td><code>employees(availableOnly: true)</code></td><td>the directory, optionally just the bench</td></tr>
+          <tr><td><code>requisition(jobId:) { candidates(limit:) }</code></td><td>a role <em>and</em> everyone scored against it, one round trip</td></tr>
+          <tr><td><code>employee(employeeId:) { match(jobId:) }</code></td><td>the same scoring engine, asked the other way round</td></tr>
+          <tr><td><code>shortlistCandidate(jobId:, employeeId:)</code></td><td>a mutation that can answer <code>ShortlistEntry</code>, <code>NotFound</code> <em>or</em> <code>CandidateBlocked</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="install">1. Install &amp; run</h2>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">pip install "strawberry-graphql[fastapi]" fastapi uvicorn
+
+# save the code below as main.py, then run the dev server:
+uvicorn main:app --reload
+# now open http://127.0.0.1:8000/graphql</code></pre>
+    </div>
+    <p>Strawberry is the schema library; FastAPI still runs the process. There is no <code>/docs</code> page here — the schema itself is the documentation, and <strong>GraphiQL</strong> (served at that same URL in a browser) reads it live.</p>
+
+    <h2 id="hello">2. Hello, schema</h2>
+    <p>A GraphQL server has one required type: <code>Query</code>, the root of everything readable. Each method decorated with <code>@strawberry.field</code> becomes a field a client may ask for.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">import strawberry
+from fastapi import FastAPI
+from strawberry.fastapi import GraphQLRouter
+
+@strawberry.type
+class Query:
+    @strawberry.field
+    def health(self) -&gt; str:          # the return type IS the schema
+        return "ok"
+
+schema = strawberry.Schema(query=Query)
+
+app = FastAPI()
+app.include_router(GraphQLRouter(schema), prefix="/graphql")</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>the request, and the answer</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">POST /graphql   {"query": "{ health }"}
+200             {"data": {"health": "ok"}}</code></pre>
+    </div>
+    <p>Note what the type hint bought you: <code>-&gt; str</code> published <code>health: String!</code> in the schema, and the <code>!</code> is a promise — this field is never null. Forget the hint and Strawberry refuses to build the schema at all, at import time, rather than shipping an untyped field.</p>
+
+    <h2 id="types">3. Types: the contract clients program against</h2>
+    <p>Objects are classes. Field names get camelCased on the way out (<code>employee_id</code> → <code>employeeId</code>), so Python stays Pythonic and the schema stays idiomatic GraphQL.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/types.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from datetime import datetime
+import strawberry
+from app import models
+
+# Reuse the domain enums rather than redeclaring them — one list of verdicts.
+Availability = strawberry.enum(models.Availability, description="Bench or on a project.")
+Verdict = strawberry.enum(models.Verdict, description="The scoring engine's answer.")
+
+@strawberry.type(description="One rated skill. Level is 1 aware · 3 independent · 5 expert.")
+class SkillRating:
+    skill: str
+    level: int
+
+@strawberry.type(description="Someone in the directory.")
+class Employee:
+    employee_id: strawberry.ID
+    name: str
+    location: str
+    availability: Availability
+    experience_years: float
+    skills: list[SkillRating]
+    created_at: datetime
+
+    # Private: available to this type's resolvers, absent from the published schema.
+    model: strawberry.Private[models.Employee]
+
+    @classmethod
+    def from_model(cls, employee: models.Employee) -&gt; "Employee":
+        return cls(employee_id=strawberry.ID(employee.employee_id), name=employee.name,
+                   location=employee.location, availability=employee.availability,
+                   experience_years=employee.experience_years,
+                   skills=[SkillRating.from_model(s) for s in employee.skills],
+                   created_at=employee.created_at, model=employee)</code></pre>
+    </div>
+    <p>That <code>from_model</code> is a deliberate seam. <code>models.py</code> is what the store keeps; this file is what clients may ask for. They mirror each other today, but renaming a Pydantic field is a refactor — <strong>renaming a GraphQL field breaks every client in production.</strong> Keeping them separate lets one change without the other.</p>
+    <div class="callout callout-note">
+      <div class="callout-title">📄 The schema is a file you can read</div>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">uv run strawberry export-schema app.graph.schema:schema &gt; schema.graphql</code></pre>
+      </div>
+      <p>Commit that file and a CI job can diff it on every PR: adding a field is safe, removing one is a breaking change, and now the review sees which is which.</p>
+    </div>
+
+    <h2 id="queries">4. Queries with arguments</h2>
+    <p>A resolver's parameters become the field's arguments — typed, with defaults, exactly like Python. <code>info</code> is the exception: Strawberry recognises it by type and hands you per-request state instead of exposing it in the schema.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/schema.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@strawberry.type
+class Query:
+    @strawberry.field(description="The directory, optionally just the people on the bench.")
+    def employees(self, info: Info, available_only: bool = False) -&gt; list[Employee]:
+        people = info.context.store.list_employees(available_only=available_only)
+        return [Employee.from_model(p) for p in people]
+
+    @strawberry.field(description="One person by id. Null if there is no such person.")
+    def employee(self, info: Info, employee_id: strawberry.ID) -&gt; Employee | None:
+        # Null, not an error: "no such row" is an ordinary answer to a lookup, and
+        # a nullable field lets the rest of a multi-field query still succeed.
+        person = info.context.store.get_employee(employee_id)
+        return Employee.from_model(person) if person else None</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>real response</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">{ employee(employeeId: "E9999") { name } health }
+
+{"data": {"employee": null, "health": "ok"}}     ← no "errors" key at all</code></pre>
+    </div>
+    <p>REST answered that with a 404. Here the missing person is <code>null</code> and the sibling field still resolved — which matters, because one GraphQL request routinely carries several independent questions.</p>
+
+    <h2 id="nested">5. Nested resolvers — the actual payoff</h2>
+    <p>This is the part with no REST equivalent. A field can be a <em>function that takes arguments</em>, anywhere in the graph — so "the role, ranked candidates, their gaps and their records" is one request instead of four.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/types.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@strawberry.type(description="An open role and the skills it needs.")
+class Requisition:
+    job_id: strawberry.ID
+    title: str
+    required_skills: list[SkillRequirement]
+    model: strawberry.Private[models.Requisition]
+
+    @strawberry.field(description="Everyone on the bench, scored and ranked, best first.")
+    def candidates(self, info: Info, limit: int = 3) -&gt; list[MatchResult]:
+        if not 1 &lt;= limit &lt;= MAX_CANDIDATES:
+            raise GraphQLError(f"limit must be between 1 and {MAX_CANDIDATES}, got {limit}")
+        return [MatchResult.from_model(m)
+                for m in info.context.store.rank(self.model, limit=limit)]
+
+@strawberry.type(description="Someone in the directory.")
+class Employee:
+    ...
+    @strawberry.field(description="Score this person against one open role.")
+    def match(self, info: Info, job_id: strawberry.ID) -&gt; MatchResult | None:
+        requisition = info.context.store.get_requisition(job_id)
+        if requisition is None:
+            return None
+        return MatchResult.from_model(info.context.store.score(self.model, requisition))</code></pre>
+    </div>
+    <p>The scoring engine lives in <code>store.py</code> and has not changed a line — the same arithmetic that <code>GET /requisitions/J2001/candidates</code> called. What changed is who decides <em>when</em> it runs: the client, by naming the field.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">curl -sG http://127.0.0.1:8000/graphql --data-urlencode 'query=
+{ requisition(jobId: "J2001") {
+    title
+    candidates(limit: 3) {
+      name score verdict blockers
+      gaps { skill required actual }
+      employee { location experienceYears }
+    }
+} }'</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>real response (trimmed)</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-json">{"data": {"requisition": {"title": "Senior Data Engineer", "candidates": [
+  {"name": "Priya Raman", "score": 100, "verdict": "strong", "blockers": [],
+   "gaps": [], "employee": {"location": "Bengaluru", "experienceYears": 8.5}},
+  {"name": "Rahul Menon", "score": 79, "verdict": "blocked",
+   "blockers": ["Apache Spark"],
+   "gaps": [{"skill": "Apache Spark", "required": 4, "actual": 3},
+            {"skill": "Apache Airflow", "required": 3, "actual": 0}],
+   "employee": {"location": "Hyderabad", "experienceYears": 5.0}}]}}}</code></pre>
+    </div>
+    <div class="callout callout-note">
+      <div class="callout-title">🔎 Reads can go over GET</div>
+      <p><code>curl -sG --data-urlencode 'query=…'</code> keeps a multi-line query readable. It has to: a raw newline is <em>illegal</em> inside a JSON string, so a <code>POST</code> body must keep the query on one line (or send it from a file). Mutations are POST-only by design.</p>
+    </div>
+
+    <h2 id="mutations">6. Inputs &amp; mutations</h2>
+    <p>Anything that changes state goes on the <code>Mutation</code> type. Arguments that are objects need <code>@strawberry.input</code> — GraphQL keeps input and output types separate on purpose, so a client can never send back a server-set field like <code>createdAt</code>.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/types.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@strawberry.input(description="One rated skill on a new employee.")
+class SkillRatingInput:
+    skill: str
+    level: int
+
+@strawberry.input(description="A new person for the directory.")
+class EmployeeInput:
+    name: str
+    location: str
+    experience_years: float
+    availability: Availability = models.Availability.bench
+    skills: list[SkillRatingInput] = strawberry.field(default_factory=list)</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/schema.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@strawberry.type
+class Mutation:
+    @strawberry.mutation(description="Add someone to the directory. Skill levels must be 1–5.")
+    def add_employee(self, info: Info, employee: EmployeeInput) -&gt; AddEmployeeResult:
+        try:
+            data = models.EmployeeCreate(**strawberry.asdict(employee))
+        except PydanticValidationError as exc:
+            return ValidationFailed(
+                message=f"{exc.error_count()} field(s) rejected",
+                invalid_fields=[
+                    InvalidField(field=".".join(str(p) for p in err["loc"]), message=err["msg"])
+                    for err in exc.errors()
+                ],
+            )
+        return Employee.from_model(info.context.store.create_employee(data))</code></pre>
+    </div>
+    <p><code>strawberry.asdict()</code> turns the input into a plain dict, so the Pydantic model that guarded the REST edge is reused unchanged — one definition of the rules, two protocols.</p>
+
+    <h2 id="errors">7. Errors: two channels, and they mean different things</h2>
+    <p>The first surprise for anyone arriving from REST: <strong>a GraphQL server answers <code>200</code> almost no matter what.</strong> The status line stops carrying meaning; the body carries it instead. There are two places it can appear, and conflating them is the most common way to make a GraphQL API unpleasant to consume.</p>
+    <table>
+      <thead><tr><th>Channel</th><th>Means</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>errors</code>, with <code>data: null</code></td><td>the request was never valid — <em>a bug in the client</em></td><td>asking for a field that does not exist</td></tr>
+        <tr><td><code>errors</code>, with partial <code>data</code></td><td>one resolver failed; the rest still resolved</td><td><code>limit: 0</code> on <code>candidates</code></td></tr>
+        <tr><td>inside <code>data</code>, as a type</td><td>a domain outcome — <em>the server working correctly</em></td><td>candidate blocked, requisition not found</td></tr>
+      </tbody>
+    </table>
+    <div class="code-block">
+      <div class="code-block-header"><span>a client bug — nothing ran</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">{ employees { salary } }
+
+{"data": null,
+ "errors": [{"message": "Cannot query field 'salary' on type 'Employee'."}]}</code></pre>
+    </div>
+    <p>The query was validated against the schema <em>before any resolver ran</em>. That check is free, it is exhaustive, and it is why a typed schema is worth the ceremony.</p>
+
+    <h2 id="unions">8. Unions: the schema's 404 and 409</h2>
+    <p>So where do "not found" and "blocked" go? Into the schema, as types. A mutation whose return type is a <strong>union</strong> forces the client to name each outcome it wants to read — it cannot forget the unhappy path, because the query will not compile without it.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/types.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@strawberry.type(description="No such employee or requisition.")
+class NotFound:
+    message: str
+    kind: str
+    id: strawberry.ID
+
+@strawberry.type(description="The candidate misses a mandatory skill — the REST 409.")
+class CandidateBlocked:
+    message: str
+    blockers: list[str]
+    score: int
+
+ShortlistResult = Annotated[
+    ShortlistEntry | NotFound | CandidateBlocked,
+    strawberry.union("ShortlistResult",
+                     description="Every way shortlisting can end, spelled out in the schema."),
+]</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/schema.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">    @strawberry.mutation(description="Shortlist a candidate — refused if they are blocked.")
+    def shortlist_candidate(
+        self, info: Info, job_id: strawberry.ID, employee_id: strawberry.ID
+    ) -&gt; ShortlistResult:
+        store = info.context.store
+        requisition = store.get_requisition(job_id)
+        if requisition is None:
+            return NotFound(message="requisition not found", kind="requisition", id=job_id)
+
+        employee = store.get_employee(employee_id)
+        if employee is None:
+            return NotFound(message="employee not found", kind="employee", id=employee_id)
+
+        match = store.score(employee, requisition)
+        if match.blockers:
+            return CandidateBlocked(
+                message=f"{match.name} is missing mandatory {', '.join(match.blockers)}",
+                blockers=match.blockers, score=match.score,
+            )
+        return ShortlistEntry.from_model(store.add_to_shortlist(job_id, match))</code></pre>
+    </div>
+    <p>The client selects on the union with <em>inline fragments</em> — <code>... on TypeName</code> — and <code>__typename</code> tells it which arm it got:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>the query</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-graphql">mutation S($job: ID!, $emp: ID!) {
+  shortlistCandidate(jobId: $job, employeeId: $emp) {
+    __typename
+    ... on ShortlistEntry  { name score verdict }
+    ... on CandidateBlocked { message blockers }
+    ... on NotFound        { message kind }
+  }
+}</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>real responses</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-json">{"emp": "E1002"} → {"__typename": "ShortlistEntry", "name": "Priya Raman",
+                    "score": 100, "verdict": "strong"}
+
+{"emp": "E1005"} → {"__typename": "CandidateBlocked",
+                    "message": "Vikram Iyer is missing mandatory Python, SQL",
+                    "blockers": ["Python", "SQL"]}
+
+{"job": "J9999"} → {"__typename": "NotFound", "message": "requisition not found",
+                    "kind": "requisition"}</code></pre>
+    </div>
+    <p>All three are <code>200</code>, and none of them has an <code>errors</code> key. That is the point: <strong>a blocked candidate is not a failure, it is an answer.</strong> The REST version said the same thing with 409 — this version says it in a way a code generator can turn into an exhaustive <code>switch</code>.</p>
+    <div class="callout callout-tip">
+      <div class="callout-title">When to use which</div>
+      <p>Use a <strong>nullable field</strong> for "this lookup found nothing" (<code>employee(employeeId:)</code>). Use a <strong>union</strong> when the caller must <em>do</em> something different per outcome, or when you owe them detail — <code>CandidateBlocked</code> carries the blocking skills, which a bare <code>null</code> never could.</p>
+    </div>
+
+    <h2 id="validation">9. What the type system will <em>not</em> do for you</h2>
+    <p><code>level: Int!</code> promises a whole number. It says nothing about 1–5. GraphQL has no <code>ge</code>/<code>le</code>, no regex, no cross-field rules — so every constraint REST got free from <code>Field(ge=1, le=5)</code> and <code>Query(3, ge=1, le=20)</code> is now yours to enforce.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>two rejections, two channels</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-text">skills: [{skill: "SQL", level: "expert"}]      ← wrong TYPE
+  {"data": null, "errors": [{"message": "Int cannot represent non-integer value..."}]}
+  GraphQL caught it. No Python ran.
+
+skills: [{skill: "SQL", level: 9}]             ← right type, wrong VALUE
+  {"data": {"addEmployee": {"__typename": "ValidationFailed",
+    "message": "1 field(s) rejected",
+    "invalidFields": [{"field": "skills.0.level",
+                       "message": "Input should be less than or equal to 5"}]}}}
+  Pydantic caught it, inside the resolver, and reported it as data.</code></pre>
+    </div>
+    <p>The same split applies to arguments. <code>limit</code> is an <code>Int!</code>, so bounding it is a line of resolver code — and because an out-of-range <code>limit</code> is a client bug rather than a domain outcome, it belongs in the <code>errors</code> channel:</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>real response</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-json">{"data": {"requisition": null},
+ "errors": [{"message": "limit must be between 1 and 20, got 0",
+             "path": ["requisition", "candidates"]}]}</code></pre>
+    </div>
+    <p>Note the <code>path</code>. GraphQL errors point at the exact field that failed — with a deep query, that is the difference between a five-minute fix and an afternoon.</p>
+
+    <h2 id="context">10. Context: dependency injection with one route</h2>
+    <p>REST gets its dependencies per route with <code>Depends()</code>. GraphQL has <em>one</em> route, so they arrive a level down — in the <strong>context</strong>, a per-request object every resolver sees as <code>info.context</code>.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/context.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">from fastapi import Depends
+from strawberry.dataloader import DataLoader
+from strawberry.fastapi import BaseContext
+
+from app.store import HRStore, get_store
+
+class Context(BaseContext):
+    """One instance per HTTP request, not per resolver call."""
+
+    def __init__(self, store: HRStore) -&gt; None:
+        super().__init__()
+        self.store = store
+        self.employees = DataLoader(load_fn=self._load_employees)
+
+    async def _load_employees(self, employee_ids: list[str]) -&gt; list[Employee | None]:
+        return self.store.get_employees(employee_ids)
+
+async def get_context(store: HRStore = Depends(get_store)) -&gt; Context:
+    return Context(store=store)</code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/main.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">graphql_router = GraphQLRouter(
+    schema,
+    context_getter=get_context,   # an ordinary FastAPI dependency
+    graphql_ide="graphiql",       # the in-browser explorer at GET /graphql
+)
+app.include_router(graphql_router, prefix="/graphql")</code></pre>
+    </div>
+    <p>Because <code>get_context</code> is a normal dependency, everything FastAPI does still works — including <code>app.dependency_overrides[get_store]</code>, which is how each test below gets its own store. Authentication belongs here too: read the header off <code>self.request</code>, put the user on the context, and every resolver has it.</p>
+
+    <h2 id="dataloader">11. N+1, and the DataLoader that fixes it</h2>
+    <p>Nested fields are GraphQL's best feature and its sharpest edge. Ask for a shortlist of 30 people and let each entry resolve its own employee record, and a naive server makes 30 database calls — the <strong>N+1 problem</strong>. It is invisible in the response and obvious in the query log.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>app/graph/types.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">    @strawberry.field(description="The full record behind this entry, batched by a DataLoader.")
+    async def employee(self, info: Info) -&gt; Employee | None:
+        person = await info.context.employees.load(self.employee_id)
+        return Employee.from_model(person) if person else None</code></pre>
+    </div>
+    <p>A <strong>DataLoader</strong> collects every <code>.load()</code> made in the same tick, calls your batch function <em>once</em> with all the keys, and hands each caller its own result. Two rules make it correct:</p>
+    <ul>
+      <li><strong>Build it per request</strong> — it caches, and a cache that outlives its request serves one client another client's stale data.</li>
+      <li><strong>Return results positionally</strong> — one slot per key, <code>None</code> for a miss. Drop the misses and every key after the first gap gets the wrong answer.</li>
+    </ul>
+    <div class="code-block">
+      <div class="code-block-header"><span>tests/test_graphql.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">def test_dataloader_batches_employee_lookups(client, store):
+    """Two shortlist entries, each asking for its employee: one trip to the store."""
+    ...
+    assert len(entries) == 2
+    assert store.batch_calls == 1            # N+1 would make this 2</code></pre>
+    </div>
+    <p>That assertion is worth copying into your own project. Batching is the kind of thing that works on the day you write it and quietly regresses six months later; only a test notices.</p>
+
+    <h2 id="explore">12. GraphiQL &amp; introspection</h2>
+    <p>Open <code>http://127.0.0.1:8000/graphql</code> in a browser and you get <strong>GraphiQL</strong>: an editor with autocomplete, inline docs and a schema browser. Nobody wrote it — it asks the server to describe itself (<em>introspection</em>), which is the same mechanism client code generators use to produce typed SDKs.</p>
+    <table>
+      <thead><tr><th>Tool</th><th>What you get</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET /graphql</code> in a browser</td><td>GraphiQL — write queries with autocomplete, read every description.</td></tr>
+        <tr><td><code>strawberry export-schema</code></td><td>the SDL as a file: commit it, diff it in CI, catch breaking changes.</td></tr>
+        <tr><td>Introspection query</td><td>what codegen tools read to build typed clients.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-note">
+      <div class="callout-title">🔒 Turn both off in production</div>
+      <p>Introspection publishes your entire API surface, and the IDE invites people to explore it. Public deployments usually disable both, plus add query <strong>depth</strong> and <strong>complexity</strong> limits — with nested fields, one small query can ask for a very large amount of work.</p>
+    </div>
+
+    <h2 id="testing">13. Testing</h2>
+    <p>No new machinery: it is still FastAPI's <code>TestClient</code> posting JSON. What changes is the assertion — you check the <em>body</em>, because the status is 200 either way.</p>
+    <div class="code-block">
+      <div class="code-block-header"><span>tests/test_graphql.py</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-python">@pytest.fixture
+def client(store):
+    app.dependency_overrides[get_store] = lambda: store   # the SAME store per test
+    yield TestClient(app)
+    app.dependency_overrides.clear()
+
+def gql(client, query, **variables):
+    """POST one operation and return the parsed body — errors included, not raised."""
+    response = client.post("/graphql", json={"query": query, "variables": variables})
+    assert response.status_code == 200, response.text
+    return response.json()
+
+def test_blocked_candidate_is_a_union_member_not_an_error(client):
+    body = gql(client, SHORTLIST, jobId="J2001", employeeId="E1005")
+    assert "errors" not in body
+    result = body["data"]["shortlistCandidate"]
+    assert result["__typename"] == "CandidateBlocked"
+    assert set(result["blockers"]) == {"Python", "SQL"}</code></pre>
+    </div>
+    <div class="callout callout-tip">
+      <div class="callout-title">🐰 Click through it instead</div>
+      <p>The project also ships a <strong>Bruno</strong> collection at <code>fast-api-graphql/bruno/</code> — 24 requests grouped Meta · Queries · Mutations · Errors · Schema, each with its own tests and a docs tab. It is the fastest way to <em>see</em> the difference between the two error channels: run <em>Mutations › Shortlist a blocked candidate</em> and watch a refusal arrive as <code>200</code> with no <code>errors</code> key.</p>
+      <div class="code-block">
+        <div class="code-block-header"><span>terminal</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">cd fast-api-graphql/bruno
+npx @usebruno/cli run --env Local -r     # server must already be running
+# Requests 24 (24 Passed) · Tests 80/80 · Assertions 14/14</code></pre>
+      </div>
+    </div>
+
+    <p>Two habits worth keeping: assert <code>"errors" not in body</code> on the happy path (a typo'd field name otherwise passes as a silent <code>None</code>), and write one test against the SDL itself — <code>assert "union ShortlistResult = ShortlistEntry | NotFound | CandidateBlocked" in schema.as_str()</code> — so a change to the contract has to be deliberate.</p>
+
+    <h2 id="rest-vs-graphql">14. REST → GraphQL, line by line</h2>
+    <p>Both versions of this API sit side by side in the course: <code>fast-api/</code> and <code>fast-api-graphql/</code>. <code>models.py</code> and <code>store.py</code> are the same file in both — <strong>the scoring engine never learns which protocol is asking.</strong> Everything else maps like this:</p>
+    <table>
+      <thead><tr><th>REST</th><th>GraphQL</th></tr></thead>
+      <tbody>
+        <tr><td>8 URLs, each with a fixed response shape</td><td>one <code>POST /graphql</code>; the client picks fields</td></tr>
+        <tr><td><code>GET /requisitions/{id}/candidates</code></td><td><code>Requisition.candidates(limit:)</code> — a field</td></tr>
+        <tr><td><code>response_model=Employee</code></td><td><code>@strawberry.type class Employee</code></td></tr>
+        <tr><td><code>404 Not Found</code></td><td><code>null</code>, or a <code>NotFound</code> union member</td></tr>
+        <tr><td><code>409 Conflict</code></td><td><code>CandidateBlocked</code> union member</td></tr>
+        <tr><td><code>422</code> from Pydantic, automatically</td><td><code>ValidationFailed</code> — you call Pydantic yourself</td></tr>
+        <tr><td><code>Query(3, ge=1, le=20)</code></td><td>a bounds check inside the resolver</td></tr>
+        <tr><td><code>Depends(get_store)</code> on each route</td><td><code>context_getter</code>, once</td></tr>
+        <tr><td>over-fetching; several round trips per screen</td><td>one round trip, exact fields — but N+1 is now yours to manage</td></tr>
+        <tr><td>HTTP caching, per-URL rate limits, CDN</td><td>all much harder: every request is <code>POST /graphql</code></td></tr>
+        <tr><td><code>/docs</code> generated from type hints</td><td>GraphiQL + SDL generated from type hints</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-tip">
+      <div class="callout-title">Which should you pick?</div>
+      <p><strong>GraphQL</strong> pays off with many different clients over one graph of related data — a mobile app that wants three fields and a dashboard that wants thirty, without a new endpoint for each. <strong>REST</strong> stays the better answer for simple, cacheable, file-and-CDN-shaped APIs, for webhooks, and anywhere HTTP semantics <em>are</em> the interface. Nothing stops you running both: they are two doors onto the same <code>store.py</code>.</p>
+    </div>
+
+    <h2 id="cheatsheet">15. Mini cheat sheet</h2>
+    <table>
+      <thead><tr><th>You want to…</th><th>Do this</th></tr></thead>
+      <tbody>
+        <tr><td>Expose an object</td><td><code>@strawberry.type class Employee:</code> + type hints</td></tr>
+        <tr><td>Read data</td><td>a method on <code>Query</code> with <code>@strawberry.field</code></td></tr>
+        <tr><td>Change data</td><td>a method on <code>Mutation</code> with <code>@strawberry.mutation</code></td></tr>
+        <tr><td>Take an argument</td><td>add a typed parameter to the resolver</td></tr>
+        <tr><td>Accept an object argument</td><td><code>@strawberry.input</code> (never an output type)</td></tr>
+        <tr><td>Say "might be missing"</td><td>return <code>Employee | None</code> → <code>Employee</code> (no <code>!</code>)</td></tr>
+        <tr><td>Return several outcomes</td><td><code>Annotated[A | B, strawberry.union("Name")]</code></td></tr>
+        <tr><td>Reach the store / current user</td><td><code>info.context</code>, built by <code>context_getter</code></td></tr>
+        <tr><td>Avoid N+1</td><td><code>DataLoader(load_fn=…)</code> on the context, awaited in the field</td></tr>
+        <tr><td>Hide data on a type</td><td><code>strawberry.Private[...]</code></td></tr>
+        <tr><td>Bound a number</td><td>check it in the resolver — the schema will not</td></tr>
+        <tr><td>Reject a business rule</td><td>return an error <em>type</em>, not an exception</td></tr>
+        <tr><td>Mount it</td><td><code>app.include_router(GraphQLRouter(schema), prefix="/graphql")</code></td></tr>
+        <tr><td>See the schema</td><td>open <code>/graphql</code>, or <code>strawberry export-schema</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="gotchas">16. Everyday gotchas</h2>
+    <table>
+      <thead><tr><th>Trap</th><th>Remember</th></tr></thead>
+      <tbody>
+        <tr><td>Checking the status code</td><td>It is 200. Read <code>data</code> and <code>errors</code> instead.</td></tr>
+        <tr><td>Everything thrown into <code>errors</code></td><td>Client bugs → <code>errors</code>. Domain outcomes → types in <code>data</code>.</td></tr>
+        <tr><td>Trusting <code>Int!</code> to mean 1–5</td><td>It means "an integer". Ranges are yours (Pydantic, or a check).</td></tr>
+        <tr><td>A union that returns <code>{}</code></td><td>You forgot the inline fragments: <code>... on ShortlistEntry { … }</code>.</td></tr>
+        <tr><td>N+1 in a nested field</td><td>Batch with a DataLoader, per request, and test the call count.</td></tr>
+        <tr><td>One shared DataLoader</td><td>Build it in the context. A cross-request cache leaks data between users.</td></tr>
+        <tr><td>A package named <code>graphql/</code></td><td>It shadows the <strong>graphql-core</strong> library on <code>sys.path</code>. This project uses <code>graph/</code>.</td></tr>
+        <tr><td>Reusing an output type as input</td><td>GraphQL forbids it — declare a matching <code>@strawberry.input</code>.</td></tr>
+        <tr><td>Unbounded query depth</td><td>Nested fields let a client ask for enormous work. Add depth/complexity limits.</td></tr>
+        <tr><td>Middleware timing per endpoint</td><td>It only ever sees <code>POST /graphql</code>. Per-field timing needs a schema extension.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">Where this goes next</div>
+      <p>You have now served the same HR domain two ways — <a href="fastapi.html">REST</a> and GraphQL — over one unchanged <code>store.py</code>. Do it a third time for an <em>AI</em> client with <a href="fastmcp.html">FastMCP</a>, then let an agent decide when to call it in the <a href="strands-course.html">Strands course</a>. Shaky on the Python? The <a href="python.html">Python Quick Start</a> covers the decorators, type hints and classes this page leans on.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">Quick Starts · AI Engineering Course</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<script src="../assets/js/theme.js"></script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/interactive.js"></script>
+<script src="../assets/js/search.js"></script>
+</body>
+</html>

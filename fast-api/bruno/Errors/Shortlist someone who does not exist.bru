@@ -1,0 +1,38 @@
+meta {
+  name: Shortlist someone who does not exist
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/requisitions/{{jobId}}/shortlist
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "employee_id": "{{missingEmployeeId}}"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("404 for the employee — the requisition was fine", function() {
+    expect(res.getStatus()).to.equal(404);
+    expect(res.getBody().detail).to.equal("employee not found");
+  });
+}
+
+docs {
+  A well-formed body naming a person who is not in the directory. The route checks the
+  requisition first, then the employee, and reports whichever is missing — so the client
+  learns *which* half of the request was wrong.
+
+  Put this next to *Shortlist a blocked candidate* and the two failure modes separate
+  cleanly: **404 means you named something that does not exist, 409 means everything you
+  named exists and the answer is still no.**
+}

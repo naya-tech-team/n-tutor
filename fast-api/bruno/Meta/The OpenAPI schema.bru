@@ -1,0 +1,58 @@
+meta {
+  name: The OpenAPI schema
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/openapi.json
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("every endpoint in the README is really published", function() {
+    const paths = Object.keys(res.getBody().paths);
+    expect(paths).to.have.members([
+      "/health",
+      "/employees",
+      "/employees/{employee_id}",
+      "/requisitions",
+      "/requisitions/{job_id}",
+      "/requisitions/{job_id}/candidates",
+      "/requisitions/{job_id}/candidates/{employee_id}",
+      "/requisitions/{job_id}/shortlist"
+    ]);
+  });
+
+  test("the Pydantic models became schema components", function() {
+    const schemas = Object.keys(res.getBody().components.schemas);
+    expect(schemas).to.include.members(["Employee", "EmployeeCreate", "MatchResult", "Requisition"]);
+  });
+
+  test("EmployeeCreate and Employee are separate — a client cannot invent an id", function() {
+    const schemas = res.getBody().components.schemas;
+    expect(Object.keys(schemas.EmployeeCreate.properties)).to.not.include("employee_id");
+    expect(Object.keys(schemas.Employee.properties)).to.include("employee_id");
+  });
+
+  test("the 1-5 bound on a skill level lives in the schema, not in a route", function() {
+    const level = res.getBody().components.schemas.SkillRating.properties.level;
+    expect(level.minimum).to.equal(1);
+    expect(level.maximum).to.equal(5);
+  });
+}
+
+docs {
+  Nobody writes this file — FastAPI derives it from the type hints and `Field(...)`
+  constraints in `app/models.py`, and `/docs` is just a viewer for it.
+
+  The last two tests are the interesting ones. `EmployeeCreate` and `Employee` are two
+  schemas because `employee_id` and `created_at` are server-set: the split is what stops a
+  client from claiming an id. And `level: 1..5` reaches the schema straight from
+  `Field(ge=1, le=5)`, so the bound is documented, enforced, and written once.
+}

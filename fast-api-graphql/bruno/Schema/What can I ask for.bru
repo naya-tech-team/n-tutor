@@ -1,0 +1,57 @@
+meta {
+  name: What can I ask for
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query SchemaShape {
+    __schema {
+      queryType {
+        fields {
+          name
+          description
+        }
+      }
+      mutationType {
+        fields {
+          name
+          description
+          args {
+            name
+            type {
+              name
+              kind
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+tests {
+  test("the whole read surface is five fields", function() {
+    const fields = res.getBody().data.__schema.queryType.fields.map(f => f.name);
+    expect(fields).to.eql(["health", "employees", "employee", "requisitions", "requisition"]);
+  });
+
+  test("every field documents itself", function() {
+    res.getBody().data.__schema.queryType.fields.forEach(f =>
+      expect(f.description, f.name).to.be.a("string"));
+  });
+}
+
+docs {
+  The same query GraphiQL runs to build its autocomplete, and the same one client
+  generators read to produce typed SDKs. The `description` values are the Python
+  docstrings and `description=` arguments from `app/graph/`.
+
+  Turn introspection **off** in production: it publishes your entire API surface.
+}

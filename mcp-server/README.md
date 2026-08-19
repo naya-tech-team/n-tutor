@@ -18,6 +18,7 @@ mandatory bar is *blocked* — no score saves them.
 - [What it exposes](#what-it-exposes)
 - [Install & run](#install--run)
 - [Expected output](#expected-output)
+- [Poke at it with Bruno](#poke-at-it-with-bruno)
 - [Use it from Claude Desktop](#use-it-from-claude-desktop)
 - [Use it from a Strands agent](#use-it-from-a-strands-agent)
 - [Troubleshooting](#troubleshooting)
@@ -33,6 +34,7 @@ mcp-server/
 │       ├── hr_data.py    # 12 employees, 6 requisitions, and match()
 │       ├── config.py     # settings
 │       └── llm.py        # unused here — the server needs no model of its own
+├── bruno/                # Bruno collection: 17 requests, 61 tests, runnable in CI
 ├── pyproject.toml        # dependencies (fastmcp) + required Python version
 └── uv.lock               # pinned, reproducible versions (commit this)
 ```
@@ -150,6 +152,70 @@ truth and caused the wrong outreach.
 
 Note also that `find_by_skill("pyspark", 4)` finds people whose records say
 *"Apache Spark"*. The alias table does that, not the model.
+
+## Poke at it with Bruno
+
+`bruno/` is a [Bruno](https://www.usebruno.com/) collection that speaks MCP over plain
+HTTP — 17 requests grouped **Handshake · Discovery · Tools · Errors**, each with its own
+tests and a `docs` tab. It is the fastest way to see the protocol *without* a client
+library doing the interesting parts for you.
+
+### Open it in the Bruno app
+
+A Bruno collection *is* a folder of `.bru` files, so there is nothing to import.
+
+1. **Collection → Open Collection**, and pick the `mcp-server/bruno` folder **itself** —
+   Bruno recognises it by the `bruno.json` at its root.
+2. Start the server (`uv run app/main.py`) and switch the environment to **Local**, top
+   right.
+3. Right-click the collection → **Run**. Or run *Handshake › Initialize* first if you want
+   to step through requests one at a time — see below.
+
+### Or run it headlessly
+
+```bash
+cd mcp-server/bruno
+npx @usebruno/cli run --env Local -r
+```
+
+```
+Requests      17 (17 Passed)
+Tests         61/61
+Assertions    17/17
+```
+
+If port 8000 is taken by [`fast-api/`](../fast-api/README.md), start this server with
+`--port 8010` and change `baseUrl` in `environments/Local.bru`.
+
+### Three things it makes visible
+
+Every request is a `POST` to the **same URL** with the method name in the body, so nothing
+you know about REST collections transfers. Three consequences, each with a request proving
+it:
+
+| | Request | What it shows |
+|---|---|---|
+| **Responses are Server-Sent Events** | *Handshake › Initialize* | `content-type: text/event-stream`, even for a plain request/response. A four-line script in `collection.bru` unwraps the `data:` lines so the tests can read `res.getBody().result` normally. |
+| **The session is stateful** | *Errors › Calling without a session* | `initialize` mints an id in a **header**; every later request echoes it or gets a `400`/`404`. This is why folder order is load-bearing here and not in the REST collection. |
+| **The status code stops meaning anything** | *Errors › Calling a tool that does not exist* | a failed tool is `200` with `isError: true`. `4xx` is reserved for the *transport* being misused — as in *Errors › Forgetting the SSE Accept header*, the single most common way a hand-rolled client fails. |
+
+Also worth opening: *Discovery › List tools*, which is the whole argument for MCP in one
+response — a client that has never seen this server learns four tool names, their
+descriptions and a JSON Schema per argument, all derived from the Python signatures in
+`app/main.py`.
+
+Nothing here mutates server state, so the collection is re-runnable as often as you like.
+Stepping through single requests works too, as long as *Handshake › Initialize* has run at
+least once in the session — and re-running it is also the fix after the server restarts,
+since sessions live in memory.
+
+### Compare it with the REST collection
+
+[`fast-api/bruno`](../fast-api/README.md) publishes this same HR domain as eight REST
+endpoints. Run both and the contrast is sharp: a candidate blocked on a mandatory skill is
+a **409** there, and a `200` carrying `{"error": …}` here — because the reader on the other
+end is a model that has to decide what to do next, not a client that has to branch on a
+status code.
 
 ## Use it from Claude Desktop
 

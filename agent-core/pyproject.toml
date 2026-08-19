@@ -1,0 +1,34 @@
+[project]
+name = "agent-core"
+version = "1.0.0"
+description = "The HR hiring system on Amazon Bedrock AgentCore: five runtimes, a gateway over Lambda and S3, memory, and observability"
+readme = "README.md"
+# 3.13 to match the PYTHON_3_13 runtime the deployment artifacts target. The
+# other projects in this repo pin >=3.12; building the zips on the same minor
+# version AgentCore runs avoids a class of wheel mismatch.
+requires-python = ">=3.13"
+dependencies = [
+    "strands-agents[a2a,ollama]>=1.51.0",
+    "strands-agents-tools>=0.8.6",
+    "bedrock-agentcore[strands-agents]>=0.1.0",
+    "fastmcp>=3.4.6",
+    "mcp>=1.29.0",
+    "httpx>=0.28.1",
+    # Declared explicitly. a2a-strands gets this transitively through the [a2a]
+    # extra and imports it anyway — one dependency resolution away from breaking.
+    "pydantic-settings>=2.15.0",
+    "boto3>=1.35.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["app"]   # so `from _shared import ...` resolves from any cwd
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.10.0",
+    "pytest>=9.1.1",
+]

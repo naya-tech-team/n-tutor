@@ -1,0 +1,67 @@
+meta {
+  name: List tools
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/mcp
+  body: json
+  auth: inherit
+}
+
+headers {
+  mcp-session-id: {{mcpSessionId}}
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/list"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("all four HR tools are published", function() {
+    const names = res.getBody().result.tools.map(t => t.name);
+    expect(names).to.have.members(["find_by_skill", "get_requisition", "score_match", "shortlist"]);
+  });
+
+  test("every tool describes itself in a sentence a model can choose on", function() {
+    res.getBody().result.tools.forEach(t => {
+      expect(t.description, t.name).to.be.a("string").that.is.not.empty;
+    });
+  });
+
+  test("arguments are typed, with defaults the client does not have to know", function() {
+    const find = res.getBody().result.tools.find(t => t.name === "find_by_skill");
+    expect(find.inputSchema.required).to.eql(["skill"]);
+    expect(find.inputSchema.properties.min_level.default).to.equal(3);
+    expect(find.inputSchema.properties.available_only.default).to.be.true;
+  });
+
+  test("unknown arguments are refused by the schema, not silently dropped", function() {
+    res.getBody().result.tools.forEach(t => {
+      expect(t.inputSchema.additionalProperties, t.name).to.be.false;
+    });
+  });
+}
+
+docs {
+  **The request that makes MCP worth the ceremony.** A client that has never seen this server
+  learns everything it needs from one call: four tool names, what each is for, and a JSON
+  Schema for every argument.
+
+  Nothing here was written by hand. FastMCP derived it from the Python signatures in
+  `app/main.py` — `def find_by_skill(skill: str, min_level: int = 3, available_only: bool = True)`
+  becomes the types, the required list and the defaults. Change the signature and the
+  advertised schema changes with it, so it cannot drift.
+
+  `additionalProperties: false` is the quiet one. A model that invents a plausible argument
+  — `location`, say — gets an error instead of a result silently computed without it.
+}

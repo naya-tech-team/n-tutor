@@ -1,0 +1,37 @@
+meta {
+  name: One employee by id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/employees/{{strongEmployeeId}}
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("it is Priya, and her record is complete", function() {
+    const e = res.getBody();
+    expect(e.employee_id).to.equal("E1002");
+    expect(e.name).to.equal("Priya Raman");
+    expect(e.location).to.equal("Bengaluru");
+    expect(e.experience_years).to.equal(8.5);
+  });
+
+  test("she holds all four skills J2001 asks for", function() {
+    const levels = {};
+    res.getBody().skills.forEach(s => { levels[s.skill] = s.level; });
+    expect(levels).to.eql({ "Python": 4, "Apache Spark": 5, "SQL": 5, "Apache Airflow": 4 });
+  });
+}
+
+docs {
+  A path parameter typed `str`. Note what this route does *not* do: it never checks whether
+  the store returned `None` and then guesses — it raises `HTTPException(404)`, and
+  the next request in this folder shows why an explicit miss beats an empty body.
+}

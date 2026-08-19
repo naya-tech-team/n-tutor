@@ -1,0 +1,66 @@
+meta {
+  name: Wrong argument type
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  mutation AddEmployee($employee: EmployeeInput!) {
+    addEmployee(employee: $employee) {
+      __typename
+      ... on Employee {
+        employeeId
+        name
+        location
+        availability
+        createdAt
+        skills {
+          skill
+          level
+        }
+      }
+      ... on ValidationFailed {
+        message
+        invalidFields {
+          field
+          message
+        }
+      }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "employee": {
+      "name": "Typo",
+      "location": "Pune",
+      "experienceYears": 1,
+      "skills": [
+        { "skill": "SQL", "level": "expert" }
+      ]
+    }
+  }
+}
+
+tests {
+  test("GraphQL caught it — no Python ran", function() {
+    expect(res.getBody().data).to.be.null;
+    expect(res.getBody().errors[0].message).to.contain("Int cannot represent");
+  });
+}
+
+docs {
+  Wrong **type**, so the type system handles it: the variables never coerce, the operation
+  never starts. Contrast *Mutations › Add an employee with an impossible level*: right
+  type, wrong **value**, caught inside the resolver and returned as data.
+
+  Two rejections, two channels, and the difference is worth internalising — it is what
+  tells a client "fix your code" apart from "fix your input".
+}
