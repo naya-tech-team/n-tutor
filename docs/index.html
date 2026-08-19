@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Welcome — Start Here · AI Engineering</title>
+<meta name="description" content="A beginner-first library for building with Python, APIs and AI agents — 15 guides from your first line of Python to agents that call each other, each with runnable code in this repo." />
+<script>
+  (function(){
+    var stored = null;
+    try { stored = localStorage.getItem("course-theme"); } catch(e) {}
+    var theme = stored || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  window.__COURSE_ROOT__ = "./";
+</script>
+<link rel="stylesheet" href="assets/css/theme.css" />
+<link rel="stylesheet" href="assets/css/layout.css" />
+<link rel="stylesheet" href="assets/css/components.css" />
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+
+<header class="site-header">
+  <button class="sidebar-toggle" id="sidebar-toggle-btn" aria-label="Toggle navigation">☰</button>
+  <div class="brand"><span class="logo-dot"></span> AI Engineering · Learn from Zero</div>
+  <div class="header-spacer"></div>
+  <div class="search-box">
+    <input type="search" id="search-input" placeholder="Search the library… ( / )" aria-label="Search course" />
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle dark mode">🌙</button>
+</header>
+<div class="progress-bar" id="progress-bar"></div>
+
+<div class="app-shell no-toc">
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Course navigation">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Get Started</div>
+      <a class="sidebar-link" href="index.html"><span class="badge-dot"></span> Welcome — Start Here</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Quick Starts <span class="qs-count">12</span></div>
+      <a class="sidebar-link" href="quickstart/python.html"><span class="badge-dot"></span> Python: Quick Start</a>
+      <a class="sidebar-link" href="quickstart/fastapi.html"><span class="badge-dot"></span> FastAPI: Quick Start</a>
+      <a class="sidebar-link" href="quickstart/graphql.html"><span class="badge-dot"></span> GraphQL: Quick Start</a>
+      <a class="sidebar-link" href="quickstart/fastmcp.html"><span class="badge-dot"></span> FastMCP: Quick Start</a>
+      <a class="sidebar-link" href="quickstart/a2a.html"><span class="badge-dot"></span> A2A: Quick Start</a>
+      <a class="sidebar-link" href="quickstart/strands-course.html"><span class="badge-dot"></span> Strands: Full Course Guide</a>
+      <a class="sidebar-link" href="quickstart/terraform.html"><span class="badge-dot"></span> Terraform: Quick Start</a>
+      <a class="sidebar-link" href="quickstart/terraform-usecases.html"><span class="badge-dot"></span> Terraform: Use Cases</a>
+      <a class="sidebar-link" href="quickstart/agentcore.html"><span class="badge-dot"></span> AWS AgentCore: Tutorial</a>
+      <a class="sidebar-link" href="quickstart/agentcore-qa.html"><span class="badge-dot"></span> AgentCore: Q&amp;A</a>
+      <a class="sidebar-link" href="quickstart/agentcore-deploy.html"><span class="badge-dot"></span> AgentCore: Deploy Prerequisites</a>
+      <a class="sidebar-link" href="quickstart/agentcore-complete-reference.html"><span class="badge-dot"></span> AgentCore: Complete Reference</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Slide Decks <span class="qs-count">3</span></div>
+      <a class="sidebar-link" href="quickstart/agentcore-capabilities.html"><span class="badge-dot"></span> AgentCore: Capabilities &amp; Trade-offs</a>
+      <a class="sidebar-link" href="quickstart/agentcore-slides.html"><span class="badge-dot"></span> AgentCore: Capabilities (slides)</a>
+      <a class="sidebar-link" href="quickstart/agentcore-dev-deck.html"><span class="badge-dot"></span> AgentCore: Developer Deep Dive</a>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content">
+    <div class="hero">
+      <h1>Build with Python, APIs and AI agents</h1>
+      <p class="subtitle">A beginner-first library. Every guide is one page, code-first, and points at a project in this repository you can actually run. No prior experience assumed — the first guide starts at <code>print("hello")</code>.</p>
+      <div class="btn-row" style="justify-content:center;">
+        <a class="btn btn-primary" href="quickstart/python.html">Start with Python →</a>
+        <a class="btn btn-ghost" href="#library">Browse the library</a>
+      </div>
+      <div class="stat-row" style="justify-content:center;">
+        <span class="stat"><strong>15</strong> guides</span>
+        <span class="stat"><strong>8</strong> runnable projects</span>
+        <span class="stat"><strong>0</strong> setup to read</span>
+      </div>
+    </div>
+
+    <div class="start-banner">
+      <span class="sb-emoji">🧭</span>
+      <div class="sb-body">
+        <strong>Not sure where to begin?</strong>
+        <p>Read the <a href="quickstart/python.html">Python Quick Start</a>, then <a href="quickstart/fastapi.html">FastAPI</a>. Those two carry almost everything later: the language, and the habit of putting a typed contract in front of your code. Everything after them is a variation on that idea — for a browser, for another program, or for an AI.</p>
+      </div>
+    </div>
+
+    <h2 id="jargon">The words, before the code</h2>
+    <p>Most of what makes this field sound hard is vocabulary. Eight terms cover nearly every guide here.</p>
+
+    <div class="jargon-grid">
+      <div class="jargon-item">
+        <div class="jt"><span class="je">🌐</span> API</div>
+        <div class="jd">A door into your program that other programs can knock on. You write a function; an API makes it callable over the network.</div>
+      </div>
+      <div class="jargon-item">
+        <div class="jt"><span class="je">✅</span> Schema</div>
+        <div class="jd">A written-down shape for data — this field is text, this number is 1 to 5. Declare it once and everything downstream can stop checking.</div>
+      </div>
+      <div class="jargon-item">
+        <div class="jt"><span class="je">🔎</span> GraphQL</div>
+        <div class="jd">One address instead of twenty, where the caller lists the fields it wants and gets exactly those back — no more, no fewer.</div>
+      </div>
+      <div class="jargon-item">
+        <div class="jt"><span class="je">🤖</span> Agent</div>
+        <div class="jd">A model in a loop with tools. It decides <em>which</em> tool to call and when to stop — your code still does the actual work.</div>
+      </div>
+      <div class="jargon-item">
+        <div class="jt"><span class="je">🧩</span> MCP</div>
+        <div class="jd">Model Context Protocol — a standard way to publish tools so any AI client can use them. Write the tool once, not once per assistant.</div>
+      </div>
+      <div class="jargon-item">
+        <div class="jt"><span class="je">🔗</span> A2A</div>
+        <div class="jd">Agent-to-agent. MCP gives one agent tools; A2A lets separately built agents discover each other and delegate work.</div>
+      </div>
+      <div class="jargon-item">
+        <div class="jt"><span class="je">🏗️</span> Infrastructure as code</div>
+        <div class="jd">Servers and databases described in files you commit, instead of buttons someone clicked once and cannot remember.</div>
+      </div>
+      <div class="jargon-item">
+        <div class="jt"><span class="je">☁️</span> AgentCore</div>
+        <div class="jd">AWS's managed home for agents in production — isolated runtime, memory, identity and tool gateways you would otherwise build yourself.</div>
+      </div>
+    </div>
+
+    <h2 id="library">The library</h2>
+    <p>Fifteen guides in five groups. Each card says what you walk away able to do.</p>
+
+    <div class="cat-head">
+      <span class="cat-emoji">🐍</span>
+      <h2>Language &amp; APIs</h2>
+      <span class="cat-count">3 guides</span>
+    </div>
+    <p class="cat-sub">Start here. The language, then two ways to put it behind an address other programs can call.</p>
+    <div class="card-grid">
+      <a class="card lib-card" href="quickstart/python.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🐍</span>
+        <span class="card-title">Python: Quick Start</span>
+        <span class="card-desc">The practical essentials on one page — syntax, collections, control flow, functions, classes and errors. Minimal theory, code first.</span>
+        <span class="card-meta">
+          <span class="badge badge-beginner">Quick Start</span>
+          <span class="badge badge-info">~15 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>read and write the Python every other guide assumes</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/fastapi.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">⚡</span>
+        <span class="card-title">FastAPI: Quick Start</span>
+        <span class="card-desc">Turn ordinary functions into a web API — routes, path and query parameters, Pydantic bodies, async, automatic docs and error handling.</span>
+        <span class="card-meta">
+          <span class="badge badge-intermediate">Quick Start</span>
+          <span class="badge badge-info">~15 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>serve validated JSON with docs you never wrote</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/graphql.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🔎</span>
+        <span class="card-title">GraphQL: Quick Start</span>
+        <span class="card-desc">One endpoint, and the client picks the fields — Strawberry on FastAPI: schema, nested resolvers, mutations, and errors modelled as types.</span>
+        <span class="card-meta">
+          <span class="badge badge-intermediate">Quick Start</span>
+          <span class="badge badge-info">~20 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>serve the same data a second way and see the trade</b>.</span>
+      </a>
+    </div>
+
+    <div class="cat-head">
+      <span class="cat-emoji">🤖</span>
+      <h2>AI agents &amp; protocols</h2>
+      <span class="cat-count">3 guides</span>
+    </div>
+    <p class="cat-sub">The same skills, aimed at an AI instead of a browser: give it tools, then let agents talk to each other.</p>
+    <div class="card-grid">
+      <a class="card lib-card" href="quickstart/fastmcp.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🧩</span>
+        <span class="card-title">FastMCP: Quick Start</span>
+        <span class="card-desc">Build an MCP server that hands an AI real tools and real data — tools, resources and prompts, then test it and wire it into Claude Desktop.</span>
+        <span class="card-meta">
+          <span class="badge badge-advanced">Quick Start</span>
+          <span class="badge badge-info">~15 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>publish tools once and have any AI client use them</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/a2a.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🔗</span>
+        <span class="card-title">A2A: Quick Start</span>
+        <span class="card-desc">Let independently built agents discover and delegate to each other — agent cards, executors, servers and clients, running locally.</span>
+        <span class="card-meta">
+          <span class="badge badge-advanced">Quick Start</span>
+          <span class="badge badge-info">runs locally</span>
+          <span class="badge badge-info">~25 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>split work across agents that were never built together</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/strands-course.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🎓</span>
+        <span class="card-title">Strands Agents: Full Course</span>
+        <span class="card-desc">Seventeen lessons from your first agent to memory and persistence — tools, MCP, structured output, streaming and multi-agent patterns.</span>
+        <span class="card-meta">
+          <span class="badge badge-advanced">Full Course</span>
+          <span class="badge badge-info">17 lessons</span>
+          <span class="badge badge-info">~3.5 hrs</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>build an agent that chooses its own tools, and know when not to</b>.</span>
+      </a>
+    </div>
+
+    <div class="cat-head">
+      <span class="cat-emoji">🏗️</span>
+      <h2>Cloud &amp; infrastructure</h2>
+      <span class="cat-count">2 guides</span>
+    </div>
+    <p class="cat-sub">Where the code above actually runs, described in files you can review and roll back.</p>
+    <div class="card-grid">
+      <a class="card lib-card" href="quickstart/terraform.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🏗️</span>
+        <span class="card-title">Terraform: Quick Start</span>
+        <span class="card-desc">Provision infrastructure as code — install, the plan/apply workflow, HCL syntax, variables, expressions, modules and state.</span>
+        <span class="card-meta">
+          <span class="badge badge-intermediate">Quick Start</span>
+          <span class="badge badge-info">~30 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>stand up cloud resources without clicking a console</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/terraform-usecases.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">📚</span>
+        <span class="card-title">Terraform: Use Cases</span>
+        <span class="card-desc">Twenty-seven runnable scenarios, each with the problem it solves and the code that solves it — from a first resource through modules and changes.</span>
+        <span class="card-meta">
+          <span class="badge badge-intermediate">Use Cases</span>
+          <span class="badge badge-info">27 scenarios</span>
+          <span class="badge badge-info">~105 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>recognise your problem and copy the shape that fits</b>.</span>
+      </a>
+    </div>
+
+    <div class="cat-head">
+      <span class="cat-emoji">☁️</span>
+      <h2>AWS AgentCore</h2>
+      <span class="cat-count">4 guides</span>
+    </div>
+    <p class="cat-sub">Taking agents to production on Amazon Bedrock AgentCore — from first tutorial to full reference.</p>
+    <div class="card-grid">
+      <a class="card lib-card" href="quickstart/agentcore.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">☁️</span>
+        <span class="card-title">AWS AgentCore: Tutorial</span>
+        <span class="card-desc">Capability by capability — Runtime, Gateway, Memory, Identity, Observability, Code Interpreter and Browser — taught by moving one agent into each.</span>
+        <span class="card-meta">
+          <span class="badge badge-advanced">Full Guide</span>
+          <span class="badge badge-info">7 capabilities</span>
+          <span class="badge badge-info">Terraform included</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>run an agent on managed infrastructure, not your laptop</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/agentcore-qa.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">💬</span>
+        <span class="card-title">AgentCore: Q&amp;A</span>
+        <span class="card-desc">The questions developers actually ask, answered as a dialogue: how it differs from Bedrock Agents, what each component is for, and what it costs.</span>
+        <span class="card-meta">
+          <span class="badge badge-beginner">Q&amp;A</span>
+          <span class="badge badge-info">no code required</span>
+          <span class="badge badge-info">~35 min</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>decide whether AgentCore is the right call at all</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/agentcore-deploy.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🔑</span>
+        <span class="card-title">AgentCore: Deploy Prerequisites</span>
+        <span class="card-desc">What must be applied, built and decided before each <code>terraform apply</code> — the stages in order, the IAM roles, and the dependency map.</span>
+        <span class="card-meta">
+          <span class="badge badge-advanced">Reference</span>
+          <span class="badge badge-info">8 stages</span>
+          <span class="badge badge-info">9 IAM roles</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>deploy in the right order and know why it is that order</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/agentcore-complete-reference.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">📖</span>
+        <span class="card-title">AgentCore: Complete Reference</span>
+        <span class="card-desc">The long-form technical reference — request paths, isolation and session models, contracts and error responses, quotas, costs and deployment options.</span>
+        <span class="card-meta">
+          <span class="badge badge-advanced">Reference</span>
+          <span class="badge badge-info">deep dive</span>
+        </span>
+        <span class="card-outcome">You leave able to <b>look up the exact limit or contract you are arguing about</b>.</span>
+      </a>
+    </div>
+
+    <div class="cat-head">
+      <span class="cat-emoji">🎞️</span>
+      <h2>Slide decks</h2>
+      <span class="cat-count">3 decks</span>
+    </div>
+    <p class="cat-sub">Presentation versions — for teaching a session, or skimming a topic in ten minutes.</p>
+    <div class="card-grid">
+      <a class="card lib-card" href="quickstart/agentcore-capabilities.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🎞️</span>
+        <span class="card-title">AgentCore: Capabilities &amp; Trade-offs</span>
+        <span class="card-desc">All nine capabilities including Policy and Evaluations, an honest pros-and-cons reckoning, and an adoption roadmap with the anti-patterns named.</span>
+        <span class="card-meta">
+          <span class="badge badge-info">Deck</span>
+        </span>
+        <span class="card-outcome">Best for <b>a decision meeting where someone will ask "why not Lambda?"</b></span>
+      </a>
+      <a class="card lib-card" href="quickstart/agentcore-slides.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">🖼️</span>
+        <span class="card-title">AgentCore: Capabilities (slides)</span>
+        <span class="card-desc">Runtime, Gateway, Memory, Identity, Observability, Code Interpreter and Browser — taught through one worked example, slide by slide.</span>
+        <span class="card-meta">
+          <span class="badge badge-info">Deck</span>
+        </span>
+        <span class="card-outcome">Best for <b>presenting the capability tour to a room</b>.</span>
+      </a>
+      <a class="card lib-card" href="quickstart/agentcore-dev-deck.html">
+        <span class="pill pill-live">Live</span>
+        <span class="card-icon">⚙️</span>
+        <span class="card-title">AgentCore: Developer Deep Dive</span>
+        <span class="card-desc">Thirty minutes for engineers who will write the code — isolation and sessions, tool discovery, outbound auth, traces and what ships to production.</span>
+        <span class="card-meta">
+          <span class="badge badge-info">Deck</span>
+          <span class="badge badge-info">~30 min</span>
+        </span>
+        <span class="card-outcome">Best for <b>a team about to build on it this sprint</b>.</span>
+      </a>
+    </div>
+
+    <h2 id="path">A path through it</h2>
+    <p>Read in this order and each step uses the one before it. Skip freely — every guide stands alone.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>Learn the language</h4>
+          <p><a href="quickstart/python.html">Python</a> — enough to read every other page here without guessing.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>Put it behind an address</h4>
+          <p><a href="quickstart/fastapi.html">FastAPI</a>, then <a href="quickstart/graphql.html">GraphQL</a> — the same data served two ways, so the trade-off becomes obvious rather than theoretical.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Hand it to an AI</h4>
+          <p><a href="quickstart/fastmcp.html">FastMCP</a> publishes the same logic as tools an agent can call — no model required in the server itself.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>Let something decide when to call it</h4>
+          <p>The <a href="quickstart/strands-course.html">Strands course</a> builds the agent; <a href="quickstart/a2a.html">A2A</a> is what you reach for when one agent is not enough.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Ship it</h4>
+          <p><a href="quickstart/terraform.html">Terraform</a> describes the cloud it runs on; <a href="quickstart/agentcore.html">AWS AgentCore</a> is the managed place to run it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-note" style="margin-top:28px;">
+      <div class="callout-title">📦 Everything here has code behind it</div>
+      <p>These pages are the written half. The other half is in the repository beside them — <code>python/</code>, <code>fast-api/</code>, <code>fast-api-graphql/</code>, <code>mcp-server/</code>, <code>strands-ai/</code>, <code>a2a-strands/</code>, <code>agent-core/</code> and <code>terraform/</code>. Each guide names the folder it belongs to, and each folder has a README that runs.</p>
+    </div>
+
+    <div class="callout callout-tip">
+      <div class="callout-title">💡 Two things worth knowing</div>
+      <p>Press <kbd>/</kbd> anywhere to search the whole library. The sidebar sections collapse — click a heading — and the theme toggle in the top right remembers your choice.</p>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">AI Engineering · Learn from Zero</footer>
+
+<script src="assets/js/theme.js"></script>
+<script src="assets/js/nav.js"></script>
+<script src="assets/js/interactive.js"></script>
+<script src="assets/js/search.js"></script>
+</body>
+</html>
